@@ -1,7 +1,9 @@
 /node_modules
 /public/storage
 /vendor
+/resources/assets/js/bower_components
 /.idea
 Homestead.json
 Homestead.yaml
 .env
+.bowerrc
