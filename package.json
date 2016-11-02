@@ -1,16 +1,36 @@
 {
   "name": "yamb-v2",
-  "version": "2.0",
-  "author": "Tomislav Plazonic <tomislav.plazonic@gmail.com>",
-  "private": true,
-  "scripts": {
-    "prod": "gulp --production",
-    "dev": "gulp watch"
+  "version": "1.0.0",
+  "description": "Yamb game, second version.",
+  "main": "public/js/app.js",
+  "directories": {
+    "test": "tests"
   },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tomiplaz/yamb-v2.git"
+  },
+  "keywords": [
+    "yamb",
+    "game"
+  ],
+  "author": "Tomislav Plazonic",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tomiplaz/yamb-v2/issues"
+  },
+  "homepage": "https://github.com/tomiplaz/yamb-v2#readme",
   "devDependencies": {
-    "gulp": "^3.9.1",
-    "bower": "^1.7.9",
     "bootstrap-sass": "^3.3.7",
-    "laravel-elixir": "^6.0.0-9"
+    "bower": "^1.7.9",
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.0",
+    "gulp-sass": "^2.3.2",
+    "gulp-sourcemaps": "^2.2.0",
+    "gulp-uglify": "^2.0.0",
+    "pump": "^1.0.1"
   }
 }
