@@ -15,6 +15,4 @@ Route::get('/', function () {
     return view('index');
 });
 
-Route::group(['prefix' => 'api/v1'], function() {
-    Route::post('authenticate', 'Auth\AuthController@authenticate');
-});
+Route::post('authenticate', 'Auth\AuthController@authenticate');
