@@ -27,7 +27,23 @@ class User extends Authenticatable
         'password', 'remember_token',
     ];
 
-    public function setPasswordAttribute($value) {
+    /**
+     * Encrypt password before storing it.
+     *
+     * @param  string  $value
+     */
+    public function setPasswordAttribute($value)
+    {
         $this->attributes['password'] = bcrypt($value);
+    }
+
+    /**
+     * Get user's games.
+     *
+     * @return @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function games()
+    {
+        return $this->hasMany('App\Game');
     }
 }
