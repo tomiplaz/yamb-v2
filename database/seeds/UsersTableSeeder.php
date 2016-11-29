@@ -18,5 +18,11 @@ class UsersTableSeeder extends Seeder
             'email' => 'tomislav@gmail.com',
             'password' => 'tomislav1'
         ]);
+
+        User::create([
+            'name' => 'Tamara',
+            'email' => 'tamara@gmail.com',
+            'password' => 'tamara2'
+        ]);
     }
 }

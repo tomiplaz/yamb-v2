@@ -39,7 +39,7 @@ class UserController extends Controller
         if ($user = User::find($id)) {
             return $user;
         } else {
-            return response('User with given ID does not exist!', 400);
+            return response('User with given ID does not exist!', 404);
         }
     }
 
@@ -56,7 +56,7 @@ class UserController extends Controller
             $user->update($request->input());
             return response('User updated!');
         } else {
-            return response('User with given ID does not exist!', 400);
+            return response('User with given ID does not exist!', 404);
         }
     }
 

@@ -14,3 +14,5 @@ use Illuminate\Http\Request;
 */
 
 Route::resource('users', 'UserController', ['only' => ['index', 'store', 'show', 'update', 'destroy']]);
+
+Route::resource('games', 'GameController', ['only' => ['index', 'store', 'show']]);

@@ -12,11 +12,21 @@ class Game extends Model
      * @var array
      */
     protected $fillable = [
-        //,
+        'user_id',
     ];
 
     /**
-     * Get games's user.
+     * The attributes for which cast should be performed.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'id' => 'int',
+        'user_id' => 'int',
+    ];
+
+    /**
+     * Get game's user.
      *
      * @return @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */

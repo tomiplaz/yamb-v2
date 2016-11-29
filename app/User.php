@@ -28,6 +28,15 @@ class User extends Authenticatable
     ];
 
     /**
+     * The attributes for which cast should be performed.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'id' => 'int',
+    ];
+
+    /**
      * Encrypt password before storing it.
      *
      * @param  string  $value

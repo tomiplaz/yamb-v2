@@ -35,6 +35,7 @@ class InitialMigration extends Migration
             $table->increments('id');
             $table->integer('user_id')->unsigned();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->timestamp('created_at');
         });
     }
 
@@ -45,10 +46,13 @@ class InitialMigration extends Migration
      */
     public function down()
     {
+        // Drop users table
+        Schema::drop('users');
+        
         // Drop password_resets table
         Schema::drop('password_resets');
 
-        // Drop users table
-        Schema::drop('users');
+        // Drop games table;
+        Schema::drop('games');
     }
 }
