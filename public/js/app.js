@@ -13,7 +13,12 @@
                 url: '/',
                 templateUrl: 'home.html',
                 controller: 'HomeCtrl as home'
-            });
+            })
+            .state('signUp', {
+                url: 'sign-up/',
+                templateUrl: 'signUp.html',
+                controller: 'SignUpCtrl as signUp'
+            })
 
         RestangularProvider
             .setBaseUrl('api/v1');
@@ -21,7 +26,7 @@
 
     run.$inject = ['$state'];
     function run($state) {
-        $state.go('home');
+        $state.go('signUp');
     }
 })();
 (function() {
@@ -36,5 +41,25 @@
         var vm = this;
 
         vm.title = "This is home";
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2')
+        .controller('SignUpCtrl', SignUpCtrl);
+    
+    SignUpCtrl.$inject = [];
+    function SignUpCtrl() {
+        var vm = this;
+
+        vm.title = "Sign Up";
+
+        vm.confirm = confirm;
+
+        function confirm() {
+            console.log(vm.name, vm.password);
+        }
     }
 })();

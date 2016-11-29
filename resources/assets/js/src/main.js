@@ -13,6 +13,11 @@
                 url: '/',
                 templateUrl: 'home.html',
                 controller: 'HomeCtrl as home'
+            })
+            .state('signUp', {
+                url: 'sign-up/',
+                templateUrl: 'signUp.html',
+                controller: 'SignUpCtrl as signUp'
             });
 
         RestangularProvider
@@ -21,6 +26,6 @@
 
     run.$inject = ['$state'];
     function run($state) {
-        $state.go('home');
+        $state.go('signUp');
     }
 })();
