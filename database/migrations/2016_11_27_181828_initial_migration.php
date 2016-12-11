@@ -36,6 +36,18 @@ class InitialMigration extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamp('created_at')->useCurrent();
         });
+
+        // Create cells table
+        Schema::create('cells', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('game_id');
+            $table->foreign('game_id')->references('id')->on('games')->onDelete('cascade');
+            $table->unsignedTinyInteger('column_id');
+            $table->foreign('column_id')->references('id')->on('columns');
+            $table->unsignedTinyInteger('row_id');
+            $table->foreign('row')->references('id')->on('rows');
+            $table->unsignedSmallInteger('value');
+        });
     }
 
     /**
@@ -51,7 +63,10 @@ class InitialMigration extends Migration
         // Drop password_resets table
         Schema::drop('password_resets');
 
-        // Drop games table;
+        // Drop games table
         Schema::drop('games');
+
+        // Drop cells table
+        Schema::drop('cells');
     }
 }
