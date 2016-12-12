@@ -34,4 +34,14 @@ class Game extends Model
     {
         return $this->belongsTo('App\User');
     }
+
+    /**
+     * Get game's cells.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function cells()
+    {
+        return $this->hasMany('App\Cell');
+    }
 }
