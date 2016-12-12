@@ -7,9 +7,12 @@
         <input type="text" ng-model="signUp.name" required>
     </div>
     <div class="col-xs-12">
-        <input type="password" ng-model="signUp.password" required pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$">
+        <input type="password" ng-model="signUp.password" required
+            pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$">
     </div>
     <div class="col-xs-12">
-        <button class="btn" ng-click="signUp.confirm()">Sign Up</button>
+        <button class="btn" ng-click="signUp.confirm()">
+            Sign Up
+        </button>
     </div>
 </div>
