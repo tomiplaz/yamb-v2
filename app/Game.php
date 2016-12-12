@@ -12,7 +12,7 @@ class Game extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id',
+        'user_id'
     ];
 
     /**
@@ -22,13 +22,13 @@ class Game extends Model
      */
     protected $casts = [
         'id' => 'int',
-        'user_id' => 'int',
+        'user_id' => 'int'
     ];
 
     /**
      * Get game's user.
      *
-     * @return @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function user()
     {

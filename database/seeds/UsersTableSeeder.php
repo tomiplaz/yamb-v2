@@ -13,16 +13,21 @@ class UsersTableSeeder extends Seeder
      */
     public function run()
     {
-        User::create([
-            'name' => 'Tomislav',
-            'email' => 'tomislav@gmail.com',
-            'password' => 'tomislav1'
-        ]);
+        $users = [
+            [
+                'name' => 'Tomislav',
+                'email' => 'tomislav@gmail.com',
+                'password' => 'tomislav1'
+            ],
+            [
+                'name' => 'Tamara',
+                'email' => 'tamara@gmail.com',
+                'password' => 'tamara2'
+            ]
+        ];
 
-        User::create([
-            'name' => 'Tamara',
-            'email' => 'tamara@gmail.com',
-            'password' => 'tamara2'
-        ]);
+        foreach ($users as $user) {
+            User::create($user);
+        }
     }
 }
