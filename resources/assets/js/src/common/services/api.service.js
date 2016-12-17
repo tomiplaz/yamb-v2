@@ -3,21 +3,33 @@
 
     angular
         .module('yamb-v2')
+        .factory('ApiRestangular', ApiRestangular)
         .factory('api', api);
     
-    api.$inject = ['Restangular'];
-    function api(Restangular) {
+    ApiRestangular.$inject = ['Restangular'];
+    function ApiRestangular(Restangular) {
+        return Restangular.withConfig(function(RestangularConfigurer) {
+            RestangularConfigurer.setBaseUrl('api/v1');
+        });
+    }
+    
+    api.$inject = ['ApiRestangular'];
+    function api(ApiRestangular) {
         return {
-            register: register,
-            login: login
+            get: get,
+            create: create
         }
 
-        function register(data) {
-            //return Restangular...
+        function get(resource, id) {
+            if (id) {
+                return ApiRestangular.one(resource, id).get();
+            } else {
+                return ApiRestangular.all(resource).getList();
+            }
         }
 
-        function login(data) {
-            return Restangular.all()
+        function create(resource, data) {
+            return ApiRestangular.all(resource).post(data);
         }
     }
 })();

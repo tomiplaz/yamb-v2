@@ -3,14 +3,22 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\LoginRequest;
 use Illuminate\Http\Request;
+
+use App\User;
 
 use JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AuthController extends Controller
 {
-    public function authenticate(Request $request)
+    public function register(RegisterRequest $request) {
+        return User::create($request->input());
+    }
+
+    public function login(LoginRequest $request)
     {
         // User's credentials
         $credentials = $request->only('email', 'password');

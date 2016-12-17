@@ -5,9 +5,9 @@
         .module('yamb-v2', ['ui.router', 'restangular'])
         .config(config)
         .run(run);
-    
-    config.$inject = ['$stateProvider', 'RestangularProvider']
-    function config($stateProvider, RestangularProvider) {
+
+    config.$inject = ['$stateProvider']
+    function config($stateProvider) {
         $stateProvider
             .state('home', {
                 url: '/',
@@ -19,9 +19,6 @@
                 templateUrl: 'signUp.html',
                 controller: 'SignUpCtrl as signUp'
             });
-
-        RestangularProvider
-            .setBaseUrl('api/v1');
     }
 
     run.$inject = ['$state'];

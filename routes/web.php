@@ -15,4 +15,6 @@ Route::get('/', function () {
     return view('index');
 });
 
-Route::post('authenticate', 'Auth\AuthController@authenticate');
+Route::post('register', 'Auth\AuthController@register');
+
+Route::post('login', 'Auth\AuthController@login');

@@ -5,8 +5,8 @@
         .module('yamb-v2')
         .controller('SignUpCtrl', SignUpCtrl);
     
-    SignUpCtrl.$inject = ['api'];
-    function SignUpCtrl(api) {
+    SignUpCtrl.$inject = ['auth'];
+    function SignUpCtrl(auth) {
         var vm = this;
 
         vm.title = "Sign Up";
@@ -14,8 +14,11 @@
         vm.confirm = confirm;
 
         function confirm() {
-            //api.
-            console.log(vm.name, vm.password);
+            auth.register(vm.input).then(function(success) {
+                console.log("Success", success);
+            }, function(error) {
+                console.log("Error", error);
+            });
         }
     }
 })();
