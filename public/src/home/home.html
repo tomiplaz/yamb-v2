@@ -1,0 +1,4 @@
+<h3>{{ home.title }}</h3>
+<button class="btn btn-default" ng-repeat="state in home.states" ui-sref="{{ state.name }}">
+    {{ state.label }}
+</button>

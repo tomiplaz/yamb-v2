@@ -2,14 +2,18 @@
     'use strict';
 
     angular
-        .module('yamb-v2')
+        .module('services.api', ['restangular', 'ngStorage'])
         .factory('ApiRestangular', ApiRestangular)
         .factory('api', api);
     
-    ApiRestangular.$inject = ['Restangular'];
-    function ApiRestangular(Restangular) {
+    ApiRestangular.$inject = ['Restangular', '$localStorage'];
+    function ApiRestangular(Restangular, $localStorage) {
         return Restangular.withConfig(function(RestangularConfigurer) {
-            RestangularConfigurer.setBaseUrl('api/v1');
+            RestangularConfigurer
+                .setBaseUrl('api/v1')
+                .setDefaultHeaders({
+                    Authorization: 'Bearer ' + $localStorage.token
+                });
         });
     }
     

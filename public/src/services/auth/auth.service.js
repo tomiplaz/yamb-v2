@@ -2,7 +2,7 @@
     'use strict';
 
     angular
-        .module('yamb-v2')
+        .module('services.auth', ['restangular'])
         .factory('auth', auth);
 
     auth.$inject = ['Restangular'];

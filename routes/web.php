@@ -18,3 +18,8 @@ Route::get('/', function () {
 Route::post('register', 'Auth\AuthController@register');
 
 Route::post('login', 'Auth\AuthController@login');
+
+// Redirect to index to let Angular handle routes
+Route::get('{any?}', function () {
+    return view('index');
+});

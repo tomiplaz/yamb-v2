@@ -1,0 +1,17 @@
+<h1>{{ login.title }}</h1>
+<form name="login.form">
+    <div class="form-group">
+        <label class="sr-only" for="email">Email</label>
+        <input type="email" class="form-control" id="email" placeholder="Email"
+            ng-model="login.input.email" required>
+    </div>
+    <div class="form-group">
+        <label class="sr-only" for="password">Password</label>
+        <input type="password" class="form-control" id="password" placeholder="Password"
+            ng-model="login.input.password" required>
+    </div>
+    <button class="btn btn-default" ng-click="login.confirm()"
+        ng-disabled="login.form.$invalid">
+        Confirm
+    </button>
+</form>
