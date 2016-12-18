@@ -4,13 +4,7 @@ var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var sass = require('gulp-sass');
 var sourcemaps = require('gulp-sourcemaps');
-
-var jsDepsFiles = [
-    'resources/assets/js/bower_components/angular/angular.js',
-    'resources/assets/js/bower_components/angular-ui-router/release/angular-ui-router.js',
-    'resources/assets/js/bower_components/lodash/dist/lodash.js',
-    'resources/assets/js/bower_components/restangular/dist/restangular.js'
-];
+var mainBowerFiles = require('main-bower-files');
 
 var jsFiles = [
     'resources/assets/js/src/main.js',
@@ -28,12 +22,12 @@ var jsFilesToBuild = [
 
 var cssFilesToBuild = [
     'public/css/bootstrap.css',
-    'public/css/main.css'
+    'public/css/app.css'
 ];
 
 gulp.task('js-deps', function(cb) {
     pump([
-        gulp.src(jsDepsFiles),
+        gulp.src(mainBowerFiles()),
         concat('deps.js'),
         gulp.dest('public/js')
     ], cb);
@@ -51,7 +45,7 @@ gulp.task('sass', function(cb) {
     pump([
         gulp.src(scssFiles),
         sass(),
-        concat('main.css'),
+        concat('app.css'),
         gulp.dest('public/css')
     ], cb);
 });
