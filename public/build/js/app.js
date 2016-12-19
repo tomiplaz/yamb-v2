@@ -8,7 +8,8 @@
             'yamb-v2.home',
             'yamb-v2.register',
             'yamb-v2.login',
-            'yamb-v2.users'
+            'yamb-v2.users',
+            'yamb-v2.play'
         ])
         .config(config)
         .run(run);
@@ -41,6 +42,19 @@
                     }
                 }
             })
+            .state('play', {
+                url: '/play',
+                templateUrl: 'src/play/play.html',
+                controller: 'PlayCtrl as play',
+                resolve: {
+                    columns: function(api) {
+                        return api.get('columns');
+                    },
+                    rows: function(api) {
+                        return api.get('rows');
+                    }
+                }
+            });
         
         $locationProvider.html5Mode(true);
     }
@@ -111,20 +125,20 @@
     }
 })();
 (function() {
-'use strict';
+    'use strict';
 
     angular
-        .module('yamb-v2.play')
+        .module('yamb-v2.play', [])
         .controller('PlayCtrl', PlayCtrl);
 
-    ControllerController.$inject = ['cols', 'rows'];
-    function ControllerController(cols, rows) {
+    PlayCtrl.$inject = ['columns', 'rows'];
+    function PlayCtrl(columns, rows) {
         var vm = this;
 
         activate();
 
         function activate() {
-            vm.cols = cols;
+            vm.columns = columns;
             vm.rows = rows;
         }
     }

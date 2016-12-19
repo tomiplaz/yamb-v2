@@ -1,0 +1,9 @@
+<table>
+    <tr>
+        <th>!</th>
+        <th ng-repeat="column in play.columns">{{ column.abbreviation }}</th>
+    </tr>
+    <tr ng-repeat="row in play.rows">
+        <th>{{ row.abbreviation }}</th>
+    </tr>
+</table>

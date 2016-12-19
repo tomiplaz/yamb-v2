@@ -8,7 +8,8 @@
             'yamb-v2.home',
             'yamb-v2.register',
             'yamb-v2.login',
-            'yamb-v2.users'
+            'yamb-v2.users',
+            'yamb-v2.play'
         ])
         .config(config)
         .run(run);
@@ -41,6 +42,19 @@
                     }
                 }
             })
+            .state('play', {
+                url: '/play',
+                templateUrl: 'src/play/play.html',
+                controller: 'PlayCtrl as play',
+                resolve: {
+                    columns: function(api) {
+                        return api.get('columns');
+                    },
+                    rows: function(api) {
+                        return api.get('rows');
+                    }
+                }
+            });
         
         $locationProvider.html5Mode(true);
     }

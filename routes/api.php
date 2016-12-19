@@ -16,3 +16,11 @@ use Illuminate\Http\Request;
 Route::resource('users', 'UserController', ['only' => ['index', 'show', 'update', 'destroy']]);
 
 Route::resource('games', 'GameController', ['only' => ['index', 'store', 'show']]);
+
+Route::get('columns', function () {
+    return DB::table('columns')->get();
+});
+
+Route::get('rows', function () {
+    return DB::table('rows')->get();
+});
