@@ -140,6 +140,10 @@
         function activate() {
             vm.columns = columns;
             vm.rows = rows;
+
+            vm.bla = {
+                red: true
+            };
         }
     }
 })();

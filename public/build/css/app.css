@@ -1,3 +1,31 @@
 body {
   text-align: center;
   background-color: lightblue; }
+
+.m-auto {
+  margin: auto; }
+
+.game-table {
+  background-color: #fff;
+  border-width: 1px;
+  border-color: #000;
+  border-style: solid;
+  border-spacing: 2px;
+  border-collapse: separate;
+  border-radius: 5px; }
+  .game-table th, .game-table td {
+    width: 50px;
+    height: 30px;
+    max-width: 50px;
+    max-height: 50px;
+    border-width: 1px;
+    border-color: #000;
+    border-style: solid;
+    border-radius: 5px;
+    text-align: center; }
+    .game-table th.input-cell, .game-table td.input-cell {
+      background-color: #123; }
+    .game-table th.heading-cell, .game-table td.heading-cell {
+      background-color: #728; }
+    .game-table th.sum-cell, .game-table td.sum-cell {
+      background-color: #673; }

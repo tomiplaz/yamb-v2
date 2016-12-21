@@ -47,7 +47,7 @@ class RowsTableSeeder extends Seeder
             [
                 'name' => 'Upper Sum',
                 'description' => 'Upper Sum row description.',
-                'abbreviation' => 'ups'
+                'abbreviation' => 'usum'
             ],
             [
                 'name' => 'Maximum',
@@ -62,7 +62,7 @@ class RowsTableSeeder extends Seeder
             [
                 'name' => 'Middle Sum',
                 'description' => 'Middle Sum row description.',
-                'abbreviation' => 'mids'
+                'abbreviation' => 'msum'
             ],
             [
                 'name' => 'Straight',
@@ -87,7 +87,7 @@ class RowsTableSeeder extends Seeder
             [
                 'name' => 'Lower Sum',
                 'description' => 'Lower Sum row description.',
-                'abbreviation' => 'lows'
+                'abbreviation' => 'lsum'
             ]
         ];
 
