@@ -8,6 +8,13 @@
         <link type="text/css" rel="stylesheet" href="build/css/bootstrap.css">
         <link type="text/css" rel="stylesheet" href="build/css/app.css">
 
+        <link rel="prefetch" href="img/dice/1.png">
+        <link rel="prefetch" href="img/dice/2.png">
+        <link rel="prefetch" href="img/dice/3.png">
+        <link rel="prefetch" href="img/dice/4.png">
+        <link rel="prefetch" href="img/dice/5.png">
+        <link rel="prefetch" href="img/dice/6.png">
+
         <base href="/">
     </head>
 
