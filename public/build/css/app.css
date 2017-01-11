@@ -34,7 +34,7 @@ body {
     border-radius: 5px;
     text-align: center; }
     .game-table th.input-cell, .game-table td.input-cell {
-      background-color: #123; }
+      background-color: #999; }
     .game-table th.heading-cell, .game-table td.heading-cell {
       background-color: #728; }
     .game-table th.sum-cell, .game-table td.sum-cell {
