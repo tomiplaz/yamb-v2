@@ -131,8 +131,8 @@
         .module('yamb-v2.play', [])
         .controller('PlayCtrl', PlayCtrl);
 
-    PlayCtrl.$inject = ['columns', 'rows', '$interval'];
-    function PlayCtrl(columns, rows, $interval) {
+    PlayCtrl.$inject = ['columns', 'rows', '$interval', '$scope'];
+    function PlayCtrl(columns, rows, $interval, $scope) {
         var vm = this;
 
         var startTime, timerInterval, timeDiff, days, hours, minutes, seconds, miliseconds;
@@ -158,7 +158,8 @@
         }
         
         function roll() {
-            $interval.cancel(timerInterval);
+            $scope.$broadcast('roll');
+            //$interval.cancel(timerInterval);
         }
 
         function updateTimer() {
@@ -248,11 +249,18 @@
             link: link,
             templateUrl: 'src/play/directives/die.html',
             replace: true,
-            scope: {}
+            scope: true
         };
 
         function link(scope, elem, attrs) {
+            scope.isLocked = false;
             scope.value = getRandomValue();
+
+            scope.$on('roll', randomizeValue);
+
+            function randomizeValue() {
+                scope.value = getRandomValue();
+            }
 
             function getRandomValue() {
                 return Math.round(Math.random() * 5 + 1);
