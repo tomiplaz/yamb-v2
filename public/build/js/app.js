@@ -135,46 +135,35 @@
     function PlayCtrl(columns, rows, $interval, $scope) {
         var vm = this;
 
-        var startTime, timerInterval, timeDiff, days, hours, minutes, seconds, miliseconds;
-
         activate();
 
         vm.start = start;
         vm.roll = roll;
 
         function activate() {
-            vm.columns = columns;
-            vm.rows = rows;
-
-            vm.timerDisplay = "00:00";
+            vm.columns = columns.plain();
+            vm.rows = rows.plain();
             vm.isGameStarted = false;
+            vm.rollNumber = 0;
         }
 
         function start() {
-            startTime = Date.now();
-            timerInterval = $interval(updateTimer, 1);
-
             vm.isGameStarted = true;
+            $scope.$broadcast('start');
+            roll();
         }
         
         function roll() {
             $scope.$broadcast('roll');
-            //$interval.cancel(timerInterval);
+            incrementRollNumber();
         }
 
-        function updateTimer() {
-            timeDiff = Date.now() - startTime;
-            days = Math.floor(timeDiff / 1000 / 60 / 60 / 24);
-            hours = Math.floor((timeDiff - days * 24 * 60 * 60 * 1000) / 1000 / 60 / 60);
-            minutes = Math.floor((timeDiff - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000) / 1000 / 60);
-            seconds = Math.floor((timeDiff - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000 - minutes * 60 * 1000) / 1000);
-            miliseconds = timeDiff - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000 - minutes * 60 * 1000 - seconds * 1000;
+        function incrementRollNumber() {
+            ++vm.rollNumber;
+        }
 
-            vm.timerDisplay = formatTimerValue(minutes) + ":" + formatTimerValue(seconds);
-
-            function formatTimerValue(value) {
-                return (value < 10 ? "0" + value : value);
-            }
+        function resetRollNumber() {
+            vm.rollNumber = 0;
         }
     }
 })();
@@ -240,38 +229,6 @@
     'use strict';
 
     angular
-        .module('yamb-v2.play')
-        .directive('die', die);
-    
-    die.$inject = [];
-    function die() {
-        return {
-            link: link,
-            templateUrl: 'src/play/directives/die.html',
-            replace: true,
-            scope: true
-        };
-
-        function link(scope, elem, attrs) {
-            scope.isLocked = false;
-            scope.value = getRandomValue();
-
-            scope.$on('roll', randomizeValue);
-
-            function randomizeValue() {
-                scope.value = getRandomValue();
-            }
-
-            function getRandomValue() {
-                return Math.round(Math.random() * 5 + 1);
-            }
-        }
-    }
-})();
-(function() {
-    'use strict';
-
-    angular
         .module('services.api', ['restangular', 'ngStorage'])
         .factory('ApiRestangular', ApiRestangular)
         .factory('api', api);
@@ -327,6 +284,110 @@
 
         function login(data) {
             return Restangular.all('login').post(data);
+        }
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.play')
+        .directive('die', die);
+    
+    die.$inject = [];
+    function die() {
+        return {
+            link: link,
+            templateUrl: 'src/play/directives/die/die.html',
+            replace: true,
+            scope: true
+        };
+
+        function link(scope, elem, attrs) {
+            scope.isLocked = false;
+            scope.value = getRandomValue();
+
+            scope.$on('roll', randomizeValue);
+
+            function randomizeValue() {
+                scope.value = getRandomValue();
+            }
+
+            function getRandomValue() {
+                return Math.round(Math.random() * 5 + 1);
+            }
+        }
+    }
+})();
+
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.play')
+        .directive('paper', paper);
+    
+    paper.$inject = [];
+    function paper() {
+        return {
+            link: link,
+            templateUrl: 'src/play/directives/paper/paper.html',
+            replace: true,
+            scope: true
+        };
+
+        function link($scope, elem, attrs) {
+            //
+        }
+    }
+})();
+
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.play')
+        .directive('timer', timer);
+    
+    timer.$inject = ['$interval'];
+    function timer($interval) {
+        return {
+            link: link,
+            templateUrl: 'src/play/directives/timer/timer.html',
+            replace: true,
+            scope: true
+        };
+
+        function link($scope, elem, attrs) {
+            var startTime, timerInterval, timeDiff, days, hours, minutes, seconds, miliseconds;
+
+            $scope.timer = {
+                value: 0,
+                display: "00:00"
+            };
+
+            $scope.$on('start', start);
+
+            function start() {
+                startTime = Date.now();
+                timerInterval = $interval(updateTimer, 1);
+            }
+
+            function updateTimer() {
+                timeDiff = Date.now() - startTime;
+                days = Math.floor(timeDiff / 1000 / 60 / 60 / 24);
+                hours = Math.floor((timeDiff - days * 24 * 60 * 60 * 1000) / 1000 / 60 / 60);
+                minutes = Math.floor((timeDiff - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000) / 1000 / 60);
+                seconds = Math.floor((timeDiff - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000 - minutes * 60 * 1000) / 1000);
+                miliseconds = timeDiff - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000 - minutes * 60 * 1000 - seconds * 1000;
+
+                $scope.timer.value = timeDiff;
+                $scope.timer.display = formatTimerValue(minutes) + ":" + formatTimerValue(seconds);
+
+                function formatTimerValue(value) {
+                    return (value < 10 ? "0" + value : value);
+                }
+            }
         }
     }
 })();

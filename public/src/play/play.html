@@ -11,27 +11,8 @@
     </button>
 </div>
 
-<div class="m-auto" ng-bind="play.timerDisplay"></div>
+<timer></timer>
 
-<table class="m-auto game-table">
-    <tr>
-        <th>!</th>
-        <th ng-repeat="column in play.columns"
-            class="heading-cell">
-            {{ column.abbreviation }}
-        </th>
-    </tr>
-    <tr ng-repeat="row in play.rows">
-        <th class="heading-cell">
-            {{ row.abbreviation }}
-        </th>
-        <td ng-repeat="column in play.columns"
-            id="{{ row.abbreviation + '_' + column.abbreviation }}"
-            ng-class="{
-                'input-cell': row.abbreviation.indexOf('sum') === -1,
-                'sum-cell': row.abbreviation.indexOf('sum') !== -1
-            }">
-            0
-        </td>
-    </tr>
-</table>
+<div class="m-auto" ng-bind="play.rollNumber"></div>
+
+<paper></paper>

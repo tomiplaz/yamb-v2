@@ -9,7 +9,7 @@
     function die() {
         return {
             link: link,
-            templateUrl: 'src/play/directives/die.html',
+            templateUrl: 'src/play/directives/die/die.html',
             replace: true,
             scope: true
         };

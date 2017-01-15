@@ -9,46 +9,35 @@
     function PlayCtrl(columns, rows, $interval, $scope) {
         var vm = this;
 
-        var startTime, timerInterval, timeDiff, days, hours, minutes, seconds, miliseconds;
-
         activate();
 
         vm.start = start;
         vm.roll = roll;
 
         function activate() {
-            vm.columns = columns;
-            vm.rows = rows;
-
-            vm.timerDisplay = "00:00";
+            vm.columns = columns.plain();
+            vm.rows = rows.plain();
             vm.isGameStarted = false;
+            vm.rollNumber = 0;
         }
 
         function start() {
-            startTime = Date.now();
-            timerInterval = $interval(updateTimer, 1);
-
             vm.isGameStarted = true;
+            $scope.$broadcast('start');
+            roll();
         }
         
         function roll() {
             $scope.$broadcast('roll');
-            //$interval.cancel(timerInterval);
+            incrementRollNumber();
         }
 
-        function updateTimer() {
-            timeDiff = Date.now() - startTime;
-            days = Math.floor(timeDiff / 1000 / 60 / 60 / 24);
-            hours = Math.floor((timeDiff - days * 24 * 60 * 60 * 1000) / 1000 / 60 / 60);
-            minutes = Math.floor((timeDiff - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000) / 1000 / 60);
-            seconds = Math.floor((timeDiff - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000 - minutes * 60 * 1000) / 1000);
-            miliseconds = timeDiff - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000 - minutes * 60 * 1000 - seconds * 1000;
+        function incrementRollNumber() {
+            ++vm.rollNumber;
+        }
 
-            vm.timerDisplay = formatTimerValue(minutes) + ":" + formatTimerValue(seconds);
-
-            function formatTimerValue(value) {
-                return (value < 10 ? "0" + value : value);
-            }
+        function resetRollNumber() {
+            vm.rollNumber = 0;
         }
     }
 })();
