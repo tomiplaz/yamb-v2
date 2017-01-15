@@ -11,10 +11,12 @@
             {{ row.abbreviation }}
         </th>
         <td ng-repeat="column in play.columns"
-            ng-bind="cells[row.abbreviation + '_' + column.abbreviation].value"
+            ng-init="cellKey = row.abbreviation + '_' + column.abbreviation"
+            ng-bind="cells[cellKey].value"
             ng-class="{
                 'input-cell': row.abbreviation.indexOf('sum') === -1,
-                'sum-cell': row.abbreviation.indexOf('sum') !== -1
+                'sum-cell': row.abbreviation.indexOf('sum') !== -1,
+                'available-cell': cells[cellKey].available
             }">
         </td>
     </tr>

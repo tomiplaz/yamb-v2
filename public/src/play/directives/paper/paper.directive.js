@@ -20,35 +20,41 @@
 
             initCells();
 
-            $scope.$on('roll', updateCells);
+            $scope.$on('roll', updateAvailableCells);
 
             function initCells() {
                 $scope.cells = {};
-                iterateRowsAndColumns(initCell);
+                iterateRowsAndColumns(initCell, true);
 
-                function initCell(row, column) {
-                    $scope.cells[row.abbreviation + '_' + column.abbreviation] = {
+                function initCell(cellKey) {
+                    $scope.cells[cellKey] = {
                         available: false,
                         value: null
                     };
                 }
             }
 
-            function updateCells() {
-                iterateRowsAndColumns(updateCell);
+            function updateAvailableCells() {
+                getAvailableCells().forEach(setCellToAvailable);
+                
+                function getAvailableCells() {
+                    return [];
+                }
 
-                function updateCell(row, column) {
-                    $scope.cells[row.abbreviation + '_' + column.abbreviation] = {
-                        available: false,
-                        value: null
-                    };
+                function setCellToAvailable(cellKey) {
+                    $scope.cells[cellKey].available = true;
                 }
             }
 
-            function iterateRowsAndColumns(f) {
+            function iterateRowsAndColumns(functionToCall, callWithCellKey) {
                 rows.forEach(function(row) {
                     columns.forEach(function(column) {
-                        f(row, column);
+                        if (callWithCellKey) {
+                            var cellKey = row.abbreviation + '_' + column.abbreviation;
+                            functionToCall(cellKey);
+                        } else {
+                            functionToCall(row, column);
+                        }
                     });
                 });
             }

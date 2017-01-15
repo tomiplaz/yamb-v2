@@ -39,3 +39,5 @@ body {
       background-color: #728; }
     .game-table th.sum-cell, .game-table td.sum-cell {
       background-color: #673; }
+    .game-table th.available-cell, .game-table td.available-cell {
+      background-color: #f00; }
