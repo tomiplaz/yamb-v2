@@ -11,7 +11,7 @@
             {{ row.abbreviation }}
         </th>
         <td ng-repeat="column in play.columns"
-            ng-bind="paper[row.abbreviation + '_' + column.abbreviation]"
+            ng-bind="cells[row.abbreviation + '_' + column.abbreviation].value"
             ng-class="{
                 'input-cell': row.abbreviation.indexOf('sum') === -1,
                 'sum-cell': row.abbreviation.indexOf('sum') !== -1

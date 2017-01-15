@@ -17,12 +17,12 @@
         function activate() {
             vm.columns = columns.plain();
             vm.rows = rows.plain();
-            vm.isGameStarted = false;
+            vm.hasGameStarted = false;
             vm.rollNumber = 0;
         }
 
         function start() {
-            vm.isGameStarted = true;
+            vm.hasGameStarted = true;
             $scope.$broadcast('start');
             roll();
         }

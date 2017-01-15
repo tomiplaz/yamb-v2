@@ -1,12 +1,12 @@
 <div class="m-auto">
-    <die ng-repeat="i in ['1', '2', '3', '4', '5']"></die>
+    <die ng-repeat="i in [1, 2, 3, 4, 5]"></die>
 </div>
 
 <div class="m-auto">
-    <button class="btn" ng-if="!play.isGameStarted" ng-click="play.start()">
+    <button class="btn" ng-if="!play.hasGameStarted" ng-click="play.start()">
         Start
     </button>
-    <button class="btn" ng-if="play.isGameStarted" ng-click="play.roll()">
+    <button class="btn" ng-if="play.hasGameStarted" ng-click="play.roll()">
         Roll
     </button>
 </div>
