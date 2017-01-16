@@ -154,8 +154,8 @@
         }
         
         function roll() {
-            $scope.$broadcast('roll');
             incrementRollNumber();
+            $scope.$broadcast('roll');
         }
 
         function incrementRollNumber() {
@@ -339,6 +339,7 @@
         function link($scope, elem, attrs) {
             var rows = $scope.play.rows;
             var columns = $scope.play.columns;
+            var playableRows = rows.filter(isPlayable);
 
             initCells();
 
@@ -346,7 +347,7 @@
 
             function initCells() {
                 $scope.cells = {};
-                iterateRowsAndColumns(initCell, true);
+                iterateCells(initCell, false);
 
                 function initCell(cellKey) {
                     $scope.cells[cellKey] = {
@@ -357,10 +358,70 @@
             }
 
             function updateAvailableCells() {
-                getAvailableCells().forEach(setCellToAvailable);
+                resetCellsAvailability();
+
+                getAvailableCellsKeys().forEach(setCellToAvailable);
+
+                function resetCellsAvailability() {
+                    iterateCells(resetCellAvailability, true);
+
+                    function resetCellAvailability(cellKey) {
+                        $scope.cells[cellKey].available = false;
+                    }
+                }
                 
-                function getAvailableCells() {
-                    return [];
+                function getAvailableCellsKeys() {
+                    var availableCellsKeys = [];
+
+                    iterateCells(checkAndPushAvailableCellKey, true);
+
+                    return availableCellsKeys;
+
+                    function checkAndPushAvailableCellKey(cellKey, row, column, rowIndex, columnIndex) {
+                        if (!isCellEmpty(cellKey)) return;
+
+                        switch (column.abbreviation) {
+                            case 'dwn':
+                                if (row.abbreviation === '1') {
+                                    availableCellsKeys.push(cellKey);
+                                } else {
+                                    var previousPlayableCellKey = getPlayableCellKey(rowIndex - 1, columnIndex);
+                                    if (!isCellEmpty(previousPlayableCellKey)) {
+                                        availableCellsKeys.push(cellKey);
+                                    }
+                                }
+                                return;
+                            case 'any':
+                                availableCellsKeys.push(cellKey);
+                                return;
+                            case 'up':
+                                if (row.abbreviation === 'yamb') {
+                                    availableCellsKeys.push(cellKey);
+                                } else {
+                                    var nextPlayableCellKey = getPlayableCellKey(rowIndex + 1, columnIndex);
+                                    if (!isCellEmpty(nextPlayableCellKey)) {
+                                        availableCellsKeys.push(cellKey);
+                                    }
+                                }
+                                return;
+                            case 'ann':
+                                if ($scope.play.rollNumber === 1) {
+                                    availableCellsKeys.push(cellKey);
+                                    return;
+                                }
+                            default:
+                                return;
+                        }
+
+                        function isCellEmpty(cellKey) {
+                            return ($scope.cells[cellKey].value === null);
+                        }
+
+                        function getPlayableCellKey(rowIndex, columnIndex) {
+                            console.log(rowIndex, columnIndex);
+                            return playableRows[rowIndex].abbreviation + '_' + columns[columnIndex].abbreviation;
+                        }
+                    }
                 }
 
                 function setCellToAvailable(cellKey) {
@@ -368,17 +429,18 @@
                 }
             }
 
-            function iterateRowsAndColumns(functionToCall, callWithCellKey) {
-                rows.forEach(function(row) {
-                    columns.forEach(function(column) {
-                        if (callWithCellKey) {
-                            var cellKey = row.abbreviation + '_' + column.abbreviation;
-                            functionToCall(cellKey);
-                        } else {
-                            functionToCall(row, column);
-                        }
+            function iterateCells(callbackFunction, onlyPlayable) {
+                var rowsToIterate = (onlyPlayable ? playableRows : rows);
+                rowsToIterate.forEach(function(row, rowIndex) {
+                    columns.forEach(function(column, columnIndex) {
+                        var cellKey = row.abbreviation + '_' + column.abbreviation;
+                        callbackFunction(cellKey, row, column, rowIndex, columnIndex);
                     });
-                });
+                });     
+            }
+
+            function isPlayable(row) {
+                return row.abbreviation.indexOf('sum') === -1;
             }
         }
     }

@@ -16,32 +16,32 @@ class RowsTableSeeder extends Seeder
         $rows = [
             [
                 'name' => '1',
-                'description' => '1 row description.',
+                'description' => '1s row description.',
                 'abbreviation' => '1'
             ],
             [
                 'name' => '2',
-                'description' => '2 row description.',
+                'description' => '2s row description.',
                 'abbreviation' => '2'
             ],
             [
                 'name' => '3',
-                'description' => '3 row description.',
+                'description' => '3s row description.',
                 'abbreviation' => '3'
             ],
             [
                 'name' => '4',
-                'description' => '4 column description.',
+                'description' => '4s row description.',
                 'abbreviation' => '4'
             ],
             [
                 'name' => '5',
-                'description' => '5 column description.',
+                'description' => '5s row description.',
                 'abbreviation' => '5'
             ],
             [
                 'name' => '6',
-                'description' => '6 column description.',
+                'description' => '6s row description.',
                 'abbreviation' => '6'
             ],
             [

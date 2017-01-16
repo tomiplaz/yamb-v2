@@ -28,8 +28,8 @@
         }
         
         function roll() {
-            $scope.$broadcast('roll');
             incrementRollNumber();
+            $scope.$broadcast('roll');
         }
 
         function incrementRollNumber() {
