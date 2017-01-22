@@ -17,21 +17,37 @@
         function link(scope, elem, attrs) {
             scope.die = {
                 isLocked: false,
+                isDisabled: true,
                 value: getRandomValue()
             };
 
             diceService.dice[attrs.i] = scope.die;
 
-            scope.$on('roll', randomizeValue);
+            scope.toggleDieLock = toggleDieLock;
 
-            function randomizeValue() {
-                if (!scope.die.isLocked) {
-                    scope.die.value = getRandomValue();
-                }
-            }
+            scope.$on('roll', rollHandler);
 
             function getRandomValue() {
                 return Math.round(Math.random() * 5 + 1);
+            }
+
+            function toggleDieLock() {
+                scope.die.isLocked = !scope.die.isLocked;
+            }
+
+            function rollHandler() {
+                if (!scope.die.isLocked) {
+                    scope.die.value = getRandomValue();
+                }
+
+                if (scope.play.rollNumber === 3) {
+                    scope.die.isLocked = false;
+                    scope.die.isDisabled = true;
+                }
+
+                if (scope.play.rollNumber === 1) {
+                    scope.die.isDisabled = false;
+                }
             }
         }
     }

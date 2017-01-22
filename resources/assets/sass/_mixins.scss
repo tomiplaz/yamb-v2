@@ -7,3 +7,9 @@
     pointer-events: auto;
     cursor: pointer;
 }
+
+@mixin box-shadow($offsetX, $offsetY, $blurRadius, $spreadRadius, $color) {
+    -moz-box-shadow: $offsetX $offsetY $blurRadius $spreadRadius $color;
+    -webkit-box-shadow: $offsetX $offsetY $blurRadius $spreadRadius $color;
+    box-shadow: $offsetX $offsetY $blurRadius $spreadRadius $color;
+}

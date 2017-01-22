@@ -128,50 +128,6 @@
     'use strict';
 
     angular
-        .module('yamb-v2.play', [])
-        .controller('PlayCtrl', PlayCtrl);
-
-    PlayCtrl.$inject = ['columns', 'rows', '$interval', '$scope'];
-    function PlayCtrl(columns, rows, $interval, $scope) {
-        var vm = this;
-
-        activate();
-
-        vm.start = start;
-        vm.roll = roll;
-
-        function activate() {
-            vm.columns = columns.plain();
-            vm.rows = rows.plain();
-            vm.hasGameStarted = false;
-            vm.rollNumber = 0;
-        }
-
-        function start() {
-            vm.hasGameStarted = true;
-            $scope.$broadcast('start');
-            roll();
-        }
-        
-        function roll() {
-            incrementRollNumber();
-            $scope.$broadcast('roll');
-        }
-
-        function incrementRollNumber() {
-            ++vm.rollNumber;
-        }
-
-        function resetRollNumber() {
-            vm.rollNumber = 0;
-        }
-    }
-})();
-
-(function() {
-    'use strict';
-
-    angular
         .module('yamb-v2.register', [])
         .controller('RegisterCtrl', RegisterCtrl);
     
@@ -197,6 +153,56 @@
         }
     }
 })();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.play', [])
+        .controller('PlayCtrl', PlayCtrl);
+
+    PlayCtrl.$inject = ['columns', 'rows', '$interval', '$scope'];
+    function PlayCtrl(columns, rows, $interval, $scope) {
+        var vm = this;
+
+        activate();
+
+        vm.start = start;
+        vm.roll = roll;
+        vm.resetRollNumber = resetRollNumber;
+
+        function activate() {
+            vm.columns = columns.plain();
+            vm.rows = rows.plain();
+            vm.hasGameStarted = false;
+            vm.rollNumber = 0;
+            vm.isInputRequired = false;
+        }
+
+        function start() {
+            vm.hasGameStarted = true;
+            $scope.$broadcast('start');
+            roll();
+        }
+        
+        function roll() {
+            incrementRollNumber();
+            $scope.$broadcast('roll');
+
+            if (vm.rollNumber === 3) {
+                vm.isInputRequired = true;
+            }
+        }
+
+        function incrementRollNumber() {
+            ++vm.rollNumber;
+        }
+
+        function resetRollNumber() {
+            vm.rollNumber = 0;
+        }
+    }
+})();
+
 (function() {
     'use strict';
 
@@ -256,6 +262,7 @@
         }
     }
 })();
+
 (function() {
     'use strict';
 
@@ -337,21 +344,37 @@
         function link(scope, elem, attrs) {
             scope.die = {
                 isLocked: false,
+                isDisabled: true,
                 value: getRandomValue()
             };
 
             diceService.dice[attrs.i] = scope.die;
 
-            scope.$on('roll', randomizeValue);
+            scope.toggleDieLock = toggleDieLock;
 
-            function randomizeValue() {
-                if (!scope.die.isLocked) {
-                    scope.die.value = getRandomValue();
-                }
-            }
+            scope.$on('roll', rollHandler);
 
             function getRandomValue() {
                 return Math.round(Math.random() * 5 + 1);
+            }
+
+            function toggleDieLock() {
+                scope.die.isLocked = !scope.die.isLocked;
+            }
+
+            function rollHandler() {
+                if (!scope.die.isLocked) {
+                    scope.die.value = getRandomValue();
+                }
+
+                if (scope.play.rollNumber === 3) {
+                    scope.die.isLocked = false;
+                    scope.die.isDisabled = true;
+                }
+
+                if (scope.play.rollNumber === 1) {
+                    scope.die.isDisabled = false;
+                }
             }
         }
     }
@@ -380,9 +403,24 @@
 
             scope.cellClicked = cellClicked;
 
+            scope.$on('roll', updateAvailableCells);
+
             initCells();
 
-            scope.$on('roll', updateAvailableCells);
+            function initCells() {
+                scope.cells = {};
+                iterateCells(initCell, false);
+
+                function initCell(cellKey, row, column) {
+                    scope.cells[cellKey] = {
+                        rowAbbreviation: row.abbreviation,
+                        columnAbbreviation: column.abbreviation,
+                        isPlayable: isPlayable(row),
+                        isAvailable: false,
+                        value: null
+                    };
+                }
+            }
 
             function cellClicked(cellKey) {
                 var cell = scope.cells[cellKey];
@@ -390,6 +428,8 @@
                 if (cell.isAvailable) {
                     cell.value = getCalculatedCellValue();
                 }
+
+                scope.play.resetRollNumber();
 
                 function getCalculatedCellValue() {
                     var diceValues = diceService.getDiceValues();
@@ -418,21 +458,6 @@
                         var rowWeight = parseInt(cell.rowAbbreviation);
                         return accumulator + (value === rowWeight ? rowWeight : 0);
                     }
-                }
-            }
-
-            function initCells() {
-                scope.cells = {};
-                iterateCells(initCell, false);
-
-                function initCell(cellKey, row, column) {
-                    scope.cells[cellKey] = {
-                        rowAbbreviation: row.abbreviation,
-                        columnAbbreviation: column.abbreviation,
-                        isPlayable: isPlayable(row),
-                        isAvailable: false,
-                        value: null
-                    };
                 }
             }
 

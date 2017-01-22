@@ -1,8 +1,7 @@
 <table class="m-auto game-table">
     <tr>
         <th class="cell">!</th>
-        <th ng-repeat="column in play.columns"
-            class="cell heading">
+        <th class="cell heading"ng-repeat="column in play.columns">
             {{ column.abbreviation }}
         </th>
     </tr>
@@ -10,14 +9,13 @@
         <th class="cell heading">
             {{ row.abbreviation }}
         </th>
-        <td class="cell"
+        <td class="cell" ng-repeat="column in play.columns"
+            ng-init="cellKey = row.abbreviation + '_' + column.abbreviation"
             ng-class="{
                 'playable': cells[cellKey].isPlayable,
                 'sum': !cells[cellKey].isPlayable,
                 'available': cells[cellKey].isAvailable
             }"
-            ng-repeat="column in play.columns"
-            ng-init="cellKey = row.abbreviation + '_' + column.abbreviation"
             ng-bind="cells[cellKey].value"
             ng-click="cellClicked(cellKey)">
         </td>

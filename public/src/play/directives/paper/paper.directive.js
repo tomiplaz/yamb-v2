@@ -21,9 +21,24 @@
 
             scope.cellClicked = cellClicked;
 
+            scope.$on('roll', updateAvailableCells);
+
             initCells();
 
-            scope.$on('roll', updateAvailableCells);
+            function initCells() {
+                scope.cells = {};
+                iterateCells(initCell, false);
+
+                function initCell(cellKey, row, column) {
+                    scope.cells[cellKey] = {
+                        rowAbbreviation: row.abbreviation,
+                        columnAbbreviation: column.abbreviation,
+                        isPlayable: isPlayable(row),
+                        isAvailable: false,
+                        value: null
+                    };
+                }
+            }
 
             function cellClicked(cellKey) {
                 var cell = scope.cells[cellKey];
@@ -31,6 +46,8 @@
                 if (cell.isAvailable) {
                     cell.value = getCalculatedCellValue();
                 }
+
+                scope.play.resetRollNumber();
 
                 function getCalculatedCellValue() {
                     var diceValues = diceService.getDiceValues();
@@ -59,21 +76,6 @@
                         var rowWeight = parseInt(cell.rowAbbreviation);
                         return accumulator + (value === rowWeight ? rowWeight : 0);
                     }
-                }
-            }
-
-            function initCells() {
-                scope.cells = {};
-                iterateCells(initCell, false);
-
-                function initCell(cellKey, row, column) {
-                    scope.cells[cellKey] = {
-                        rowAbbreviation: row.abbreviation,
-                        columnAbbreviation: column.abbreviation,
-                        isPlayable: isPlayable(row),
-                        isAvailable: false,
-                        value: null
-                    };
                 }
             }
 

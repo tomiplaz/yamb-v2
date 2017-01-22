@@ -13,12 +13,14 @@
 
         vm.start = start;
         vm.roll = roll;
+        vm.resetRollNumber = resetRollNumber;
 
         function activate() {
             vm.columns = columns.plain();
             vm.rows = rows.plain();
             vm.hasGameStarted = false;
             vm.rollNumber = 0;
+            vm.isInputRequired = false;
         }
 
         function start() {
@@ -30,6 +32,10 @@
         function roll() {
             incrementRollNumber();
             $scope.$broadcast('roll');
+
+            if (vm.rollNumber === 3) {
+                vm.isInputRequired = true;
+            }
         }
 
         function incrementRollNumber() {

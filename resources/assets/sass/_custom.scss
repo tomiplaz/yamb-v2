@@ -12,14 +12,19 @@ body {
     height: 35px;
     text-align: center;
     border: 0 solid #000;
-    border-radius: 5px;
+    border-radius: $border-radius;
     margin: 5px;
     display: inline-block;
     background-color: #fff;
     @include pointer-enabled;
+    @include box-shadow(0, 0, $dice-shadow-blur-radius, $dice-default-shadow-spread-radius, #000);
 
-    .locked {
-        background-color: #aaa;
+    &.locked {
+        @include box-shadow(0, 0, $dice-shadow-blur-radius, $dice-locked-shadow-spread-radius, $basic-red);
+    }
+
+    &.disabled {
+        @include pointer-disabled;
     }
 }
 

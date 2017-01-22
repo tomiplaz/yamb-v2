@@ -15,9 +15,17 @@ body {
   display: inline-block;
   background-color: #fff;
   pointer-events: auto;
-  cursor: pointer; }
-  .die .locked {
-    background-color: #aaa; }
+  cursor: pointer;
+  -moz-box-shadow: 0 0 2px 0 #000;
+  -webkit-box-shadow: 0 0 2px 0 #000;
+  box-shadow: 0 0 2px 0 #000; }
+  .die.locked {
+    -moz-box-shadow: 0 0 2px 2px #f22;
+    -webkit-box-shadow: 0 0 2px 2px #f22;
+    box-shadow: 0 0 2px 2px #f22; }
+  .die.disabled {
+    pointer-events: none;
+    cursor: default; }
 
 .game-table {
   background-color: #fff;

@@ -6,7 +6,7 @@
     <button class="btn" ng-if="!play.hasGameStarted" ng-click="play.start()">
         Start
     </button>
-    <button class="btn" ng-if="play.hasGameStarted" ng-click="play.roll()">
+    <button class="btn" ng-if="play.hasGameStarted" ng-click="play.roll()" ng-disabled="play.isInputRequired">
         Roll
     </button>
 </div>
