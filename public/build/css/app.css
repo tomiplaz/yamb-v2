@@ -13,7 +13,11 @@ body {
   border-radius: 5px;
   margin: 5px;
   display: inline-block;
-  background-color: #fff; }
+  background-color: #fff;
+  pointer-events: auto;
+  cursor: pointer; }
+  .die .locked {
+    background-color: #aaa; }
 
 .game-table {
   background-color: #fff;
@@ -23,7 +27,7 @@ body {
   border-spacing: 2px;
   border-collapse: separate;
   border-radius: 5px; }
-  .game-table th, .game-table td {
+  .game-table .cell {
     width: 50px;
     height: 30px;
     max-width: 50px;
@@ -32,12 +36,16 @@ body {
     border-color: #000;
     border-style: solid;
     border-radius: 5px;
-    text-align: center; }
-    .game-table th.input-cell, .game-table td.input-cell {
+    text-align: center;
+    pointer-events: none;
+    cursor: default; }
+    .game-table .cell.playable {
       background-color: #999; }
-    .game-table th.heading-cell, .game-table td.heading-cell {
+    .game-table .cell.heading {
       background-color: #728; }
-    .game-table th.sum-cell, .game-table td.sum-cell {
+    .game-table .cell.sum {
       background-color: #673; }
-    .game-table th.available-cell, .game-table td.available-cell {
-      background-color: #f00; }
+    .game-table .cell.available {
+      background-color: #f00;
+      pointer-events: auto;
+      cursor: pointer; }

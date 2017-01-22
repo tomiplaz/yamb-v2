@@ -5,8 +5,8 @@
         .module('yamb-v2.play')
         .directive('die', die);
     
-    die.$inject = [];
-    function die() {
+    die.$inject = ['diceService'];
+    function die(diceService) {
         return {
             link: link,
             templateUrl: 'src/play/directives/die/die.html',
@@ -15,13 +15,19 @@
         };
 
         function link(scope, elem, attrs) {
-            scope.isLocked = false;
-            scope.value = getRandomValue();
+            scope.die = {
+                isLocked: false,
+                value: getRandomValue()
+            };
+
+            diceService.dice[attrs.i] = scope.die;
 
             scope.$on('roll', randomizeValue);
 
             function randomizeValue() {
-                scope.value = getRandomValue();
+                if (!scope.die.isLocked) {
+                    scope.die.value = getRandomValue();
+                }
             }
 
             function getRandomValue() {

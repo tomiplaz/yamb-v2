@@ -16,12 +16,15 @@ body {
     margin: 5px;
     display: inline-block;
     background-color: #fff;
+    @include pointer-enabled;
+
+    .locked {
+        background-color: #aaa;
+    }
 }
 
 .game-table {
-    // Background
     background-color: #fff;
-    // Border
     border-width: 1px;
     border-color: #000;
     border-style: solid;
@@ -29,34 +32,33 @@ body {
     border-collapse: separate;
     border-radius: $border-radius;
 
-    th, td {
-        // Size
+    .cell {
         width: 50px;
         height: 30px;
         max-width: 50px;
         max-height: 50px;
-        // Border
         border-width: 1px;
         border-color: #000;
         border-style: solid;
         border-radius: $border-radius;
-        // Text
         text-align: center;
+        @include pointer-disabled;
 
-        &.input-cell {
+        &.playable {
             background-color: $input-cell-color;
         }
 
-        &.heading-cell {
+        &.heading {
             background-color: $heading-cell-color;
         }
 
-        &.sum-cell {
+        &.sum {
             background-color: $sum-cell-color;
         }
 
-        &.available-cell {
+        &.available {
             background-color: $available-cell-color;
+            @include pointer-enabled;
         }
     }
 }

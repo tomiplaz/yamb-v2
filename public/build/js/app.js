@@ -229,6 +229,37 @@
     'use strict';
 
     angular
+        .module('yamb-v2.play')
+        .factory('diceService', diceService);
+    
+    function diceService() {
+        var service = {
+            dice: {},
+            getDice: getDice,
+            getDiceValues: getDiceValues
+        }
+
+        return service;
+
+        function getDice() {
+            return service.dice;
+        }
+
+        function getDiceValues() {
+            var diceValues = [];
+
+            for (var i in service.dice) {
+                diceValues.push(service.dice[i].value);
+            }
+
+            return diceValues;
+        }
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
         .module('services.api', ['restangular', 'ngStorage'])
         .factory('ApiRestangular', ApiRestangular)
         .factory('api', api);
@@ -294,8 +325,8 @@
         .module('yamb-v2.play')
         .directive('die', die);
     
-    die.$inject = [];
-    function die() {
+    die.$inject = ['diceService'];
+    function die(diceService) {
         return {
             link: link,
             templateUrl: 'src/play/directives/die/die.html',
@@ -304,13 +335,19 @@
         };
 
         function link(scope, elem, attrs) {
-            scope.isLocked = false;
-            scope.value = getRandomValue();
+            scope.die = {
+                isLocked: false,
+                value: getRandomValue()
+            };
+
+            diceService.dice[attrs.i] = scope.die;
 
             scope.$on('roll', randomizeValue);
 
             function randomizeValue() {
-                scope.value = getRandomValue();
+                if (!scope.die.isLocked) {
+                    scope.die.value = getRandomValue();
+                }
             }
 
             function getRandomValue() {
@@ -327,8 +364,8 @@
         .module('yamb-v2.play')
         .directive('paper', paper);
     
-    paper.$inject = [];
-    function paper() {
+    paper.$inject = ['diceService'];
+    function paper(diceService) {
         return {
             link: link,
             templateUrl: 'src/play/directives/paper/paper.html',
@@ -336,22 +373,43 @@
             scope: true
         };
 
-        function link($scope, elem, attrs) {
-            var rows = $scope.play.rows;
-            var columns = $scope.play.columns;
+        function link(scope, elem, attrs) {
+            var rows = scope.play.rows;
+            var columns = scope.play.columns;
             var playableRows = rows.filter(isPlayable);
+
+            scope.cellClicked = cellClicked;
 
             initCells();
 
-            $scope.$on('roll', updateAvailableCells);
+            scope.$on('roll', updateAvailableCells);
+
+            function cellClicked(cellKey) {
+                var cell = scope.cells[cellKey];
+
+                if (cell.isAvailable) {
+                    cell.value = getCalculatedCellValue();
+                }
+
+                function getCalculatedCellValue() {
+                    var diceValues = diceService.getDiceValues();
+
+                    switch (cell.row) {
+                        //
+                    }
+                }
+            }
 
             function initCells() {
-                $scope.cells = {};
+                scope.cells = {};
                 iterateCells(initCell, false);
 
-                function initCell(cellKey) {
-                    $scope.cells[cellKey] = {
-                        available: false,
+                function initCell(cellKey, row, column) {
+                    scope.cells[cellKey] = {
+                        row: row.abbreviation,
+                        column: column.abbreviation,
+                        isPlayable: isPlayable(row),
+                        isAvailable: false,
                         value: null
                     };
                 }
@@ -366,7 +424,7 @@
                     iterateCells(resetCellAvailability, true);
 
                     function resetCellAvailability(cellKey) {
-                        $scope.cells[cellKey].available = false;
+                        scope.cells[cellKey].isAvailable = false;
                     }
                 }
                 
@@ -405,7 +463,7 @@
                                 }
                                 return;
                             case 'ann':
-                                if ($scope.play.rollNumber === 1) {
+                                if (scope.play.rollNumber === 1) {
                                     availableCellsKeys.push(cellKey);
                                     return;
                                 }
@@ -414,18 +472,17 @@
                         }
 
                         function isCellEmpty(cellKey) {
-                            return ($scope.cells[cellKey].value === null);
+                            return (scope.cells[cellKey].value === null);
                         }
 
                         function getPlayableCellKey(rowIndex, columnIndex) {
-                            console.log(rowIndex, columnIndex);
                             return playableRows[rowIndex].abbreviation + '_' + columns[columnIndex].abbreviation;
                         }
                     }
                 }
 
                 function setCellToAvailable(cellKey) {
-                    $scope.cells[cellKey].available = true;
+                    scope.cells[cellKey].isAvailable = true;
                 }
             }
 

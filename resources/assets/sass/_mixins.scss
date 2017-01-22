@@ -1,0 +1,9 @@
+@mixin pointer-disabled {
+    pointer-events: none;
+    cursor: default;
+}
+
+@mixin pointer-enabled {
+    pointer-events: auto;
+    cursor: pointer;
+}

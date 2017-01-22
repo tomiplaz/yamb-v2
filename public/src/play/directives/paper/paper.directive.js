@@ -5,8 +5,8 @@
         .module('yamb-v2.play')
         .directive('paper', paper);
     
-    paper.$inject = [];
-    function paper() {
+    paper.$inject = ['diceService'];
+    function paper(diceService) {
         return {
             link: link,
             templateUrl: 'src/play/directives/paper/paper.html',
@@ -14,22 +14,43 @@
             scope: true
         };
 
-        function link($scope, elem, attrs) {
-            var rows = $scope.play.rows;
-            var columns = $scope.play.columns;
+        function link(scope, elem, attrs) {
+            var rows = scope.play.rows;
+            var columns = scope.play.columns;
             var playableRows = rows.filter(isPlayable);
+
+            scope.cellClicked = cellClicked;
 
             initCells();
 
-            $scope.$on('roll', updateAvailableCells);
+            scope.$on('roll', updateAvailableCells);
+
+            function cellClicked(cellKey) {
+                var cell = scope.cells[cellKey];
+
+                if (cell.isAvailable) {
+                    cell.value = getCalculatedCellValue();
+                }
+
+                function getCalculatedCellValue() {
+                    var diceValues = diceService.getDiceValues();
+
+                    switch (cell.row) {
+                        //
+                    }
+                }
+            }
 
             function initCells() {
-                $scope.cells = {};
+                scope.cells = {};
                 iterateCells(initCell, false);
 
-                function initCell(cellKey) {
-                    $scope.cells[cellKey] = {
-                        available: false,
+                function initCell(cellKey, row, column) {
+                    scope.cells[cellKey] = {
+                        row: row.abbreviation,
+                        column: column.abbreviation,
+                        isPlayable: isPlayable(row),
+                        isAvailable: false,
                         value: null
                     };
                 }
@@ -44,7 +65,7 @@
                     iterateCells(resetCellAvailability, true);
 
                     function resetCellAvailability(cellKey) {
-                        $scope.cells[cellKey].available = false;
+                        scope.cells[cellKey].isAvailable = false;
                     }
                 }
                 
@@ -83,7 +104,7 @@
                                 }
                                 return;
                             case 'ann':
-                                if ($scope.play.rollNumber === 1) {
+                                if (scope.play.rollNumber === 1) {
                                     availableCellsKeys.push(cellKey);
                                     return;
                                 }
@@ -92,18 +113,17 @@
                         }
 
                         function isCellEmpty(cellKey) {
-                            return ($scope.cells[cellKey].value === null);
+                            return (scope.cells[cellKey].value === null);
                         }
 
                         function getPlayableCellKey(rowIndex, columnIndex) {
-                            console.log(rowIndex, columnIndex);
                             return playableRows[rowIndex].abbreviation + '_' + columns[columnIndex].abbreviation;
                         }
                     }
                 }
 
                 function setCellToAvailable(cellKey) {
-                    $scope.cells[cellKey].available = true;
+                    scope.cells[cellKey].isAvailable = true;
                 }
             }
 
