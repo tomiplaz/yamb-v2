@@ -35,8 +35,29 @@
                 function getCalculatedCellValue() {
                     var diceValues = diceService.getDiceValues();
 
-                    switch (cell.row) {
-                        //
+                    switch (cell.rowAbbreviation) {
+                        case 'str':
+                            return 0;
+                        case 'full':
+                            return 0;
+                        case 'quad':
+                            return 0;
+                        case 'yamb':
+                            return 0;
+                        case 'min':
+                        case 'max':
+                            return diceValues.reduce(minMaxReduction, 0);
+                        default:
+                            return diceValues.reduce(oneToSixReduction, 0);
+                    }
+
+                    function minMaxReduction(accumulator, value) {
+                        return accumulator + value;
+                    }
+
+                    function oneToSixReduction(accumulator, value) {
+                        var rowWeight = parseInt(cell.rowAbbreviation);
+                        return accumulator + (value === rowWeight ? rowWeight : 0);
                     }
                 }
             }
@@ -47,8 +68,8 @@
 
                 function initCell(cellKey, row, column) {
                     scope.cells[cellKey] = {
-                        row: row.abbreviation,
-                        column: column.abbreviation,
+                        rowAbbreviation: row.abbreviation,
+                        columnAbbreviation: column.abbreviation,
                         isPlayable: isPlayable(row),
                         isAvailable: false,
                         value: null
