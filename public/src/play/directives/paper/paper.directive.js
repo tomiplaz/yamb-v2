@@ -54,18 +54,54 @@
 
                     switch (cell.rowAbbreviation) {
                         case 'str':
-                            return 0;
+                            return getStraightValue();
                         case 'full':
-                            return 0;
+                            return getFullHouseValue();
                         case 'quad':
-                            return 0;
+                            return getQuadsValue();
                         case 'yamb':
-                            return 0;
+                            return getYambValue();
                         case 'min':
                         case 'max':
                             return diceValues.reduce(minMaxReduction, 0);
                         default:
                             return diceValues.reduce(oneToSixReduction, 0);
+                    }
+
+                    function getStraightValue() {
+                        return isStraight() ? 66 - (scope.play.rollNumber - 1) * 10 : 0;
+
+                        function isStraight() {
+                            var sortedString = diceValues.sort().join('');
+                            return (sortedString.indexOf('12345') === -1 || sortedString.indexOf('23456') === -1)
+                        }
+                    }
+
+                    function getFullHouseValue() {
+                        return 0;
+                    }
+
+                    function getQuadsValue() {
+                        var sorted = diceValues.sort();
+
+                        return isQuads() ? 40 + sorted[1] * 4 : 0;
+
+                        function isQuads() {
+                            return sorted[0] === sorted[3] || sorted[1] === sorted[4];
+                        }
+                    }
+
+                    function getYambValue() {
+                        return isYamb() ? 50 + diceValues[0] * 5 : 0;
+
+                        function isYamb() {
+                            for (var i = 1; i < diceValues.length; i++) {
+                                if (diceValues[i] !== diceValues[i - 1]) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        }
                     }
 
                     function minMaxReduction(accumulator, value) {
