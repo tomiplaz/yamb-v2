@@ -11,22 +11,33 @@
             link: link,
             templateUrl: 'src/play/directives/timer/timer.html',
             replace: true,
-            scope: true
+            scope: false
         };
 
-        function link($scope, elem, attrs) {
+        function link(scope, elem, attrs) {
             var startTime, timerInterval, timeDiff, days, hours, minutes, seconds, miliseconds;
 
-            $scope.timer = {
+            scope.timer = {
                 value: 0,
                 display: "00:00"
             };
 
-            $scope.$on('start', start);
+            scope.$on('start', start);
+            scope.$on('stop', stop);
+
+            elem.on('$destroy', onDestroy);
 
             function start() {
                 startTime = Date.now();
                 timerInterval = $interval(updateTimer, 1);
+            }
+
+            function stop() {
+                $interval.cancel(timerInterval);
+            }
+
+            function onDestroy() {
+                if (timerInterval) stop();
             }
 
             function updateTimer() {
@@ -37,8 +48,8 @@
                 seconds = Math.floor((timeDiff - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000 - minutes * 60 * 1000) / 1000);
                 miliseconds = timeDiff - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000 - minutes * 60 * 1000 - seconds * 1000;
 
-                $scope.timer.value = timeDiff;
-                $scope.timer.display = formatTimerValue(minutes) + ":" + formatTimerValue(seconds);
+                scope.timer.value = timeDiff;
+                scope.timer.display = formatTimerValue(minutes) + ":" + formatTimerValue(seconds);
 
                 function formatTimerValue(value) {
                     return (value < 10 ? "0" + value : value);

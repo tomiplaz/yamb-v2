@@ -9,7 +9,8 @@
         var service = {
             dice: {},
             getDice: getDice,
-            getDiceValues: getDiceValues
+            getDiceValues: getDiceValues,
+            unlockAndDisableDice: unlockAndDisableDice
         }
 
         return service;
@@ -26,6 +27,13 @@
             }
 
             return diceValues;
+        }
+
+        function unlockAndDisableDice() {
+            for (var i in service.dice) {
+                service.dice[i].isLocked = false;
+                service.dice[i].isDisabled = true;
+            }
         }
     }
 })();

@@ -14,6 +14,8 @@
         vm.start = start;
         vm.roll = roll;
         vm.resetRollNumber = resetRollNumber;
+        vm.setIsInputRequired = setIsInputRequired;
+        vm.saveGame = saveGame;
 
         function activate() {
             vm.columns = columns.plain();
@@ -21,6 +23,7 @@
             vm.hasGameStarted = false;
             vm.rollNumber = 0;
             vm.isInputRequired = false;
+            vm.isFinished = false;
         }
 
         function start() {
@@ -44,6 +47,15 @@
 
         function resetRollNumber() {
             vm.rollNumber = 0;
+        }
+
+        function setIsInputRequired(value) {
+            vm.isInputRequired = value;
+        }
+
+        function saveGame(cells, finalResult) {
+            vm.isFinished = true;
+            console.log(cells, finalResult, $scope.timer);
         }
     }
 })();
