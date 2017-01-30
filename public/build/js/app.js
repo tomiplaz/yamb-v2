@@ -528,7 +528,7 @@
                 function calculateSums() {
                     iterateCells(calculateSum, 'sum');
 
-                    function calculateSum(cellKey, row, column, rowIndex, columnIndex) {
+                    function calculateSum(cellKey, row, column) {
                         switch (row.abbreviation) {
                             case 'usum':
                                 var relevantValues = getRelevantValues(6);
@@ -539,9 +539,9 @@
                                 break;
                             case 'msum':
                                 var relevantValues = getRelevantValues(2);
-                                if (relevantValues.every(hasValue)) {
+                                var onesCellKey = rows[0].abbreviation + '_' + column.abbreviation;
+                                if (relevantValues.every(hasValue) && scope.cells[onesCellKey].value !== null) {
                                     var difference = relevantValues[1] - relevantValues[0];
-                                    var onesCellKey = rows[0].abbreviation + '_' + column.abbreviation;
                                     scope.cells[cellKey].value = (difference < 0 ? 0 : difference * scope.cells[onesCellKey].value);
                                 }
                                 break;
@@ -559,7 +559,7 @@
                             var relevantValues = [];
 
                             for (var i = 1; i <= numberOfTrailingCells; i++) {
-                                cellKey = rows[rowIndex - i].abbreviation + '_' + column.abbreviation;
+                                cellKey = rows[row.id - 1 - i].abbreviation + '_' + column.abbreviation;
                                 relevantValues.push(scope.cells[cellKey].value);
                             }
 
@@ -666,10 +666,9 @@
                 if (filterRows === 'playable') rowsToIterate = playableRows;
                 if (filterRows === 'sum') rowsToIterate = sumRows;
 
-                rowsToIterate.forEach(function(row) {
-                    columns.forEach(function(column) {
+                rowsToIterate.forEach(function(row, rowIndex) {
+                    columns.forEach(function(column, columnIndex) {
                         var cellKey = row.abbreviation + '_' + column.abbreviation;
-                        // Create Row and Column models, so that casts can be applied
                         callbackFunction(cellKey, row, column, rowIndex, columnIndex);
                     });
                 });     

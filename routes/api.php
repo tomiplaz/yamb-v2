@@ -17,10 +17,6 @@ Route::resource('users', 'UserController', ['only' => ['index', 'show', 'update'
 
 Route::resource('games', 'GameController', ['only' => ['index', 'store', 'show']]);
 
-Route::get('columns', function () {
-    return DB::table('columns')->get();
-});
+Route::resource('rows', 'RowController', ['only' => ['index']]);
 
-Route::get('rows', function () {
-    return DB::table('rows')->get();
-});
+Route::resource('columns', 'ColumnController', ['only' => ['index']]);
