@@ -19,6 +19,8 @@
             var columns = scope.play.columns;
             var playableRows = rows.filter(isPlayable);
             var sumRows = rows.filter(isSum);
+            var turnNumber = 0;
+            var announcedCellKey = null;
 
             scope.cellClicked = cellClicked;
 
@@ -36,7 +38,8 @@
                         columnAbbreviation: column.abbreviation,
                         isPlayable: isPlayable(row),
                         isAvailable: false,
-                        value: null
+                        value: null,
+                        inputTurn: null
                     };
                 }
             }
@@ -45,15 +48,23 @@
                 var cell = scope.cells[cellKey];
 
                 if (cell.isAvailable) {
-                    cell.value = getCalculatedCellValue();
+                    if (cell.columnAbbreviation === 'ann' && !announcedCellKey) {
+                        resetCellsAvailability();
+                        announcedCellKey = cellKey;
+                        scope.cells[cellKey].isAvailable = true;
+                    } else {
+                        cell.value = getCalculatedCellValue();
+                        cell.inputTurn = ++turnNumber;
 
-                    resetCellsAvailability();
-                    scope.play.resetRollNumber();
-                    scope.play.setIsInputRequired(false);
-                    diceService.unlockAndDisableDice();
+                        announcedCellKey = null;
+                        resetCellsAvailability();
+                        scope.play.resetRollNumber();
+                        scope.play.setIsInputRequired(false);
+                        diceService.unlockAndDisableDice();
 
-                    calculateSums();
-                    calculateFinalResult();
+                        calculateSums();
+                        calculateFinalResult();
+                    }
                 }
 
                 function getCalculatedCellValue() {
@@ -196,7 +207,11 @@
                 function getAvailableCellsKeys() {
                     var availableCellsKeys = [];
 
-                    iterateCells(checkAndPushAvailableCellKey, 'playable');
+                    if (!announcedCellKey) {
+                        iterateCells(checkAndPushAvailableCellKey, 'playable');
+                    } else {
+                        availableCellsKeys.push(announcedCellKey);
+                    }
 
                     return availableCellsKeys;
 
