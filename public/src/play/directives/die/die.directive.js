@@ -21,7 +21,7 @@
                 value: getRandomValue()
             };
 
-            diceService.dice[attrs.i] = scope.die;
+            diceService.dice[parseInt(attrs.index)] = scope.die;
 
             scope.toggleDieLock = toggleDieLock;
 

@@ -7,7 +7,7 @@
     
     function diceService() {
         var service = {
-            dice: {},
+            dice: [],
             getDice: getDice,
             getDiceValues: getDiceValues,
             unlockAndDisableDice: unlockAndDisableDice
@@ -20,19 +20,19 @@
         }
 
         function getDiceValues() {
-            var diceValues = [];
+            return service.dice.map(dieValue);
 
-            for (var i in service.dice) {
-                diceValues.push(service.dice[i].value);
+            function dieValue(die) {
+                return die.value;
             }
-
-            return diceValues;
         }
 
         function unlockAndDisableDice() {
-            for (var i in service.dice) {
-                service.dice[i].isLocked = false;
-                service.dice[i].isDisabled = true;
+            service.dice.forEach(unlockAndDisableDie);
+
+            function unlockAndDisableDie(die) {
+                die.isLocked = false;
+                die.isDisabled = true;
             }
         }
     }

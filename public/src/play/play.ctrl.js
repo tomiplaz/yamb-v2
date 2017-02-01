@@ -20,6 +20,8 @@
         function activate() {
             vm.columns = columns.plain();
             vm.rows = rows.plain();
+            vm.numberOfDice = 6;
+            vm.diceIndices = getDiceIndices();
             vm.hasGameStarted = false;
             vm.rollNumber = 0;
             vm.isInputRequired = false;
@@ -39,6 +41,16 @@
             if (vm.rollNumber === 3) {
                 vm.isInputRequired = true;
             }
+        }
+
+        function getDiceIndices() {
+            var diceIndices = [];
+
+            for (var i = 0; i < vm.numberOfDice; i++) {
+                diceIndices.push(i);
+            }
+
+            return diceIndices;
         }
 
         function incrementRollNumber() {

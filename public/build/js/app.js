@@ -146,6 +146,8 @@
         function activate() {
             vm.columns = columns.plain();
             vm.rows = rows.plain();
+            vm.numberOfDice = 6;
+            vm.diceIndices = getDiceIndices();
             vm.hasGameStarted = false;
             vm.rollNumber = 0;
             vm.isInputRequired = false;
@@ -165,6 +167,16 @@
             if (vm.rollNumber === 3) {
                 vm.isInputRequired = true;
             }
+        }
+
+        function getDiceIndices() {
+            var diceIndices = [];
+
+            for (var i = 0; i < vm.numberOfDice; i++) {
+                diceIndices.push(i);
+            }
+
+            return diceIndices;
         }
 
         function incrementRollNumber() {
@@ -252,7 +264,7 @@
     
     function diceService() {
         var service = {
-            dice: {},
+            dice: [],
             getDice: getDice,
             getDiceValues: getDiceValues,
             unlockAndDisableDice: unlockAndDisableDice
@@ -265,19 +277,19 @@
         }
 
         function getDiceValues() {
-            var diceValues = [];
+            return service.dice.map(dieValue);
 
-            for (var i in service.dice) {
-                diceValues.push(service.dice[i].value);
+            function dieValue(die) {
+                return die.value;
             }
-
-            return diceValues;
         }
 
         function unlockAndDisableDice() {
-            for (var i in service.dice) {
-                service.dice[i].isLocked = false;
-                service.dice[i].isDisabled = true;
+            service.dice.forEach(unlockAndDisableDie);
+
+            function unlockAndDisableDie(die) {
+                die.isLocked = false;
+                die.isDisabled = true;
             }
         }
     }
@@ -368,7 +380,7 @@
                 value: getRandomValue()
             };
 
-            diceService.dice[attrs.i] = scope.die;
+            diceService.dice[parseInt(attrs.index)] = scope.die;
 
             scope.toggleDieLock = toggleDieLock;
 
@@ -483,9 +495,9 @@
                             return getYambValue();
                         case 'min':
                         case 'max':
-                            return diceValues.reduce(sumReduction, 0);
+                            return getMinMaxValue();
                         default:
-                            return diceValues.reduce(oneToSixReduction, 0);
+                            return getOneToSixValue();
                     }
 
                     function getStraightValue() {
@@ -498,41 +510,84 @@
                     }
 
                     function getFullHouseValue() {
-                        return isFullHouse() ? diceValues.reduce(sumReduction, 30) : 0;
+                        var fullHouse = getFullHouse();
 
-                        function isFullHouse() {
-                            var sorted = diceValues.sort();
-                            return (sorted[0] === sorted[1] && sorted[2] === sorted[4]) ||
-                                (sorted[0] === sorted[2] && sorted[3] === sorted[4]);
+                        return fullHouse.every(hasValue) ? fullHouse[0] * 3 + fullHouse[1] * 2 + 30 : 0;
+
+                        function getFullHouse() {
+                            var diceCount = getDiceCount();
+
+                            return [getFullHouseMember(2), getFullHouseMember(1)];
+
+                            function getDiceCount() {
+                                var diceCount = {};
+
+                                [1, 2, 3, 4, 5, 6].forEach(initDiceCount);
+                                diceValues.forEach(incrementCount);
+
+                                return diceCount;
+
+                                function initDiceCount(value) {
+                                    diceCount[value] = 0;
+                                }
+
+                                function incrementCount(dieValue) {
+                                    diceCount[dieValue]++;
+                                }
+                            }
+                            
+                            function getFullHouseMember(count) {
+                                for (var i = 6; i > 0; i--) {
+                                    if (diceCount[i] > count) {
+                                        delete diceCount[i];
+                                        return i;
+                                    }
+                                }
+                            }
                         }
                     }
 
                     function getQuadsValue() {
                         var sorted = diceValues.sort();
 
-                        return isQuads() ? 40 + sorted[1] * 4 : 0;
+                        return isQuads() ? 40 + sorted[2] * 4 : 0;
 
                         function isQuads() {
-                            return sorted[0] === sorted[3] || sorted[1] === sorted[4];
+                            for (var i = sorted.length - 1; i >= 3; i--) {
+                                if (sorted[i] === sorted[i - 3]) return true;
+                            }
+                            return false;
                         }
                     }
 
                     function getYambValue() {
-                        return isYamb() ? 50 + diceValues[0] * 5 : 0;
+                        var sorted = diceValues.sort();
+
+                        return isYamb() ? 50 + sorted[1] * 5 : 0;
 
                         function isYamb() {
-                            for (var i = 1; i < diceValues.length; i++) {
-                                if (diceValues[i] !== diceValues[i - 1]) {
-                                    return false;
-                                }
+                            for (var i = sorted.length - 1; i >= 4; i--) {
+                                if (sorted[i] === sorted[i - 4]) return true;
                             }
-                            return true;
+                            return false;
                         }
                     }
 
-                    function oneToSixReduction(accumulator, value) {
+                    function getMinMaxValue() {
+                        return diceValues.reduce(sumReduction, 0);
+                    }
+
+                    function getOneToSixValue() {
+                        var count = 0;
                         var rowWeight = parseInt(cell.rowAbbreviation);
-                        return accumulator + (value === rowWeight ? rowWeight : 0);
+
+                        diceValues.forEach(incrementCountIfValid);
+
+                        return (count > 5 ? 5 : count) * rowWeight;
+
+                        function incrementCountIfValid(dieValue) {
+                            if (dieValue === rowWeight) count++;
+                        }
                     }
                 }
 
@@ -702,7 +757,7 @@
             }
 
             function hasValue(value) {
-                return value !== null;
+                return value !== null && value !== undefined;
             }
         }
     }
