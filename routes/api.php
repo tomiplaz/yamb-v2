@@ -20,3 +20,7 @@ Route::resource('games', 'GameController', ['only' => ['index', 'store', 'show']
 Route::resource('rows', 'RowController', ['only' => ['index']]);
 
 Route::resource('columns', 'ColumnController', ['only' => ['index']]);
+
+Route::group(['prefix' => 'users'], function() {
+    Route::post('unfinished-game', 'UserController@incrementUnfinishedGames');
+});

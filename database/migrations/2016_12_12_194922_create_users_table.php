@@ -18,6 +18,7 @@ class CreateUsersTable extends Migration
             $table->string('name', 20);
             $table->string('email', 100)->unique();
             $table->string('password', 72);
+            $table->unsignedBigInteger('unfinished_games');
             $table->timestamps();
         });
     }

@@ -64,4 +64,19 @@ class UserController extends Controller
             return response('User with given ID does not exist!', 400);
         }
     }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function incrementUnfinishedGames($id)
+    {
+        if ($user = User::find($id)) {
+            $user->increment('unfinished_games');
+        } else {
+            return response('User with given ID does not exist!', 400);
+        }
+    }
 }

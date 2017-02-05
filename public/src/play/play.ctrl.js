@@ -5,8 +5,8 @@
         .module('yamb-v2.play', [])
         .controller('PlayCtrl', PlayCtrl);
 
-    PlayCtrl.$inject = ['columns', 'rows', '$interval', '$scope'];
-    function PlayCtrl(columns, rows, $interval, $scope) {
+    PlayCtrl.$inject = ['columns', 'rows', '$interval', '$scope', 'api'];
+    function PlayCtrl(columns, rows, $interval, $scope, api) {
         var vm = this;
 
         activate();
@@ -26,6 +26,12 @@
             vm.rollNumber = 0;
             vm.isInputRequired = false;
             vm.isFinished = false;
+
+            $scope.$on('$destroy', onDestroy);
+
+            function onDestroy() {
+                //api.custom('users', user.id, 'post', 'unfinished-game');
+            }
         }
 
         function start() {
