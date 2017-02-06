@@ -6,6 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
         <link type="text/css" rel="stylesheet" href="build/css/bootstrap.css">
+        <link type="text/css" rel="stylesheet" href="build/css/deps.css">
         <link type="text/css" rel="stylesheet" href="build/css/app.css">
 
         <link rel="prefetch" href="img/dice/1.png">

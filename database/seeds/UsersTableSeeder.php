@@ -17,12 +17,14 @@ class UsersTableSeeder extends Seeder
             [
                 'name' => 'Tomislav',
                 'email' => 'tomislav@gmail.com',
-                'password' => 'tomislav1'
+                'password' => 'tomislav1',
+                'unfinished_games' => 0
             ],
             [
                 'name' => 'Tamara',
                 'email' => 'tamara@gmail.com',
-                'password' => 'tamara2'
+                'password' => 'tamara2',
+                'unfinished_games' => 0
             ]
         ];
 

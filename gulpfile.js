@@ -27,7 +27,7 @@ gulp.task('watch', ['js', 'sass'], function() {
 
 gulp.task('js-deps', function(cb) {
     pump([
-        gulp.src(mainBowerFiles()),
+        gulp.src(mainBowerFiles('**/*.js')),
         concat('deps.js'),
         gulp.dest('public/build/js')
     ], cb);
@@ -38,6 +38,14 @@ gulp.task('js', function(cb) {
         gulp.src(jsFiles),
         concat('app.js'),
         gulp.dest('public/build/js')
+    ], cb);
+});
+
+gulp.task('css-deps', function(cb) {
+    pump([
+        gulp.src(mainBowerFiles('**/*.css')),
+        concat('deps.css'),
+        gulp.dest('public/build/css')
     ], cb);
 });
 

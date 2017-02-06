@@ -75,6 +75,7 @@ class UserController extends Controller
     {
         if ($user = User::find($id)) {
             $user->increment('unfinished_games');
+            return response('OK');
         } else {
             return response('User with given ID does not exist!', 400);
         }

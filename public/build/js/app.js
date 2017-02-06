@@ -4,6 +4,9 @@
     angular
         .module('yamb-v2', [
             'ui.router',
+            'angular-jwt',
+            'ngStorage',
+            'toastr',
             'services',
             'yamb-v2.home',
             'yamb-v2.register',
@@ -17,41 +20,69 @@
     config.$inject = ['$stateProvider', '$locationProvider']
     function config($stateProvider, $locationProvider) {
         $stateProvider
-            .state('home', {
+            .state('root', {
                 url: '/',
-                templateUrl: 'src/home/home.html',
-                controller: 'HomeCtrl as home'
-            })
-            .state('register', {
-                url: '/register',
-                templateUrl: 'src/register/register.html',
-                controller: 'RegisterCtrl as register'
-            })
-            .state('login', {
-                url: '/login',
-                templateUrl: 'src/login/login.html',
-                controller: 'LoginCtrl as login'
-            })
-            .state('users', {
-                url: '/users',
-                templateUrl: 'src/users/users.html',
-                controller: 'UsersCtrl as users',
+                abstract: true,
+                template: '<div ui-view></div>',
                 resolve: {
-                    users: function(api) {
-                        return api.get('users');
+                    user: function($localStorage, jwtHelper, apiService, userService) {
+                        if ($localStorage.token) {
+                            var decodedToken = jwtHelper.decodeToken($localStorage.token);
+
+                            return apiService
+                                .get('users', decodedToken.sub)
+                                .then(successCallback, errorCallback);
+                            
+                            function successCallback(response) {
+                                userService.user = response.plain();
+                                return userService.user;
+                            }
+
+                            function errorCallback(response) {
+                                console.log("Error fetching user.");
+                                return userService.user;
+                            }
+                        } else {
+                            return null;
+                        }
                     }
                 }
             })
-            .state('play', {
-                url: '/play',
+            .state('root.home', {
+                url: 'home',
+                templateUrl: 'src/home/home.html',
+                controller: 'HomeCtrl as home'
+            })
+            .state('root.register', {
+                url: 'register',
+                templateUrl: 'src/register/register.html',
+                controller: 'RegisterCtrl as register'
+            })
+            .state('root.login', {
+                url: 'login',
+                templateUrl: 'src/login/login.html',
+                controller: 'LoginCtrl as login'
+            })
+            .state('root.users', {
+                url: 'users',
+                templateUrl: 'src/users/users.html',
+                controller: 'UsersCtrl as users',
+                resolve: {
+                    users: function(apiService) {
+                        return apiService.get('users');
+                    }
+                }
+            })
+            .state('root.play', {
+                url: 'play',
                 templateUrl: 'src/play/play.html',
                 controller: 'PlayCtrl as play',
                 resolve: {
-                    columns: function(api) {
-                        return api.get('columns');
+                    columns: function(apiService) {
+                        return apiService.get('columns');
                     },
-                    rows: function(api) {
-                        return api.get('rows');
+                    rows: function(apiService) {
+                        return apiService.get('rows');
                     }
                 }
             });
@@ -61,7 +92,7 @@
 
     run.$inject = ['$state'];
     function run($state) {
-        $state.go('register');
+        $state.go('root.home');
     }
 })();
 (function() {
@@ -77,19 +108,19 @@
 
         vm.states = [
             {
-                name: 'login',
+                name: 'root.login',
                 label: 'Login'
             },
             {
-                name: 'register',
+                name: 'root.register',
                 label: 'Register'
             },
             {
-                name: 'play',
+                name: 'root.play',
                 label: 'Play'
             },
             {
-                name: 'users',
+                name: 'root.users',
                 label: 'Users'
             }
         ];
@@ -102,8 +133,8 @@
         .module('yamb-v2.login', [])
         .controller('LoginCtrl', LoginCtrl);
 
-    LoginCtrl.$inject = ['auth', '$localStorage'];
-    function LoginCtrl(auth, $localStorage) {
+    LoginCtrl.$inject = ['authService', '$localStorage'];
+    function LoginCtrl(authService, $localStorage) {
         var vm = this;
 
         activate();
@@ -115,8 +146,7 @@
         }
 
         function confirm() {
-            auth.login(vm.input).then(function(success) {
-                console.log("Success", success);
+            authService.login(vm.input).then(function(success) {
                 $localStorage.token = success.token;
             }, function(error) {
                 console.log("Error", error);
@@ -131,8 +161,8 @@
         .module('yamb-v2.play', [])
         .controller('PlayCtrl', PlayCtrl);
 
-    PlayCtrl.$inject = ['columns', 'rows', '$interval', '$scope'];
-    function PlayCtrl(columns, rows, $interval, $scope) {
+    PlayCtrl.$inject = ['columns', 'rows', '$interval', '$scope', 'apiService', 'userService'];
+    function PlayCtrl(columns, rows, $interval, $scope, apiService, userService) {
         var vm = this;
 
         activate();
@@ -144,6 +174,7 @@
         vm.saveGame = saveGame;
 
         function activate() {
+            vm.user = userService.user;
             vm.columns = columns.plain();
             vm.rows = rows.plain();
             vm.numberOfDice = 6;
@@ -152,6 +183,15 @@
             vm.rollNumber = 0;
             vm.isInputRequired = false;
             vm.isFinished = false;
+
+            $scope.$on('$destroy', onDestroy);
+
+            function onDestroy() {
+                // Handle on refresh, close, etc...
+                if (vm.user && vm.hasGameStarted) {
+                    apiService.custom('users', vm.user.id, 'post', 'increment-unfinished-games');
+                }
+            }
         }
 
         function start() {
@@ -205,8 +245,8 @@
         .module('yamb-v2.register', [])
         .controller('RegisterCtrl', RegisterCtrl);
     
-    RegisterCtrl.$inject = ['auth', '$state'];
-    function RegisterCtrl(auth, $state) {
+    RegisterCtrl.$inject = ['authService', '$state'];
+    function RegisterCtrl(authService, $state) {
         var vm = this;
 
         activate();
@@ -218,7 +258,7 @@
         }
 
         function confirm() {
-            auth.register(vm.input).then(function(success) {
+            authService.register(vm.input).then(function(success) {
                 console.log("Success", success);
                 $state.go('login');
             }, function(error) {
@@ -233,7 +273,8 @@
     angular
         .module('services', [
             'services.auth',
-            'services.api'
+            'services.api',
+            'services.user'
         ]);
 })();
 (function() {
@@ -299,9 +340,9 @@
     'use strict';
 
     angular
-        .module('services.api', ['restangular', 'ngStorage'])
+        .module('services.api', ['restangular'])
         .factory('ApiRestangular', ApiRestangular)
-        .factory('api', api);
+        .factory('apiService', apiService);
     
     ApiRestangular.$inject = ['Restangular', '$localStorage'];
     function ApiRestangular(Restangular, $localStorage) {
@@ -314,11 +355,12 @@
         });
     }
     
-    api.$inject = ['ApiRestangular'];
-    function api(ApiRestangular) {
+    apiService.$inject = ['ApiRestangular'];
+    function apiService(ApiRestangular) {
         return {
             get: get,
-            create: create
+            create: create,
+            custom: custom
         }
 
         function get(resource, id) {
@@ -332,6 +374,11 @@
         function create(resource, data) {
             return ApiRestangular.all(resource).post(data);
         }
+
+        function custom(resource, id, method, route, data, params, headers) {
+            var restangularObject = (id ? ApiRestangular.one(resource, id) : ApiRestangular.all(resource));
+            return restangularObject.customOperation(method, route, params, headers, data);
+        }
     }
 })();
 (function() {
@@ -339,10 +386,10 @@
 
     angular
         .module('services.auth', ['restangular'])
-        .factory('auth', auth);
+        .factory('authService', authService);
 
-    auth.$inject = ['Restangular'];
-    function auth(Restangular) {
+    authService.$inject = ['Restangular'];
+    function authService(Restangular) {
         return {
             register: register,
             login: login
@@ -354,6 +401,20 @@
 
         function login(data) {
             return Restangular.all('login').post(data);
+        }
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('services.user', ['angular-jwt'])
+        .factory('userService', userService);
+    
+    userService.$inject = [];
+    function userService() {
+        return {
+            user: null
         }
     }
 })();

@@ -53599,6 +53599,909 @@ angular.module('ui.router.state')
 
 }));
 
+(function() {
+  'use strict';
+
+  angular.module('toastr', [])
+    .factory('toastr', toastr);
+
+  toastr.$inject = ['$animate', '$injector', '$document', '$rootScope', '$sce', 'toastrConfig', '$q'];
+
+  function toastr($animate, $injector, $document, $rootScope, $sce, toastrConfig, $q) {
+    var container;
+    var index = 0;
+    var toasts = [];
+
+    var previousToastMessage = '';
+    var openToasts = {};
+
+    var containerDefer = $q.defer();
+
+    var toast = {
+      active: active,
+      clear: clear,
+      error: error,
+      info: info,
+      remove: remove,
+      success: success,
+      warning: warning,
+      refreshTimer: refreshTimer
+    };
+
+    return toast;
+
+    /* Public API */
+    function active() {
+      return toasts.length;
+    }
+
+    function clear(toast) {
+      // Bit of a hack, I will remove this soon with a BC
+      if (arguments.length === 1 && !toast) { return; }
+
+      if (toast) {
+        remove(toast.toastId);
+      } else {
+        for (var i = 0; i < toasts.length; i++) {
+          remove(toasts[i].toastId);
+        }
+      }
+    }
+
+    function error(message, title, optionsOverride) {
+      var type = _getOptions().iconClasses.error;
+      return _buildNotification(type, message, title, optionsOverride);
+    }
+
+    function info(message, title, optionsOverride) {
+      var type = _getOptions().iconClasses.info;
+      return _buildNotification(type, message, title, optionsOverride);
+    }
+
+    function success(message, title, optionsOverride) {
+      var type = _getOptions().iconClasses.success;
+      return _buildNotification(type, message, title, optionsOverride);
+    }
+
+    function warning(message, title, optionsOverride) {
+      var type = _getOptions().iconClasses.warning;
+      return _buildNotification(type, message, title, optionsOverride);
+    }
+
+    function refreshTimer(toast, newTime) {
+      if (toast && toast.isOpened && toasts.indexOf(toast) >= 0) {
+          toast.scope.refreshTimer(newTime);
+      }
+    }
+
+    function remove(toastId, wasClicked) {
+      var toast = findToast(toastId);
+
+      if (toast && ! toast.deleting) { // Avoid clicking when fading out
+        toast.deleting = true;
+        toast.isOpened = false;
+        $animate.leave(toast.el).then(function() {
+          if (toast.scope.options.onHidden) {
+            toast.scope.options.onHidden(!!wasClicked, toast);
+          }
+          toast.scope.$destroy();
+          var index = toasts.indexOf(toast);
+          delete openToasts[toast.scope.message];
+          toasts.splice(index, 1);
+          var maxOpened = toastrConfig.maxOpened;
+          if (maxOpened && toasts.length >= maxOpened) {
+            toasts[maxOpened - 1].open.resolve();
+          }
+          if (lastToast()) {
+            container.remove();
+            container = null;
+            containerDefer = $q.defer();
+          }
+        });
+      }
+
+      function findToast(toastId) {
+        for (var i = 0; i < toasts.length; i++) {
+          if (toasts[i].toastId === toastId) {
+            return toasts[i];
+          }
+        }
+      }
+
+      function lastToast() {
+        return !toasts.length;
+      }
+    }
+
+    /* Internal functions */
+    function _buildNotification(type, message, title, optionsOverride) {
+      if (angular.isObject(title)) {
+        optionsOverride = title;
+        title = null;
+      }
+
+      return _notify({
+        iconClass: type,
+        message: message,
+        optionsOverride: optionsOverride,
+        title: title
+      });
+    }
+
+    function _getOptions() {
+      return angular.extend({}, toastrConfig);
+    }
+
+    function _createOrGetContainer(options) {
+      if(container) { return containerDefer.promise; }
+
+      container = angular.element('<div></div>');
+      container.attr('id', options.containerId);
+      container.addClass(options.positionClass);
+      container.css({'pointer-events': 'auto'});
+
+      var target = angular.element(document.querySelector(options.target));
+
+      if ( ! target || ! target.length) {
+        throw 'Target for toasts doesn\'t exist';
+      }
+
+      $animate.enter(container, target).then(function() {
+        containerDefer.resolve();
+      });
+
+      return containerDefer.promise;
+    }
+
+    function _notify(map) {
+      var options = _getOptions();
+
+      if (shouldExit()) { return; }
+
+      var newToast = createToast();
+
+      toasts.push(newToast);
+
+      if (ifMaxOpenedAndAutoDismiss()) {
+        var oldToasts = toasts.slice(0, (toasts.length - options.maxOpened));
+        for (var i = 0, len = oldToasts.length; i < len; i++) {
+          remove(oldToasts[i].toastId);
+        }
+      }
+
+      if (maxOpenedNotReached()) {
+        newToast.open.resolve();
+      }
+
+      newToast.open.promise.then(function() {
+        _createOrGetContainer(options).then(function() {
+          newToast.isOpened = true;
+          if (options.newestOnTop) {
+            $animate.enter(newToast.el, container).then(function() {
+              newToast.scope.init();
+            });
+          } else {
+            var sibling = container[0].lastChild ? angular.element(container[0].lastChild) : null;
+            $animate.enter(newToast.el, container, sibling).then(function() {
+              newToast.scope.init();
+            });
+          }
+        });
+      });
+
+      return newToast;
+
+      function ifMaxOpenedAndAutoDismiss() {
+        return options.autoDismiss && options.maxOpened && toasts.length > options.maxOpened;
+      }
+
+      function createScope(toast, map, options) {
+        if (options.allowHtml) {
+          toast.scope.allowHtml = true;
+          toast.scope.title = $sce.trustAsHtml(map.title);
+          toast.scope.message = $sce.trustAsHtml(map.message);
+        } else {
+          toast.scope.title = map.title;
+          toast.scope.message = map.message;
+        }
+
+        toast.scope.toastType = toast.iconClass;
+        toast.scope.toastId = toast.toastId;
+        toast.scope.extraData = options.extraData;
+
+        toast.scope.options = {
+          extendedTimeOut: options.extendedTimeOut,
+          messageClass: options.messageClass,
+          onHidden: options.onHidden,
+          onShown: generateEvent('onShown'),
+          onTap: generateEvent('onTap'),
+          progressBar: options.progressBar,
+          tapToDismiss: options.tapToDismiss,
+          timeOut: options.timeOut,
+          titleClass: options.titleClass,
+          toastClass: options.toastClass
+        };
+
+        if (options.closeButton) {
+          toast.scope.options.closeHtml = options.closeHtml;
+        }
+
+        function generateEvent(event) {
+          if (options[event]) {
+            return function() {
+              options[event](toast);
+            };
+          }
+        }
+      }
+
+      function createToast() {
+        var newToast = {
+          toastId: index++,
+          isOpened: false,
+          scope: $rootScope.$new(),
+          open: $q.defer()
+        };
+        newToast.iconClass = map.iconClass;
+        if (map.optionsOverride) {
+          angular.extend(options, cleanOptionsOverride(map.optionsOverride));
+          newToast.iconClass = map.optionsOverride.iconClass || newToast.iconClass;
+        }
+
+        createScope(newToast, map, options);
+
+        newToast.el = createToastEl(newToast.scope);
+
+        return newToast;
+
+        function cleanOptionsOverride(options) {
+          var badOptions = ['containerId', 'iconClasses', 'maxOpened', 'newestOnTop',
+                            'positionClass', 'preventDuplicates', 'preventOpenDuplicates', 'templates'];
+          for (var i = 0, l = badOptions.length; i < l; i++) {
+            delete options[badOptions[i]];
+          }
+
+          return options;
+        }
+      }
+
+      function createToastEl(scope) {
+        var angularDomEl = angular.element('<div toast></div>'),
+          $compile = $injector.get('$compile');
+        return $compile(angularDomEl)(scope);
+      }
+
+      function maxOpenedNotReached() {
+        return options.maxOpened && toasts.length <= options.maxOpened || !options.maxOpened;
+      }
+
+      function shouldExit() {
+        var isDuplicateOfLast = options.preventDuplicates && map.message === previousToastMessage;
+        var isDuplicateOpen = options.preventOpenDuplicates && openToasts[map.message];
+
+        if (isDuplicateOfLast || isDuplicateOpen) {
+          return true;
+        }
+
+        previousToastMessage = map.message;
+        openToasts[map.message] = true;
+
+        return false;
+      }
+    }
+  }
+}());
+
+(function() {
+  'use strict';
+
+  angular.module('toastr')
+    .constant('toastrConfig', {
+      allowHtml: false,
+      autoDismiss: false,
+      closeButton: false,
+      closeHtml: '<button>&times;</button>',
+      containerId: 'toast-container',
+      extendedTimeOut: 1000,
+      iconClasses: {
+        error: 'toast-error',
+        info: 'toast-info',
+        success: 'toast-success',
+        warning: 'toast-warning'
+      },
+      maxOpened: 0,
+      messageClass: 'toast-message',
+      newestOnTop: true,
+      onHidden: null,
+      onShown: null,
+      onTap: null,
+      positionClass: 'toast-top-right',
+      preventDuplicates: false,
+      preventOpenDuplicates: false,
+      progressBar: false,
+      tapToDismiss: true,
+      target: 'body',
+      templates: {
+        toast: 'directives/toast/toast.html',
+        progressbar: 'directives/progressbar/progressbar.html'
+      },
+      timeOut: 5000,
+      titleClass: 'toast-title',
+      toastClass: 'toast'
+    });
+}());
+
+(function() {
+  'use strict';
+
+  angular.module('toastr')
+    .directive('progressBar', progressBar);
+
+  progressBar.$inject = ['toastrConfig'];
+
+  function progressBar(toastrConfig) {
+    return {
+      require: '^toast',
+      templateUrl: function() {
+        return toastrConfig.templates.progressbar;
+      },
+      link: linkFunction
+    };
+
+    function linkFunction(scope, element, attrs, toastCtrl) {
+      var intervalId, currentTimeOut, hideTime;
+
+      toastCtrl.progressBar = scope;
+
+      scope.start = function(duration) {
+        if (intervalId) {
+          clearInterval(intervalId);
+        }
+
+        currentTimeOut = parseFloat(duration);
+        hideTime = new Date().getTime() + currentTimeOut;
+        intervalId = setInterval(updateProgress, 10);
+      };
+
+      scope.stop = function() {
+        if (intervalId) {
+          clearInterval(intervalId);
+        }
+      };
+
+      function updateProgress() {
+        var percentage = ((hideTime - (new Date().getTime())) / currentTimeOut) * 100;
+        element.css('width', percentage + '%');
+      }
+
+      scope.$on('$destroy', function() {
+        // Failsafe stop
+        clearInterval(intervalId);
+      });
+    }
+  }
+}());
+
+(function() {
+  'use strict';
+
+  angular.module('toastr')
+    .controller('ToastController', ToastController);
+
+  function ToastController() {
+    this.progressBar = null;
+
+    this.startProgressBar = function(duration) {
+      if (this.progressBar) {
+        this.progressBar.start(duration);
+      }
+    };
+
+    this.stopProgressBar = function() {
+      if (this.progressBar) {
+        this.progressBar.stop();
+      }
+    };
+  }
+}());
+
+(function() {
+  'use strict';
+
+  angular.module('toastr')
+    .directive('toast', toast);
+
+  toast.$inject = ['$injector', '$interval', 'toastrConfig', 'toastr'];
+
+  function toast($injector, $interval, toastrConfig, toastr) {
+    return {
+      templateUrl: function() {
+        return toastrConfig.templates.toast;
+      },
+      controller: 'ToastController',
+      link: toastLinkFunction
+    };
+
+    function toastLinkFunction(scope, element, attrs, toastCtrl) {
+      var timeout;
+
+      scope.toastClass = scope.options.toastClass;
+      scope.titleClass = scope.options.titleClass;
+      scope.messageClass = scope.options.messageClass;
+      scope.progressBar = scope.options.progressBar;
+
+      if (wantsCloseButton()) {
+        var button = angular.element(scope.options.closeHtml),
+          $compile = $injector.get('$compile');
+        button.addClass('toast-close-button');
+        button.attr('ng-click', 'close(true, $event)');
+        $compile(button)(scope);
+        element.children().prepend(button);
+      }
+
+      scope.init = function() {
+        if (scope.options.timeOut) {
+          timeout = createTimeout(scope.options.timeOut);
+        }
+        if (scope.options.onShown) {
+          scope.options.onShown();
+        }
+      };
+
+      element.on('mouseenter', function() {
+        hideAndStopProgressBar();
+        if (timeout) {
+          $interval.cancel(timeout);
+        }
+      });
+
+      scope.tapToast = function () {
+        if (angular.isFunction(scope.options.onTap)) {
+          scope.options.onTap();
+        }
+        if (scope.options.tapToDismiss) {
+          scope.close(true);
+        }
+      };
+
+      scope.close = function (wasClicked, $event) {
+        if ($event && angular.isFunction($event.stopPropagation)) {
+          $event.stopPropagation();
+        }
+        toastr.remove(scope.toastId, wasClicked);
+      };
+      
+      scope.refreshTimer = function(newTime) {
+        if (timeout) {
+          $interval.cancel(timeout);
+          timeout = createTimeout(newTime || scope.options.timeOut);
+        }
+      };
+
+      element.on('mouseleave', function() {
+        if (scope.options.timeOut === 0 && scope.options.extendedTimeOut === 0) { return; }
+        scope.$apply(function() {
+          scope.progressBar = scope.options.progressBar;
+        });
+        timeout = createTimeout(scope.options.extendedTimeOut);
+      });
+
+      function createTimeout(time) {
+        toastCtrl.startProgressBar(time);
+        return $interval(function() {
+          toastCtrl.stopProgressBar();
+          toastr.remove(scope.toastId);
+        }, time, 1);
+      }
+
+      function hideAndStopProgressBar() {
+        scope.progressBar = false;
+        toastCtrl.stopProgressBar();
+      }
+
+      function wantsCloseButton() {
+        return scope.options.closeHtml;
+      }
+    }
+  }
+}());
+
+angular.module("toastr").run(["$templateCache", function($templateCache) {$templateCache.put("directives/progressbar/progressbar.html","<div class=\"toast-progress\"></div>\n");
+$templateCache.put("directives/toast/toast.html","<div class=\"{{toastClass}} {{toastType}}\" ng-click=\"tapToast()\">\n  <div ng-switch on=\"allowHtml\">\n    <div ng-switch-default ng-if=\"title\" class=\"{{titleClass}}\" aria-label=\"{{title}}\">{{title}}</div>\n    <div ng-switch-default class=\"{{messageClass}}\" aria-label=\"{{message}}\">{{message}}</div>\n    <div ng-switch-when=\"true\" ng-if=\"title\" class=\"{{titleClass}}\" ng-bind-html=\"title\"></div>\n    <div ng-switch-when=\"true\" class=\"{{messageClass}}\" ng-bind-html=\"message\"></div>\n  </div>\n  <progress-bar ng-if=\"progressBar\"></progress-bar>\n</div>\n");}]);
+(function() {
+
+
+// Create all modules and define dependencies to make sure they exist
+// and are loaded in the correct order to satisfy dependency injection
+// before all nested files are concatenated by Grunt
+
+// Modules
+angular.module('angular-jwt',
+    [
+        'angular-jwt.options',
+        'angular-jwt.interceptor',
+        'angular-jwt.jwt',
+        'angular-jwt.authManager'
+    ]);
+
+angular.module('angular-jwt.authManager', [])
+  .provider('authManager', function () {
+
+    this.$get = ["$rootScope", "$injector", "$location", "jwtHelper", "jwtInterceptor", "jwtOptions", function ($rootScope, $injector, $location, jwtHelper, jwtInterceptor, jwtOptions) {
+
+      var config = jwtOptions.getConfig();
+
+      function invokeToken(tokenGetter) {
+        var token = null;
+        if (Array.isArray(tokenGetter)) {
+          token = $injector.invoke(tokenGetter, this, {options: null});
+        } else {
+          token = tokenGetter();
+        }
+        return token;
+      }
+
+      function invokeRedirector(redirector) {
+        if (Array.isArray(redirector) || angular.isFunction(redirector)) {
+          return $injector.invoke(redirector, config, {});
+        } else {
+          throw new Error('unauthenticatedRedirector must be a function');
+        }
+      }
+
+      function isAuthenticated() {
+        var token = invokeToken(config.tokenGetter);
+        if (token) {
+          return !jwtHelper.isTokenExpired(token);
+        }
+      }
+
+      $rootScope.isAuthenticated = false;
+
+      function authenticate() {
+        $rootScope.isAuthenticated = true;
+      }
+
+      function unauthenticate() {
+        $rootScope.isAuthenticated = false;
+      }
+
+      function checkAuthOnRefresh() {
+        $rootScope.$on('$locationChangeStart', function () {
+          var token = invokeToken(config.tokenGetter);
+          if (token) {
+            if (!jwtHelper.isTokenExpired(token)) {
+              authenticate();
+            } else {
+              $rootScope.$broadcast('tokenHasExpired', token);
+            }
+          }
+        });
+      }
+
+      function redirectWhenUnauthenticated() {
+        $rootScope.$on('unauthenticated', function () {
+          invokeRedirector(config.unauthenticatedRedirector);
+          unauthenticate();
+        });
+      }
+
+      function verifyRoute(event, next) {
+        if (!next) {
+          return false;
+        }
+
+        var routeData = (next.$$route) ? next.$$route : next.data;
+
+        if (routeData && routeData.requiresLogin === true) {
+          var token = invokeToken(config.tokenGetter);
+          if (!token || jwtHelper.isTokenExpired(token)) {
+            event.preventDefault();
+            invokeRedirector(config.unauthenticatedRedirector);
+          }
+        }
+      }
+
+      var eventName = ($injector.has('$state')) ? '$stateChangeStart' : '$routeChangeStart';
+      $rootScope.$on(eventName, verifyRoute);
+
+      return {
+        authenticate: authenticate,
+        unauthenticate: unauthenticate,
+        getToken: function(){ return invokeToken(config.tokenGetter); },
+        redirect: function() { return invokeRedirector(config.unauthenticatedRedirector); },
+        checkAuthOnRefresh: checkAuthOnRefresh,
+        redirectWhenUnauthenticated: redirectWhenUnauthenticated,
+        isAuthenticated: isAuthenticated
+      }
+    }]
+  });
+
+angular.module('angular-jwt.interceptor', [])
+  .provider('jwtInterceptor', function() {
+
+    this.urlParam;
+    this.authHeader;
+    this.authPrefix;
+    this.whiteListedDomains;
+    this.tokenGetter;
+
+    var config = this;
+
+    this.$get = ["$q", "$injector", "$rootScope", "urlUtils", "jwtOptions", function($q, $injector, $rootScope, urlUtils, jwtOptions) {
+
+      var options = angular.extend({}, jwtOptions.getConfig(), config);
+
+      function isSafe (url) {
+        if (!urlUtils.isSameOrigin(url) && !options.whiteListedDomains.length) {
+          throw new Error('As of v0.1.0, requests to domains other than the application\'s origin must be white listed. Use jwtOptionsProvider.config({ whiteListedDomains: [<domain>] }); to whitelist.')
+        }
+        var hostname = urlUtils.urlResolve(url).hostname.toLowerCase();
+        for (var i = 0; i < options.whiteListedDomains.length; i++) {
+          var domain = options.whiteListedDomains[i];
+          var regexp = domain instanceof RegExp ? domain : new RegExp(domain, 'i');
+          if (hostname.match(regexp)) {
+            return true;
+          }
+        }
+
+        if (urlUtils.isSameOrigin(url)) {
+          return true;
+        }
+
+        return false;
+      }
+
+      return {
+        request: function (request) {
+          if (request.skipAuthorization || !isSafe(request.url)) {
+            return request;
+          }
+
+          if (options.urlParam) {
+            request.params = request.params || {};
+            // Already has the token in the url itself
+            if (request.params[options.urlParam]) {
+              return request;
+            }
+          } else {
+            request.headers = request.headers || {};
+            // Already has an Authorization header
+            if (request.headers[options.authHeader]) {
+              return request;
+            }
+          }
+
+          var tokenPromise = $q.when($injector.invoke(options.tokenGetter, this, {
+            options: request
+          }));
+
+          return tokenPromise.then(function(token) {
+            if (token) {
+              if (options.urlParam) {
+                request.params[options.urlParam] = token;
+              } else {
+                request.headers[options.authHeader] = options.authPrefix + token;
+              }
+            }
+            return request;
+          });
+        },
+        responseError: function (response) {
+          // handle the case where the user is not authenticated
+          if (response.status === 401) {
+            $rootScope.$broadcast('unauthenticated', response);
+          }
+          return $q.reject(response);
+        }
+      };
+    }]
+  });
+
+ angular.module('angular-jwt.jwt', [])
+  .service('jwtHelper', ["$window", function($window) {
+
+    this.urlBase64Decode = function(str) {
+      var output = str.replace(/-/g, '+').replace(/_/g, '/');
+      switch (output.length % 4) {
+        case 0: { break; }
+        case 2: { output += '=='; break; }
+        case 3: { output += '='; break; }
+        default: {
+          throw 'Illegal base64url string!';
+        }
+      }
+      return $window.decodeURIComponent(escape($window.atob(output))); //polyfill https://github.com/davidchambers/Base64.js
+    };
+
+
+    this.decodeToken = function(token) {
+      var parts = token.split('.');
+
+      if (parts.length !== 3) {
+        throw new Error('JWT must have 3 parts');
+      }
+
+      var decoded = this.urlBase64Decode(parts[1]);
+      if (!decoded) {
+        throw new Error('Cannot decode the token');
+      }
+
+      return angular.fromJson(decoded);
+    };
+
+    this.getTokenExpirationDate = function(token) {
+      var decoded = this.decodeToken(token);
+
+      if(typeof decoded.exp === "undefined") {
+        return null;
+      }
+
+      var d = new Date(0); // The 0 here is the key, which sets the date to the epoch
+      d.setUTCSeconds(decoded.exp);
+
+      return d;
+    };
+
+    this.isTokenExpired = function(token, offsetSeconds) {
+      var d = this.getTokenExpirationDate(token);
+      offsetSeconds = offsetSeconds || 0;
+      if (d === null) {
+        return false;
+      }
+
+      // Token expired?
+      return !(d.valueOf() > (new Date().valueOf() + (offsetSeconds * 1000)));
+    };
+  }]);
+
+angular.module('angular-jwt.options', [])
+  .provider('jwtOptions', function() {
+    var globalConfig = {};
+    this.config = function(value) {
+      globalConfig = value;
+    };
+    this.$get = function() {
+
+      var options = {
+        urlParam: null,
+        authHeader: 'Authorization',
+        authPrefix: 'Bearer ',
+        whiteListedDomains: [],
+        tokenGetter: function() {
+          return null;
+        },
+        loginPath: '/',
+        unauthenticatedRedirectPath: '/',
+        unauthenticatedRedirector: ['$location', function($location) {
+          $location.path(this.unauthenticatedRedirectPath);
+        }]
+      };
+
+      function JwtOptions() {
+        var config = this.config = angular.extend({}, options, globalConfig);
+      }
+
+      JwtOptions.prototype.getConfig = function() {
+        return this.config;
+      };
+
+      return new JwtOptions();
+    }
+  });
+
+ /**
+  * The content from this file was directly lifted from Angular. It is
+  * unfortunately not a public API, so the best we can do is copy it.
+  *
+  * Angular References:
+  *   https://github.com/angular/angular.js/issues/3299
+  *   https://github.com/angular/angular.js/blob/d077966ff1ac18262f4615ff1a533db24d4432a7/src/ng/urlUtils.js
+  */
+
+ angular.module('angular-jwt.interceptor')
+  .service('urlUtils', function () {
+
+    // NOTE:  The usage of window and document instead of $window and $document here is
+    // deliberate.  This service depends on the specific behavior of anchor nodes created by the
+    // browser (resolving and parsing URLs) that is unlikely to be provided by mock objects and
+    // cause us to break tests.  In addition, when the browser resolves a URL for XHR, it
+    // doesn't know about mocked locations and resolves URLs to the real document - which is
+    // exactly the behavior needed here.  There is little value is mocking these out for this
+    // service.
+    var urlParsingNode = document.createElement("a");
+    var originUrl = urlResolve(window.location.href);
+
+    /**
+     *
+     * Implementation Notes for non-IE browsers
+     * ----------------------------------------
+     * Assigning a URL to the href property of an anchor DOM node, even one attached to the DOM,
+     * results both in the normalizing and parsing of the URL.  Normalizing means that a relative
+     * URL will be resolved into an absolute URL in the context of the application document.
+     * Parsing means that the anchor node's host, hostname, protocol, port, pathname and related
+     * properties are all populated to reflect the normalized URL.  This approach has wide
+     * compatibility - Safari 1+, Mozilla 1+, Opera 7+,e etc.  See
+     * http://www.aptana.com/reference/html/api/HTMLAnchorElement.html
+     *
+     * Implementation Notes for IE
+     * ---------------------------
+     * IE <= 10 normalizes the URL when assigned to the anchor node similar to the other
+     * browsers.  However, the parsed components will not be set if the URL assigned did not specify
+     * them.  (e.g. if you assign a.href = "foo", then a.protocol, a.host, etc. will be empty.)  We
+     * work around that by performing the parsing in a 2nd step by taking a previously normalized
+     * URL (e.g. by assigning to a.href) and assigning it a.href again.  This correctly populates the
+     * properties such as protocol, hostname, port, etc.
+     *
+     * References:
+     *   http://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement
+     *   http://www.aptana.com/reference/html/api/HTMLAnchorElement.html
+     *   http://url.spec.whatwg.org/#urlutils
+     *   https://github.com/angular/angular.js/pull/2902
+     *   http://james.padolsey.com/javascript/parsing-urls-with-the-dom/
+     *
+     * @kind function
+     * @param {string} url The URL to be parsed.
+     * @description Normalizes and parses a URL.
+     * @returns {object} Returns the normalized URL as a dictionary.
+     *
+     *   | member name   | Description    |
+     *   |---------------|----------------|
+     *   | href          | A normalized version of the provided URL if it was not an absolute URL |
+     *   | protocol      | The protocol including the trailing colon                              |
+     *   | host          | The host and port (if the port is non-default) of the normalizedUrl    |
+     *   | search        | The search params, minus the question mark                             |
+     *   | hash          | The hash string, minus the hash symbol
+     *   | hostname      | The hostname
+     *   | port          | The port, without ":"
+     *   | pathname      | The pathname, beginning with "/"
+     *
+     */
+    function urlResolve(url) {
+      var href = url;
+
+      // Normalize before parse.  Refer Implementation Notes on why this is
+      // done in two steps on IE.
+      urlParsingNode.setAttribute("href", href);
+      href = urlParsingNode.href;
+      urlParsingNode.setAttribute('href', href);
+
+      // urlParsingNode provides the UrlUtils interface - http://url.spec.whatwg.org/#urlutils
+      return {
+        href: urlParsingNode.href,
+        protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, '') : '',
+        host: urlParsingNode.host,
+        search: urlParsingNode.search ? urlParsingNode.search.replace(/^\?/, '') : '',
+        hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, '') : '',
+        hostname: urlParsingNode.hostname,
+        port: urlParsingNode.port,
+        pathname: (urlParsingNode.pathname.charAt(0) === '/')
+          ? urlParsingNode.pathname
+          : '/' + urlParsingNode.pathname
+      };
+    }
+
+    /**
+     * Parse a request URL and determine whether this is a same-origin request as the application document.
+     *
+     * @param {string|object} requestUrl The url of the request as a string that will be resolved
+     * or a parsed URL object.
+     * @returns {boolean} Whether the request is for the same origin as the application document.
+     */
+    function urlIsSameOrigin(requestUrl) {
+      var parsed = (angular.isString(requestUrl)) ? urlResolve(requestUrl) : requestUrl;
+      return (parsed.protocol === originUrl.protocol &&
+              parsed.host === originUrl.host);
+    }
+
+    return {
+      urlResolve: urlResolve,
+      isSameOrigin: urlIsSameOrigin
+    };
+
+  });
+
+}());
 /**
  * Restful Resources service for AngularJS apps
  * @version v1.5.2 - 2016-02-08 * @link https://github.com/mgonto/restangular

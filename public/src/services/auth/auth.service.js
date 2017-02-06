@@ -3,10 +3,10 @@
 
     angular
         .module('services.auth', ['restangular'])
-        .factory('auth', auth);
+        .factory('authService', authService);
 
-    auth.$inject = ['Restangular'];
-    function auth(Restangular) {
+    authService.$inject = ['Restangular'];
+    function authService(Restangular) {
         return {
             register: register,
             login: login

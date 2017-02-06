@@ -2,9 +2,9 @@
     'use strict';
 
     angular
-        .module('services.api', ['restangular', 'ngStorage'])
+        .module('services.api', ['restangular'])
         .factory('ApiRestangular', ApiRestangular)
-        .factory('api', api);
+        .factory('apiService', apiService);
     
     ApiRestangular.$inject = ['Restangular', '$localStorage'];
     function ApiRestangular(Restangular, $localStorage) {
@@ -17,8 +17,8 @@
         });
     }
     
-    api.$inject = ['ApiRestangular'];
-    function api(ApiRestangular) {
+    apiService.$inject = ['ApiRestangular'];
+    function apiService(ApiRestangular) {
         return {
             get: get,
             create: create,

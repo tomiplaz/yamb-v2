@@ -4,6 +4,7 @@
     angular
         .module('services', [
             'services.auth',
-            'services.api'
+            'services.api',
+            'services.user'
         ]);
 })();

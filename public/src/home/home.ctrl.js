@@ -11,19 +11,19 @@
 
         vm.states = [
             {
-                name: 'login',
+                name: 'root.login',
                 label: 'Login'
             },
             {
-                name: 'register',
+                name: 'root.register',
                 label: 'Register'
             },
             {
-                name: 'play',
+                name: 'root.play',
                 label: 'Play'
             },
             {
-                name: 'users',
+                name: 'root.users',
                 label: 'Users'
             }
         ];
