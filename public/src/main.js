@@ -8,6 +8,7 @@
             'ngStorage',
             'toastr',
             'services',
+            'yamb-v2.root',
             'yamb-v2.home',
             'yamb-v2.register',
             'yamb-v2.login',
@@ -23,7 +24,8 @@
             .state('root', {
                 url: '/',
                 abstract: true,
-                template: '<div ui-view></div>',
+                templateUrl: 'src/root/root.html',
+                controller: 'RootCtrl as root',
                 resolve: {
                     user: function($localStorage, jwtHelper, apiService, userService) {
                         if ($localStorage.token) {

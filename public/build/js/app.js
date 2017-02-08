@@ -8,6 +8,7 @@
             'ngStorage',
             'toastr',
             'services',
+            'yamb-v2.root',
             'yamb-v2.home',
             'yamb-v2.register',
             'yamb-v2.login',
@@ -23,7 +24,8 @@
             .state('root', {
                 url: '/',
                 abstract: true,
-                template: '<div ui-view></div>',
+                templateUrl: 'src/root/root.html',
+                controller: 'RootCtrl as root',
                 resolve: {
                     user: function($localStorage, jwtHelper, apiService, userService) {
                         if ($localStorage.token) {
@@ -102,28 +104,8 @@
         .module('yamb-v2.home', [])
         .controller('HomeCtrl', HomeCtrl);
 
-    HomeCtrl.$inject = [];
     function HomeCtrl() {
         var vm = this;
-
-        vm.states = [
-            {
-                name: 'root.login',
-                label: 'Login'
-            },
-            {
-                name: 'root.register',
-                label: 'Register'
-            },
-            {
-                name: 'root.play',
-                label: 'Play'
-            },
-            {
-                name: 'root.users',
-                label: 'Users'
-            }
-        ];
     }
 })();
 (function() {
@@ -148,6 +130,35 @@
         function confirm() {
             authService.login(vm.input).then(function(success) {
                 $localStorage.token = success.token;
+            }, function(error) {
+                console.log("Error", error);
+            });
+        }
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.register', [])
+        .controller('RegisterCtrl', RegisterCtrl);
+    
+    RegisterCtrl.$inject = ['authService', '$state'];
+    function RegisterCtrl(authService, $state) {
+        var vm = this;
+
+        activate();
+
+        function activate() {
+            vm.title = "Register";
+            
+            vm.confirm = confirm;
+        }
+
+        function confirm() {
+            authService.register(vm.input).then(function(success) {
+                console.log("Success", success);
+                $state.go('login');
             }, function(error) {
                 console.log("Error", error);
             });
@@ -242,28 +253,41 @@
     'use strict';
 
     angular
-        .module('yamb-v2.register', [])
-        .controller('RegisterCtrl', RegisterCtrl);
+        .module('yamb-v2.root', [])
+        .controller('RootCtrl', RootCtrl);
     
-    RegisterCtrl.$inject = ['authService', '$state'];
-    function RegisterCtrl(authService, $state) {
+    function RootCtrl() {
         var vm = this;
 
         activate();
 
         function activate() {
-            vm.title = "Register";
-            
-            vm.confirm = confirm;
-        }
-
-        function confirm() {
-            authService.register(vm.input).then(function(success) {
-                console.log("Success", success);
-                $state.go('login');
-            }, function(error) {
-                console.log("Error", error);
-            });
+            vm.states = [            
+                {
+                    name: 'root.play',
+                    label: 'Play'
+                },
+                {
+                    name: 'root.rules',
+                    label: 'Rules'
+                },
+                {
+                    name: 'root.leaderboard',
+                    label: 'Leaderboard'
+                },
+                {
+                    name: 'root.statistics',
+                    label: 'Statistics'
+                },
+                {
+                    name: 'root.register',
+                    label: 'Register'
+                },
+                {
+                    name: 'root.login',
+                    label: 'Login'
+                }
+            ];
         }
     }
 })();
