@@ -29,7 +29,7 @@ gulp.task('js-deps', function(cb) {
     pump([
         gulp.src(mainBowerFiles('**/*.js')),
         concat('deps.js'),
-        gulp.dest('public/build/js')
+        gulp.dest('public/js')
     ], cb);
 });
 
@@ -37,7 +37,7 @@ gulp.task('js', function(cb) {
     pump([
         gulp.src(jsFiles),
         concat('app.js'),
-        gulp.dest('public/build/js')
+        gulp.dest('public/js')
     ], cb);
 });
 
@@ -45,7 +45,7 @@ gulp.task('css-deps', function(cb) {
     pump([
         gulp.src(mainBowerFiles('**/*.css')),
         concat('deps.css'),
-        gulp.dest('public/build/css')
+        gulp.dest('public/css')
     ], cb);
 });
 
@@ -54,6 +54,6 @@ gulp.task('sass', function(cb) {
         gulp.src(scssFiles),
         sass(),
         concat('app.css'),
-        gulp.dest('public/build/css')
+        gulp.dest('public/css')
     ], cb);
 });
