@@ -25,30 +25,7 @@
                 url: '/',
                 abstract: true,
                 templateUrl: 'src/root/root.html',
-                controller: 'RootCtrl as root',
-                resolve: {
-                    user: function($localStorage, jwtHelper, apiService, userService) {
-                        if ($localStorage.token) {
-                            var decodedToken = jwtHelper.decodeToken($localStorage.token);
-
-                            return apiService
-                                .get('users', decodedToken.sub)
-                                .then(successCallback, errorCallback);
-                            
-                            function successCallback(response) {
-                                userService.user = response.plain();
-                                return userService.user;
-                            }
-
-                            function errorCallback(response) {
-                                console.log("Error fetching user.");
-                                return userService.user;
-                            }
-                        } else {
-                            return null;
-                        }
-                    }
-                }
+                controller: 'RootCtrl as root'
             })
             .state('root.home', {
                 url: 'home',
@@ -115,8 +92,8 @@
         .module('yamb-v2.login', [])
         .controller('LoginCtrl', LoginCtrl);
 
-    LoginCtrl.$inject = ['authService', '$localStorage', '$state'];
-    function LoginCtrl(authService, $localStorage, $state) {
+    LoginCtrl.$inject = ['authService', '$localStorage', '$state', 'userService'];
+    function LoginCtrl(authService, $localStorage, $state, userService) {
         var vm = this;
 
         activate();
@@ -130,6 +107,7 @@
         function confirm() {
             authService.login(vm.input).then(function(success) {
                 $localStorage.token = success.token;
+                userService.updateUser();
                 $state.go('root.play');
             }, function(error) {
                 console.log("Error", error);
@@ -257,8 +235,8 @@
         .module('yamb-v2.root', [])
         .controller('RootCtrl', RootCtrl);
     
-    RootCtrl.$inject = ['userService', '$localStorage', '$state'];
-    function RootCtrl(userService, $localStorage, $state) {
+    RootCtrl.$inject = ['userService', '$localStorage', '$state', '$scope'];
+    function RootCtrl(userService, $localStorage, $state, $scope) {
         var vm = this;
 
         activate();
@@ -266,8 +244,6 @@
         vm.logout = logout;
 
         function activate() {
-            vm.user = userService.user;
-            vm.isUserLoggedIn = !!userService.user;
             vm.greeting = "Hello";
 
             vm.leftStates = [
@@ -293,14 +269,23 @@
                 {
                     name: 'root.register',
                     label: 'Register'
+                },
+                {
+                    name: 'root.login',
+                    label: 'Login'
                 }
             ];
 
-            if (!vm.isUserLoggedIn) {
-                vm.rightStates.push({
-                    name: 'root.login',
-                    label: 'Login'
-                });
+            $scope.$watch(getUserServiceUser, updateVmUser);
+
+            userService.updateUser();
+
+            function getUserServiceUser() {
+                return userService.user;
+            }
+
+            function updateVmUser(newVal) {
+                vm.user = newVal;
             }
         }
 
@@ -455,10 +440,31 @@
         .module('services.user', ['angular-jwt'])
         .factory('userService', userService);
     
-    userService.$inject = [];
-    function userService() {
-        return {
-            user: null
+    userService.$inject = ['$localStorage', 'jwtHelper', 'apiService'];
+    function userService($localStorage, jwtHelper, apiService) {
+        var service = {
+            user: null,
+            updateUser: updateUser
+        };
+
+        return service;
+
+        function updateUser() {
+            if ($localStorage.token) {
+                var decodedToken = jwtHelper.decodeToken($localStorage.token);
+
+                return apiService
+                    .get('users', decodedToken.sub)
+                    .then(successCallback, errorCallback);
+                
+                function successCallback(response) {
+                    service.user = response.plain();
+                }
+
+                function errorCallback(response) {
+                    console.log("Error fetching user.");
+                }
+            }
         }
     }
 })();

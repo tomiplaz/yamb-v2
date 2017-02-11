@@ -25,30 +25,7 @@
                 url: '/',
                 abstract: true,
                 templateUrl: 'src/root/root.html',
-                controller: 'RootCtrl as root',
-                resolve: {
-                    user: function($localStorage, jwtHelper, apiService, userService) {
-                        if ($localStorage.token) {
-                            var decodedToken = jwtHelper.decodeToken($localStorage.token);
-
-                            return apiService
-                                .get('users', decodedToken.sub)
-                                .then(successCallback, errorCallback);
-                            
-                            function successCallback(response) {
-                                userService.user = response.plain();
-                                return userService.user;
-                            }
-
-                            function errorCallback(response) {
-                                console.log("Error fetching user.");
-                                return userService.user;
-                            }
-                        } else {
-                            return null;
-                        }
-                    }
-                }
+                controller: 'RootCtrl as root'
             })
             .state('root.home', {
                 url: 'home',

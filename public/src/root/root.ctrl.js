@@ -5,8 +5,8 @@
         .module('yamb-v2.root', [])
         .controller('RootCtrl', RootCtrl);
     
-    RootCtrl.$inject = ['userService', '$localStorage', '$state'];
-    function RootCtrl(userService, $localStorage, $state) {
+    RootCtrl.$inject = ['userService', '$localStorage', '$state', '$scope'];
+    function RootCtrl(userService, $localStorage, $state, $scope) {
         var vm = this;
 
         activate();
@@ -14,8 +14,6 @@
         vm.logout = logout;
 
         function activate() {
-            vm.user = userService.user;
-            vm.isUserLoggedIn = !!userService.user;
             vm.greeting = "Hello";
 
             vm.leftStates = [
@@ -41,14 +39,23 @@
                 {
                     name: 'root.register',
                     label: 'Register'
+                },
+                {
+                    name: 'root.login',
+                    label: 'Login'
                 }
             ];
 
-            if (!vm.isUserLoggedIn) {
-                vm.rightStates.push({
-                    name: 'root.login',
-                    label: 'Login'
-                });
+            $scope.$watch(getUserServiceUser, updateVmUser);
+
+            userService.updateUser();
+
+            function getUserServiceUser() {
+                return userService.user;
+            }
+
+            function updateVmUser(newVal) {
+                vm.user = newVal;
             }
         }
 
