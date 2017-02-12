@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Game;
+use Illuminate\Support\Facades\DB;
+use \Exception;
 
 class GameController extends Controller
 {
@@ -25,7 +27,17 @@ class GameController extends Controller
      */
     public function store(Request $request)
     {
-        return Game::create($request->input());
+        DB::beginTransaction();
+        try {
+            $game = Game::create($request->get('game'));
+            $game->cells()->createMany($request->get('cells'));
+
+            DB::commit();
+            return response('OK', 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response($e->getMessage(), 500);
+        }
     }
 
     /**

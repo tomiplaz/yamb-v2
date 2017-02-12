@@ -12,7 +12,7 @@ class Game extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id'
+        'user_id', 'number_of_dice', 'result', 'duration'
     ];
 
     /**
@@ -22,8 +22,12 @@ class Game extends Model
      */
     protected $casts = [
         'id' => 'int',
-        'user_id' => 'int'
+        'user_id' => 'int',
+        'result' => 'int',
+        'duration' => 'int'
     ];
+
+    public $timestamps = false;
 
     /**
      * Get game's user.

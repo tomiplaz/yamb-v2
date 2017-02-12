@@ -5,8 +5,8 @@
         .module('yamb-v2.root', [])
         .controller('RootCtrl', RootCtrl);
     
-    RootCtrl.$inject = ['userService', '$localStorage', '$state', '$scope'];
-    function RootCtrl(userService, $localStorage, $state, $scope) {
+    RootCtrl.$inject = ['userService', '$localStorage', '$state', '$rootScope'];
+    function RootCtrl(userService, $localStorage, $state, $rootScope) {
         var vm = this;
 
         activate();
@@ -46,22 +46,12 @@
                 }
             ];
 
-            $scope.$watch(getUserServiceUser, updateVmUser);
-
             userService.updateUser();
-
-            function getUserServiceUser() {
-                return userService.user;
-            }
-
-            function updateVmUser(newVal) {
-                vm.user = newVal;
-            }
         }
 
         function logout() {
             delete $localStorage.token;
-            userService.user = null;
+            $rootScope.user = null;
             $state.go('root.home');
         }
     }

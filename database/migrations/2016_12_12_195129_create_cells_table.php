@@ -17,11 +17,12 @@ class CreateCellsTable extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('game_id');
             $table->foreign('game_id')->references('id')->on('games')->onDelete('cascade');
-            $table->unsignedTinyInteger('column_id');
-            $table->foreign('column_id')->references('id')->on('columns');
             $table->unsignedTinyInteger('row_id');
             $table->foreign('row_id')->references('id')->on('rows');
+            $table->unsignedTinyInteger('column_id');
+            $table->foreign('column_id')->references('id')->on('columns');
             $table->unsignedSmallInteger('value');
+            $table->unsignedTinyInteger('input_turn')->nullable();
         });
     }
 

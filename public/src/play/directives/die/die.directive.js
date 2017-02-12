@@ -17,7 +17,7 @@
         function link(scope, elem, attrs) {
             scope.die = {
                 isLocked: false,
-                isDisabled: true,
+                isDisabled: false,
                 value: getRandomValue()
             };
 

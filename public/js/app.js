@@ -119,90 +119,6 @@
     'use strict';
 
     angular
-        .module('yamb-v2.play', [])
-        .controller('PlayCtrl', PlayCtrl);
-
-    PlayCtrl.$inject = ['columns', 'rows', '$interval', '$scope', 'apiService', 'userService'];
-    function PlayCtrl(columns, rows, $interval, $scope, apiService, userService) {
-        var vm = this;
-
-        activate();
-
-        vm.start = start;
-        vm.roll = roll;
-        vm.resetRollNumber = resetRollNumber;
-        vm.setIsInputRequired = setIsInputRequired;
-        vm.saveGame = saveGame;
-
-        function activate() {
-            vm.user = userService.user;
-            vm.columns = columns.plain();
-            vm.rows = rows.plain();
-            vm.numberOfDice = 6;
-            vm.diceIndices = getDiceIndices();
-            vm.hasGameStarted = false;
-            vm.rollNumber = 0;
-            vm.isInputRequired = false;
-            vm.isFinished = false;
-
-            $scope.$on('$destroy', onDestroy);
-
-            function onDestroy() {
-                // Handle on refresh, close, etc...
-                if (vm.user && vm.hasGameStarted) {
-                    apiService.custom('users', vm.user.id, 'post', 'increment-unfinished-games');
-                }
-            }
-        }
-
-        function start() {
-            vm.hasGameStarted = true;
-            $scope.$broadcast('start');
-            roll();
-        }
-        
-        function roll() {
-            incrementRollNumber();
-            $scope.$broadcast('roll');
-
-            if (vm.rollNumber === 3) {
-                vm.isInputRequired = true;
-            }
-        }
-
-        function getDiceIndices() {
-            var diceIndices = [];
-
-            for (var i = 0; i < vm.numberOfDice; i++) {
-                diceIndices.push(i);
-            }
-
-            return diceIndices;
-        }
-
-        function incrementRollNumber() {
-            ++vm.rollNumber;
-        }
-
-        function resetRollNumber() {
-            vm.rollNumber = 0;
-        }
-
-        function setIsInputRequired(value) {
-            vm.isInputRequired = value;
-        }
-
-        function saveGame(cells, finalResult) {
-            vm.isFinished = true;
-            console.log(cells, finalResult, $scope.timer);
-        }
-    }
-})();
-
-(function() {
-    'use strict';
-
-    angular
         .module('yamb-v2.register', [])
         .controller('RegisterCtrl', RegisterCtrl);
     
@@ -232,11 +148,141 @@
     'use strict';
 
     angular
+        .module('yamb-v2.play', [])
+        .controller('PlayCtrl', PlayCtrl);
+
+    PlayCtrl.$inject = ['columns', 'rows', '$interval', '$scope', 'apiService', '$rootScope', 'toastr'];
+    function PlayCtrl(columns, rows, $interval, $scope, apiService, $rootScope, toastr) {
+        var vm = this;
+
+        activate();
+
+        vm.startGame = startGame;
+        vm.roll = roll;
+        vm.resetRollNumber = resetRollNumber;
+        vm.setIsInputRequired = setIsInputRequired;
+        vm.setIsAnnouncementRequired = setIsAnnouncementRequired;
+        vm.saveGame = saveGame;
+
+        function activate() {
+            vm.columns = columns.plain();
+            vm.rows = rows.plain();
+            vm.hasGameStarted = false;
+            vm.rollNumber = 0;
+            vm.isInputRequired = false;
+            vm.isAnnouncementRequired = false;
+            vm.isGameFinished = false;
+
+            $scope.$on('$destroy', onDestroy);
+
+            function onDestroy() {
+                // Handle on refresh, close, etc...
+                if ($rootScope.user && vm.hasGameStarted) {
+                    apiService.custom('users', vm.$rootScope.id, 'post', 'increment-unfinished-games');
+                }
+            }
+        }
+
+        function startGame(numberOfDice) {
+            vm.numberOfDice = numberOfDice;
+            vm.diceIndices = getDiceIndices();
+
+            vm.hasGameStarted = true;
+            $scope.$broadcast('start');
+            roll();
+        }
+        
+        function roll() {
+            incrementRollNumber();
+            $scope.$broadcast('roll');
+
+            if (vm.rollNumber === 3) {
+                setIsInputRequired(true)
+            }
+        }
+
+        function getDiceIndices() {
+            var diceIndices = [];
+
+            for (var i = 0; i < vm.numberOfDice; i++) {
+                diceIndices.push(i);
+            }
+
+            return diceIndices;
+        }
+
+        function incrementRollNumber() {
+            ++vm.rollNumber;
+        }
+
+        function resetRollNumber() {
+            vm.rollNumber = 0;
+        }
+
+        function setIsInputRequired(value) {
+            vm.isInputRequired = value;
+        }
+
+        function setIsAnnouncementRequired(value) {
+            vm.isAnnouncementRequired = value;
+        }
+
+        function saveGame(cells, finalResult) {
+            vm.isGameFinished = true;
+            vm.finalResult = finalResult;
+
+            $scope.$broadcast('stop');
+
+            var data = {
+                game: {
+                    user_id: ($rootScope.user ? $rootScope.user.id : null),
+                    number_of_dice: vm.numberOfDice.toString(),
+                    result: finalResult,
+                    duration: $scope.timer.value
+                },
+                cells: getMappedCells(cells)
+            };
+
+            apiService
+                .create('games', data)
+                .then(successCallback, errorCallback);
+
+            function getMappedCells(cells) {
+                var mappedCells = [];
+
+                for (var cellKey in cells) {
+                    mappedCells.push({
+                        row_id: cells[cellKey].row.id,
+                        column_id: cells[cellKey].column.id,
+                        value: cells[cellKey].value,
+                        input_turn: cells[cellKey].inputTurn
+                    });
+                }
+
+                return mappedCells;
+            }
+
+            function successCallback(response) {
+                toastr.success("Game saved successfully!", "Game saved");
+                // Hide paper, show result and how it stands on leaderboard
+            }
+
+            function errorCallback(response) {
+                toastr.error(response, "Error");
+            }
+        }
+    }
+})();
+
+(function() {
+    'use strict';
+
+    angular
         .module('yamb-v2.root', [])
         .controller('RootCtrl', RootCtrl);
     
-    RootCtrl.$inject = ['userService', '$localStorage', '$state', '$scope'];
-    function RootCtrl(userService, $localStorage, $state, $scope) {
+    RootCtrl.$inject = ['userService', '$localStorage', '$state', '$rootScope'];
+    function RootCtrl(userService, $localStorage, $state, $rootScope) {
         var vm = this;
 
         activate();
@@ -276,22 +322,12 @@
                 }
             ];
 
-            $scope.$watch(getUserServiceUser, updateVmUser);
-
             userService.updateUser();
-
-            function getUserServiceUser() {
-                return userService.user;
-            }
-
-            function updateVmUser(newVal) {
-                vm.user = newVal;
-            }
         }
 
         function logout() {
             delete $localStorage.token;
-            userService.user = null;
+            $rootScope.user = null;
             $state.go('root.home');
         }
     }
@@ -440,14 +476,11 @@
         .module('services.user', ['angular-jwt'])
         .factory('userService', userService);
     
-    userService.$inject = ['$localStorage', 'jwtHelper', 'apiService'];
-    function userService($localStorage, jwtHelper, apiService) {
-        var service = {
-            user: null,
+    userService.$inject = ['$localStorage', 'jwtHelper', 'apiService', '$rootScope'];
+    function userService($localStorage, jwtHelper, apiService, $rootScope) {
+        return {
             updateUser: updateUser
         };
-
-        return service;
 
         function updateUser() {
             if ($localStorage.token) {
@@ -458,7 +491,7 @@
                     .then(successCallback, errorCallback);
                 
                 function successCallback(response) {
-                    service.user = response.plain();
+                    $rootScope.user = response.plain();
                 }
 
                 function errorCallback(response) {
@@ -487,7 +520,7 @@
         function link(scope, elem, attrs) {
             scope.die = {
                 isLocked: false,
-                isDisabled: true,
+                isDisabled: false,
                 value: getRandomValue()
             };
 
@@ -559,11 +592,12 @@
 
                 function initCell(cellKey, row, column) {
                     scope.cells[cellKey] = {
-                        rowAbbreviation: row.abbreviation,
-                        columnAbbreviation: column.abbreviation,
+                        row: row,
+                        column: column,
                         isPlayable: isPlayable(row),
                         isAvailable: false,
-                        value: null,
+                        value: (isPlayable(row) && row.abbreviation !== '1' ? 7 : null),
+                        //value: null,
                         inputTurn: null
                     };
                 }
@@ -573,9 +607,10 @@
                 var cell = scope.cells[cellKey];
 
                 if (cell.isAvailable) {
-                    if (cell.columnAbbreviation === 'ann' && !announcedCellKey) {
+                    if (cell.column.abbreviation === 'ann' && !announcedCellKey) {
                         resetCellsAvailability();
                         announcedCellKey = cellKey;
+                        scope.play.setIsAnnouncementRequired(false);
                         scope.cells[cellKey].isAvailable = true;
                     } else {
                         cell.value = getCalculatedCellValue();
@@ -595,7 +630,7 @@
                 function getCalculatedCellValue() {
                     var diceValues = diceService.getDiceValues();
 
-                    switch (cell.rowAbbreviation) {
+                    switch (cell.row.abbreviation) {
                         case 'str':
                             return getStraightValue();
                         case 'full':
@@ -690,7 +725,7 @@
 
                     function getOneToSixValue() {
                         var count = 0;
-                        var rowWeight = parseInt(cell.rowAbbreviation);
+                        var rowWeight = parseInt(cell.row.abbreviation);
 
                         diceValues.forEach(incrementCountIfValid);
 
@@ -771,6 +806,12 @@
                 resetCellsAvailability();
 
                 getAvailableCellsKeys().forEach(setCellToAvailable);
+
+                if (isAnnouncementColumnTheOnlyOneLeft() && !announcedCellKey) {
+                    scope.play.setIsAnnouncementRequired(true);
+                } else {
+                    scope.play.setIsAnnouncementRequired(false);
+                }
                 
                 function getAvailableCellsKeys() {
                     var availableCellsKeys = [];
@@ -831,6 +872,21 @@
 
                 function setCellToAvailable(cellKey) {
                     scope.cells[cellKey].isAvailable = true;
+                }
+
+                function isAnnouncementColumnTheOnlyOneLeft() {
+                    var cellKey = null;
+
+                    for (var i = 0; i < sumRows.length; i++) {
+                        for (var j = 0; j < columns.length; j++) {
+                            cellKey = sumRows[i].abbreviation + '_' + columns[j].abbreviation;
+                            if (columns[j].abbreviation !== 'ann' && scope.cells[cellKey].value === null) {
+                                return false;
+                            }
+                        }
+                    }
+
+                    return true;
                 }
             }
 

@@ -16,14 +16,14 @@
 
         <div class="collapse navbar-collapse" id="navbar-collapse">
             <ul ng-repeat="side in ['left', 'right']" class="nav navbar-nav navbar-{{ side }}">
-                <li ng-if="$last && root.user">
-                    <a>{{ root.greeting + ', ' + root.user.name + '!' }}</a>
+                <li ng-if="$last && user">
+                    <a>{{ root.greeting + ', ' + user.name + '!' }}</a>
                 <li>
                 <li ng-repeat="state in root[side + 'States']" ng-class="{'active': (state.name | isState)}"
-                    ng-hide="state.name === 'root.login' && root.user">
+                    ng-hide="state.name === 'root.login' && user">
                     <a ui-sref="{{ state.name }}">{{ state.label }}</a>
                 </li>
-                <li ng-if="$last && root.user">
+                <li ng-if="$last && user">
                     <a ng-click="root.logout()">Logout</a>
                 </li>
             </ul>

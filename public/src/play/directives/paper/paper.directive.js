@@ -34,11 +34,12 @@
 
                 function initCell(cellKey, row, column) {
                     scope.cells[cellKey] = {
-                        rowAbbreviation: row.abbreviation,
-                        columnAbbreviation: column.abbreviation,
+                        row: row,
+                        column: column,
                         isPlayable: isPlayable(row),
                         isAvailable: false,
-                        value: null,
+                        value: (isPlayable(row) && row.abbreviation !== '1' ? 7 : null),
+                        //value: null,
                         inputTurn: null
                     };
                 }
@@ -48,9 +49,10 @@
                 var cell = scope.cells[cellKey];
 
                 if (cell.isAvailable) {
-                    if (cell.columnAbbreviation === 'ann' && !announcedCellKey) {
+                    if (cell.column.abbreviation === 'ann' && !announcedCellKey) {
                         resetCellsAvailability();
                         announcedCellKey = cellKey;
+                        scope.play.setIsAnnouncementRequired(false);
                         scope.cells[cellKey].isAvailable = true;
                     } else {
                         cell.value = getCalculatedCellValue();
@@ -70,7 +72,7 @@
                 function getCalculatedCellValue() {
                     var diceValues = diceService.getDiceValues();
 
-                    switch (cell.rowAbbreviation) {
+                    switch (cell.row.abbreviation) {
                         case 'str':
                             return getStraightValue();
                         case 'full':
@@ -165,7 +167,7 @@
 
                     function getOneToSixValue() {
                         var count = 0;
-                        var rowWeight = parseInt(cell.rowAbbreviation);
+                        var rowWeight = parseInt(cell.row.abbreviation);
 
                         diceValues.forEach(incrementCountIfValid);
 
@@ -246,6 +248,12 @@
                 resetCellsAvailability();
 
                 getAvailableCellsKeys().forEach(setCellToAvailable);
+
+                if (isAnnouncementColumnTheOnlyOneLeft() && !announcedCellKey) {
+                    scope.play.setIsAnnouncementRequired(true);
+                } else {
+                    scope.play.setIsAnnouncementRequired(false);
+                }
                 
                 function getAvailableCellsKeys() {
                     var availableCellsKeys = [];
@@ -306,6 +314,21 @@
 
                 function setCellToAvailable(cellKey) {
                     scope.cells[cellKey].isAvailable = true;
+                }
+
+                function isAnnouncementColumnTheOnlyOneLeft() {
+                    var cellKey = null;
+
+                    for (var i = 0; i < sumRows.length; i++) {
+                        for (var j = 0; j < columns.length; j++) {
+                            cellKey = sumRows[i].abbreviation + '_' + columns[j].abbreviation;
+                            if (columns[j].abbreviation !== 'ann' && scope.cells[cellKey].value === null) {
+                                return false;
+                            }
+                        }
+                    }
+
+                    return true;
                 }
             }
 

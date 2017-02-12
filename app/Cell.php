@@ -12,7 +12,7 @@ class Cell extends Model
      * @var array
      */
     protected $fillable = [
-        'game_id', 'column_id', 'row_id', 'value'
+        'game_id', 'column_id', 'row_id', 'value', 'input_turn'
     ];
 
     /**
@@ -25,6 +25,9 @@ class Cell extends Model
         'game_id' => 'int',
         'column_id' => 'int',
         'row_id' => 'int',
-        'value_id' => 'int'
+        'value' => 'int',
+        'input_turn' => 'int'
     ];
+
+    public $timestamps = false;
 }
