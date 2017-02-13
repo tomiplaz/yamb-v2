@@ -12,60 +12,14 @@
             'yamb-v2.home',
             'yamb-v2.register',
             'yamb-v2.login',
-            'yamb-v2.users',
-            'yamb-v2.play'
+            'yamb-v2.play',
+            'yamb-v2.statistics'
         ])
         .config(config)
         .run(run);
 
-    config.$inject = ['$stateProvider', '$locationProvider']
-    function config($stateProvider, $locationProvider) {
-        $stateProvider
-            .state('root', {
-                url: '/',
-                abstract: true,
-                templateUrl: 'src/root/root.html',
-                controller: 'RootCtrl as root'
-            })
-            .state('root.home', {
-                url: 'home',
-                templateUrl: 'src/home/home.html',
-                controller: 'HomeCtrl as home'
-            })
-            .state('root.register', {
-                url: 'register',
-                templateUrl: 'src/register/register.html',
-                controller: 'RegisterCtrl as register'
-            })
-            .state('root.login', {
-                url: 'login',
-                templateUrl: 'src/login/login.html',
-                controller: 'LoginCtrl as login'
-            })
-            .state('root.users', {
-                url: 'users',
-                templateUrl: 'src/users/users.html',
-                controller: 'UsersCtrl as users',
-                resolve: {
-                    users: function(apiService) {
-                        return apiService.get('users');
-                    }
-                }
-            })
-            .state('root.play', {
-                url: 'play',
-                templateUrl: 'src/play/play.html',
-                controller: 'PlayCtrl as play',
-                resolve: {
-                    columns: function(apiService) {
-                        return apiService.get('columns');
-                    },
-                    rows: function(apiService) {
-                        return apiService.get('rows');
-                    }
-                }
-            });
-        
+    config.$inject = ['$locationProvider']
+    function config($locationProvider) {        
         $locationProvider.html5Mode(true);
     }
 
@@ -79,6 +33,23 @@
 
     angular
         .module('yamb-v2.home', [])
+        .config(config);
+    
+    config.$inject = ['$stateProvider'];
+    function config($stateProvider) {
+        $stateProvider
+            .state('root.home', {
+                url: 'home',
+                templateUrl: 'src/home/home.html',
+                controller: 'HomeCtrl as home'
+            });
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.home')
         .controller('HomeCtrl', HomeCtrl);
 
     function HomeCtrl() {
@@ -90,6 +61,23 @@
 
     angular
         .module('yamb-v2.login', [])
+        .config(config);
+    
+    config.$inject = ['$stateProvider'];
+    function config($stateProvider) {
+        $stateProvider
+            .state('root.login', {
+                url: 'login',
+                templateUrl: 'src/login/login.html',
+                controller: 'LoginCtrl as login'
+            });
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.login')
         .controller('LoginCtrl', LoginCtrl);
 
     LoginCtrl.$inject = ['authService', '$localStorage', '$state', 'userService'];
@@ -119,36 +107,32 @@
     'use strict';
 
     angular
-        .module('yamb-v2.register', [])
-        .controller('RegisterCtrl', RegisterCtrl);
+        .module('yamb-v2.play', [])
+        .config(config);
     
-    RegisterCtrl.$inject = ['authService', '$state'];
-    function RegisterCtrl(authService, $state) {
-        var vm = this;
-
-        activate();
-
-        function activate() {
-            vm.title = "Register";
-            
-            vm.confirm = confirm;
-        }
-
-        function confirm() {
-            authService.register(vm.input).then(function(success) {
-                console.log("Success", success);
-                $state.go('login');
-            }, function(error) {
-                console.log("Error", error);
+    config.$inject = ['$stateProvider'];
+    function config($stateProvider) {
+        $stateProvider
+            .state('root.play', {
+                url: 'play',
+                templateUrl: 'src/play/play.html',
+                controller: 'PlayCtrl as play',
+                resolve: {
+                    columns: function(apiService) {
+                        return apiService.get('columns');
+                    },
+                    rows: function(apiService) {
+                        return apiService.get('rows');
+                    }
+                }
             });
-        }
     }
 })();
 (function() {
     'use strict';
 
     angular
-        .module('yamb-v2.play', [])
+        .module('yamb-v2.play')
         .controller('PlayCtrl', PlayCtrl);
 
     PlayCtrl.$inject = ['columns', 'rows', '$interval', '$scope', 'apiService', '$rootScope', 'toastr'];
@@ -279,6 +263,24 @@
 
     angular
         .module('yamb-v2.root', [])
+        .config(config);
+    
+    config.$inject = ['$stateProvider'];
+    function config($stateProvider) {
+        $stateProvider
+            .state('root', {
+                url: '/',
+                abstract: true,
+                templateUrl: 'src/root/root.html',
+                controller: 'RootCtrl as root'
+            });
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.root')
         .controller('RootCtrl', RootCtrl);
     
     RootCtrl.$inject = ['userService', '$localStorage', '$state', '$rootScope'];
@@ -336,6 +338,52 @@
     'use strict';
 
     angular
+        .module('yamb-v2.register', [])
+        .config(config);
+    
+    config.$inject = ['$stateProvider'];
+    function config($stateProvider) {
+        $stateProvider
+            .state('root.register', {
+                url: 'register',
+                templateUrl: 'src/register/register.html',
+                controller: 'RegisterCtrl as register'
+            });
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.register')
+        .controller('RegisterCtrl', RegisterCtrl);
+    
+    RegisterCtrl.$inject = ['authService', '$state'];
+    function RegisterCtrl(authService, $state) {
+        var vm = this;
+
+        activate();
+
+        function activate() {
+            vm.title = "Register";
+            
+            vm.confirm = confirm;
+        }
+
+        function confirm() {
+            authService.register(vm.input).then(function(success) {
+                console.log("Success", success);
+                $state.go('login');
+            }, function(error) {
+                console.log("Error", error);
+            });
+        }
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
         .module('services', [
             'services.auth',
             'services.api',
@@ -346,19 +394,29 @@
     'use strict';
 
     angular
-        .module('yamb-v2.users', [])
-        .controller('UsersCtrl', UsersCtrl);
+        .module('yamb-v2.statistics', [])
+        .config(config);
     
-    UsersCtrl.$inject = ['users'];
-    function UsersCtrl(users) {
+    config.$inject = ['$stateProvider'];
+    function config($stateProvider) {
+        $stateProvider
+            .state('root.statistics', {
+                url: 'statistics',
+                templateUrl: 'src/statistics/statistics.html',
+                controller: 'StatisticsCtrl as statistics'
+            });
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.statistics')
+        .controller('StatisticsCtrl', StatisticsCtrl);
+    
+    StatisticsCtrl.$inject = [];
+    function StatisticsCtrl() {
         var vm = this;
-
-        activate();
-
-        function activate() {
-            vm.title = "Users";
-            vm.users = users;
-        }
     }
 })();
 (function() {

@@ -2,7 +2,7 @@
     'use strict';
 
     angular
-        .module('yamb-v2.home', [])
+        .module('yamb-v2.home')
         .controller('HomeCtrl', HomeCtrl);
 
     function HomeCtrl() {

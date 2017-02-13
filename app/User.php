@@ -55,4 +55,14 @@ class User extends Authenticatable
     {
         return $this->hasMany('App\Game');
     }
+
+    /**
+     * Get user's cells.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
+     */
+    public function cells()
+    {
+        return $this->hasManyThrough('App\Cell', 'App\Game', 'user_id', 'game_id', 'id');
+    }
 }

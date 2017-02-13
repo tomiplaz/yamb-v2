@@ -2,7 +2,7 @@
     'use strict';
 
     angular
-        .module('yamb-v2.root', [])
+        .module('yamb-v2.root')
         .controller('RootCtrl', RootCtrl);
     
     RootCtrl.$inject = ['userService', '$localStorage', '$state', '$rootScope'];

@@ -24,3 +24,8 @@ Route::resource('columns', 'ColumnController', ['only' => ['index']]);
 Route::group(['prefix' => 'users'], function() {
     Route::post('{id}/increment-unfinished-games', 'UserController@incrementUnfinishedGames');
 });
+
+Route::group(['prefix' => 'statistics'], function() {
+    Route::get('average-cells-values', 'StatisticsController@getAvarageCellsValues');
+    Route::get('{id}/average-cells-values', 'StatisticsController@getAvarageCellsValues');
+});

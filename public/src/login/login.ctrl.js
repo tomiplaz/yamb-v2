@@ -2,7 +2,7 @@
     'use strict';
 
     angular
-        .module('yamb-v2.login', [])
+        .module('yamb-v2.login')
         .controller('LoginCtrl', LoginCtrl);
 
     LoginCtrl.$inject = ['authService', '$localStorage', '$state', 'userService'];

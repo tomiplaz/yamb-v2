@@ -2,7 +2,7 @@
     'use strict';
 
     angular
-        .module('yamb-v2.register', [])
+        .module('yamb-v2.register')
         .controller('RegisterCtrl', RegisterCtrl);
     
     RegisterCtrl.$inject = ['authService', '$state'];

@@ -2,7 +2,7 @@
     'use strict';
 
     angular
-        .module('yamb-v2.play', [])
+        .module('yamb-v2.play')
         .controller('PlayCtrl', PlayCtrl);
 
     PlayCtrl.$inject = ['columns', 'rows', '$interval', '$scope', 'apiService', '$rootScope', 'toastr'];
