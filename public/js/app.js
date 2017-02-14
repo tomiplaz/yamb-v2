@@ -262,6 +262,52 @@
     'use strict';
 
     angular
+        .module('yamb-v2.register', [])
+        .config(config);
+    
+    config.$inject = ['$stateProvider'];
+    function config($stateProvider) {
+        $stateProvider
+            .state('root.register', {
+                url: 'register',
+                templateUrl: 'src/register/register.html',
+                controller: 'RegisterCtrl as register'
+            });
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.register')
+        .controller('RegisterCtrl', RegisterCtrl);
+    
+    RegisterCtrl.$inject = ['authService', '$state'];
+    function RegisterCtrl(authService, $state) {
+        var vm = this;
+
+        activate();
+
+        function activate() {
+            vm.title = "Register";
+            
+            vm.confirm = confirm;
+        }
+
+        function confirm() {
+            authService.register(vm.input).then(function(success) {
+                console.log("Success", success);
+                $state.go('login');
+            }, function(error) {
+                console.log("Error", error);
+            });
+        }
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
         .module('yamb-v2.root', [])
         .config(config);
     
@@ -338,52 +384,6 @@
     'use strict';
 
     angular
-        .module('yamb-v2.register', [])
-        .config(config);
-    
-    config.$inject = ['$stateProvider'];
-    function config($stateProvider) {
-        $stateProvider
-            .state('root.register', {
-                url: 'register',
-                templateUrl: 'src/register/register.html',
-                controller: 'RegisterCtrl as register'
-            });
-    }
-})();
-(function() {
-    'use strict';
-
-    angular
-        .module('yamb-v2.register')
-        .controller('RegisterCtrl', RegisterCtrl);
-    
-    RegisterCtrl.$inject = ['authService', '$state'];
-    function RegisterCtrl(authService, $state) {
-        var vm = this;
-
-        activate();
-
-        function activate() {
-            vm.title = "Register";
-            
-            vm.confirm = confirm;
-        }
-
-        function confirm() {
-            authService.register(vm.input).then(function(success) {
-                console.log("Success", success);
-                $state.go('login');
-            }, function(error) {
-                console.log("Error", error);
-            });
-        }
-    }
-})();
-(function() {
-    'use strict';
-
-    angular
         .module('services', [
             'services.auth',
             'services.api',
@@ -419,6 +419,209 @@
         var vm = this;
     }
 })();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.play')
+        .factory('calculationService', calculationService);
+    
+    function calculationService() {
+        return {
+            getStraightValue: getStraightValue,
+            getFullHouseValue: getFullHouseValue,
+            getQuadsValue: getQuadsValue,
+            getYambValue: getYambValue,
+            getMinMaxValue: getMinMaxValue,
+            getOneToSixValue: getOneToSixValue,
+            getCalculateSum: getCalculateSum,
+            getFinalResult: getFinalResult
+        }
+
+        function getStraightValue(rollNumber, diceValues) {
+            return isStraight() ? 66 - (rollNumber - 1) * 10 : 0;
+
+            function isStraight() {
+                var sortedString = diceValues.sort().join('');
+                return (sortedString.indexOf('12345') !== -1 || sortedString.indexOf('23456') !== -1);
+            }
+        }
+
+        function getFullHouseValue(diceValues) {
+            var fullHouse = getFullHouse();
+
+            return fullHouse.every(hasValue) ? fullHouse[0] * 3 + fullHouse[1] * 2 + 30 : 0;
+
+            function getFullHouse() {
+                var diceCount = getDiceCount();
+
+                return [getFullHouseMember(2), getFullHouseMember(1)];
+
+                function getDiceCount() {
+                    var diceCount = {};
+
+                    [1, 2, 3, 4, 5, 6].forEach(initDiceCount);
+                    diceValues.forEach(incrementCount);
+
+                    return diceCount;
+
+                    function initDiceCount(value) {
+                        diceCount[value] = 0;
+                    }
+
+                    function incrementCount(dieValue) {
+                        diceCount[dieValue]++;
+                    }
+                }
+                
+                function getFullHouseMember(count) {
+                    for (var i = 6; i > 0; i--) {
+                        if (diceCount[i] > count) {
+                            delete diceCount[i];
+                            return i;
+                        }
+                    }
+                }
+            }
+        }
+
+        function getQuadsValue(diceValues) {
+            var sorted = diceValues.sort();
+
+            return isQuads() ? 40 + sorted[2] * 4 : 0;
+
+            function isQuads() {
+                for (var i = sorted.length - 1; i >= 3; i--) {
+                    if (sorted[i] === sorted[i - 3]) return true;
+                }
+                return false;
+            }
+        }
+
+        function getYambValue(diceValues) {
+            var sorted = diceValues.sort();
+
+            return isYamb() ? 50 + sorted[1] * 5 : 0;
+
+            function isYamb() {
+                for (var i = sorted.length - 1; i >= 4; i--) {
+                    if (sorted[i] === sorted[i - 4]) return true;
+                }
+                return false;
+            }
+        }
+
+        function getMinMaxValue(diceValues) {
+            return diceValues.reduce(sumReduction, 0);
+        }
+
+        function getOneToSixValue(cell, diceValues) {
+            var count = 0;
+            var rowWeight = parseInt(cell.row.abbreviation);
+
+            diceValues.forEach(incrementCountIfValid);
+
+            return (count > 5 ? 5 : count) * rowWeight;
+
+            function incrementCountIfValid(dieValue) {
+                if (dieValue === rowWeight) count++;
+            }
+        }
+
+        function getCalculateSum(rows, cells) {
+            return function(cellKey, row, column) {
+                switch (row.abbreviation) {
+                    case 'usum':
+                        var relevantValues = getRelevantValues(6);
+                        if (relevantValues.every(hasValue)) {
+                            var sum = relevantValues.reduce(sumReduction, 0);
+                            cells[cellKey].value = (sum >= 60 ? sum + 30 : sum);
+                        }
+                        break;
+                    case 'msum':
+                        var relevantValues = getRelevantValues(2);
+                        var onesCellKey = rows[0].abbreviation + '_' + column.abbreviation;
+                        if (relevantValues.every(hasValue) && cells[onesCellKey].value !== null) {
+                            var difference = relevantValues[1] - relevantValues[0];
+                            cells[cellKey].value = (difference < 0 ? 0 : difference * cells[onesCellKey].value);
+                        }
+                        break;
+                    case 'lsum':
+                        var relevantValues = getRelevantValues(4);
+                        if (relevantValues.every(hasValue)) {
+                            cells[cellKey].value = relevantValues.reduce(sumReduction, 0);
+                        }
+                        break;
+                    default:
+                }
+
+                function getRelevantValues(numberOfTrailingCells) {
+                    var cellKey = null;
+                    var relevantValues = [];
+
+                    for (var i = 1; i <= numberOfTrailingCells; i++) {
+                        cellKey = rows[row.id - 1 - i].abbreviation + '_' + column.abbreviation;
+                        relevantValues.push(cells[cellKey].value);
+                    }
+
+                    return relevantValues;
+                }
+            };
+        }
+
+        function calculateSum(cellKey, row, column) {
+            switch (row.abbreviation) {
+                case 'usum':
+                    var relevantValues = getRelevantValues(6);
+                    if (relevantValues.every(hasValue)) {
+                        var sum = relevantValues.reduce(sumReduction, 0);
+                        scope.cells[cellKey].value = (sum >= 60 ? sum + 30 : sum);
+                    }
+                    break;
+                case 'msum':
+                    var relevantValues = getRelevantValues(2);
+                    var onesCellKey = rows[0].abbreviation + '_' + column.abbreviation;
+                    if (relevantValues.every(hasValue) && scope.cells[onesCellKey].value !== null) {
+                        var difference = relevantValues[1] - relevantValues[0];
+                        scope.cells[cellKey].value = (difference < 0 ? 0 : difference * scope.cells[onesCellKey].value);
+                    }
+                    break;
+                case 'lsum':
+                    var relevantValues = getRelevantValues(4);
+                    if (relevantValues.every(hasValue)) {
+                        scope.cells[cellKey].value = relevantValues.reduce(sumReduction, 0);
+                    }
+                    break;
+                default:
+            }
+
+            function getRelevantValues(numberOfTrailingCells) {
+                var cellKey = null;
+                var relevantValues = [];
+
+                for (var i = 1; i <= numberOfTrailingCells; i++) {
+                    cellKey = rows[row.id - 1 - i].abbreviation + '_' + column.abbreviation;
+                    relevantValues.push(scope.cells[cellKey].value);
+                }
+
+                return relevantValues;
+            }
+        }
+
+        function getFinalResult(sumsValues) {
+            return sumsValues.reduce(sumReduction, 0);
+        }
+
+        function hasValue(value) {
+            return value !== null && value !== undefined;
+        }
+
+        function sumReduction(accumulator, value) {
+            return accumulator + value;
+        }
+    }
+})();
+
 (function() {
     'use strict';
 
@@ -621,8 +824,8 @@
         .module('yamb-v2.play')
         .directive('paper', paper);
     
-    paper.$inject = ['diceService'];
-    function paper(diceService) {
+    paper.$inject = ['diceService', 'calculationService'];
+    function paper(diceService, calculationService) {
         return {
             link: link,
             templateUrl: 'src/play/directives/paper/paper.html',
@@ -654,8 +857,8 @@
                         column: column,
                         isPlayable: isPlayable(row),
                         isAvailable: false,
-                        value: (isPlayable(row) && row.abbreviation !== '1' ? 7 : null),
-                        //value: null,
+                        //value: (isPlayable(row) && row.abbreviation !== '1' ? 7 : null),
+                        value: null,
                         inputTurn: null
                     };
                 }
@@ -690,159 +893,30 @@
 
                     switch (cell.row.abbreviation) {
                         case 'str':
-                            return getStraightValue();
+                            return calculationService.getStraightValue(scope.play.rollNumber, diceValues);
                         case 'full':
-                            return getFullHouseValue();
+                            return calculationService.getFullHouseValue(diceValues);
                         case 'quad':
-                            return getQuadsValue();
+                            return calculationService.getQuadsValue(diceValues);
                         case 'yamb':
-                            return getYambValue();
+                            return calculationService.getYambValue(diceValues);
                         case 'min':
                         case 'max':
-                            return getMinMaxValue();
+                            return calculationService.getMinMaxValue(diceValues);
                         default:
-                            return getOneToSixValue();
-                    }
-
-                    function getStraightValue() {
-                        return isStraight() ? 66 - (scope.play.rollNumber - 1) * 10 : 0;
-
-                        function isStraight() {
-                            var sortedString = diceValues.sort().join('');
-                            return (sortedString.indexOf('12345') !== -1 || sortedString.indexOf('23456') !== -1);
-                        }
-                    }
-
-                    function getFullHouseValue() {
-                        var fullHouse = getFullHouse();
-
-                        return fullHouse.every(hasValue) ? fullHouse[0] * 3 + fullHouse[1] * 2 + 30 : 0;
-
-                        function getFullHouse() {
-                            var diceCount = getDiceCount();
-
-                            return [getFullHouseMember(2), getFullHouseMember(1)];
-
-                            function getDiceCount() {
-                                var diceCount = {};
-
-                                [1, 2, 3, 4, 5, 6].forEach(initDiceCount);
-                                diceValues.forEach(incrementCount);
-
-                                return diceCount;
-
-                                function initDiceCount(value) {
-                                    diceCount[value] = 0;
-                                }
-
-                                function incrementCount(dieValue) {
-                                    diceCount[dieValue]++;
-                                }
-                            }
-                            
-                            function getFullHouseMember(count) {
-                                for (var i = 6; i > 0; i--) {
-                                    if (diceCount[i] > count) {
-                                        delete diceCount[i];
-                                        return i;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    function getQuadsValue() {
-                        var sorted = diceValues.sort();
-
-                        return isQuads() ? 40 + sorted[2] * 4 : 0;
-
-                        function isQuads() {
-                            for (var i = sorted.length - 1; i >= 3; i--) {
-                                if (sorted[i] === sorted[i - 3]) return true;
-                            }
-                            return false;
-                        }
-                    }
-
-                    function getYambValue() {
-                        var sorted = diceValues.sort();
-
-                        return isYamb() ? 50 + sorted[1] * 5 : 0;
-
-                        function isYamb() {
-                            for (var i = sorted.length - 1; i >= 4; i--) {
-                                if (sorted[i] === sorted[i - 4]) return true;
-                            }
-                            return false;
-                        }
-                    }
-
-                    function getMinMaxValue() {
-                        return diceValues.reduce(sumReduction, 0);
-                    }
-
-                    function getOneToSixValue() {
-                        var count = 0;
-                        var rowWeight = parseInt(cell.row.abbreviation);
-
-                        diceValues.forEach(incrementCountIfValid);
-
-                        return (count > 5 ? 5 : count) * rowWeight;
-
-                        function incrementCountIfValid(dieValue) {
-                            if (dieValue === rowWeight) count++;
-                        }
+                            return calculationService.getOneToSixValue(cell, diceValues);
                     }
                 }
 
                 function calculateSums() {
-                    iterateCells(calculateSum, 'sum');
-
-                    function calculateSum(cellKey, row, column) {
-                        switch (row.abbreviation) {
-                            case 'usum':
-                                var relevantValues = getRelevantValues(6);
-                                if (relevantValues.every(hasValue)) {
-                                    var sum = relevantValues.reduce(sumReduction, 0);
-                                    scope.cells[cellKey].value = (sum >= 60 ? sum + 30 : sum);
-                                }
-                                break;
-                            case 'msum':
-                                var relevantValues = getRelevantValues(2);
-                                var onesCellKey = rows[0].abbreviation + '_' + column.abbreviation;
-                                if (relevantValues.every(hasValue) && scope.cells[onesCellKey].value !== null) {
-                                    var difference = relevantValues[1] - relevantValues[0];
-                                    scope.cells[cellKey].value = (difference < 0 ? 0 : difference * scope.cells[onesCellKey].value);
-                                }
-                                break;
-                            case 'lsum':
-                                var relevantValues = getRelevantValues(4);
-                                if (relevantValues.every(hasValue)) {
-                                    scope.cells[cellKey].value = relevantValues.reduce(sumReduction, 0);
-                                }
-                                break;
-                            default:
-                        }
-
-                        function getRelevantValues(numberOfTrailingCells) {
-                            var cellKey = null;
-                            var relevantValues = [];
-
-                            for (var i = 1; i <= numberOfTrailingCells; i++) {
-                                cellKey = rows[row.id - 1 - i].abbreviation + '_' + column.abbreviation;
-                                relevantValues.push(scope.cells[cellKey].value);
-                            }
-
-                            return relevantValues;
-                        }
-                    }
+                    iterateCells(calculationService.getCalculateSum(rows, scope.cells), 'sum');
                 }
 
                 function calculateFinalResult() {
                     var sumsValues = getSumsValues();
 
                     if (sumsValues.every(hasValue)) {
-                        scope.finalResult = sumsValues.reduce(sumReduction, 0);
+                        scope.finalResult = calculationService.getFinalResult(sumsValues);
                         scope.play.saveGame(scope.cells, scope.finalResult);
                     }
 
@@ -975,10 +1049,6 @@
 
             function isSum(row) {
                 return row.abbreviation.indexOf('sum') !== -1;
-            }
-
-            function sumReduction(accumulator, value) {
-                return accumulator + value;
             }
 
             function hasValue(value) {

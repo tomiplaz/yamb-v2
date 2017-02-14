@@ -26,6 +26,6 @@ Route::group(['prefix' => 'users'], function() {
 });
 
 Route::group(['prefix' => 'statistics'], function() {
-    Route::get('average-cells-values', 'StatisticsController@getAvarageCellsValues');
-    Route::get('{id}/average-cells-values', 'StatisticsController@getAvarageCellsValues');
+    Route::get('average-cells-values-and-input-turns', 'StatisticsController@getAvarageCellsValuesAndInputTurns');
+    Route::get('{id}/average-cells-values-and-input-turns', 'StatisticsController@getAvarageCellsValuesAndInputTurns');
 });

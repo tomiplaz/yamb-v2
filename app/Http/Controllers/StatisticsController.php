@@ -16,9 +16,9 @@ class StatisticsController extends Controller
      *
      * @return array
      */
-    public function getAvarageCellsValues(Request $request) {
+    public function getAvarageCellsValuesAndInputTurns(Request $request) {
         $userId = $request->route('id');
-        $averageCellValues = [];
+        $cells = [];
         $rows = Row::all();
         $columns = Column::all();
 
@@ -38,15 +38,24 @@ class StatisticsController extends Controller
                 $relevantCells = array_filter($cells, $this->getFilterCellByRowAndColumnId($row, $column));
                 // Set avarage cell value
                 if (empty($relevantCells)) {
-                    $averageCellValues[$cellKey] = 0;
+                    $cellsAverages[$cellKey] = [
+                        'averageValue' => '-',
+                        'averageInputTurn' => '-'
+                    ];
                 } else {
-                    $sum = array_reduce($relevantCells, [$this, 'sumCellsValues'], 0);
-                    $averageCellValues[$cellKey] = $sum / count($relevantCells);
+                    $cellsValuesSum = array_reduce($relevantCells, $this->getSumCellsProperty('value'), 0);
+                    $cellsInputTurnsSum = array_reduce($relevantCells, $this->getSumCellsProperty('input_turn'), 0);
+                    $cellsValuesAverage = $cellsValuesSum / count($relevantCells);
+                    $cellsInputTurnsAverage = ($cellsInputTurnsSum === 0 ? '-' : $cellsInputTurnsSum / count($relevantCells));
+                    $cellsAverages[$cellKey] = [
+                        'averageValue' => $cellsValuesAverage,
+                        'averageInputTurn' => $cellsInputTurnsAverage
+                    ];
                 }
             }
         }
 
-        return $averageCellValues;
+        return $cellsAverages;
     }
 
     private function getFilterCellByRowAndColumnId($row, $column) {
@@ -57,5 +66,11 @@ class StatisticsController extends Controller
 
     private function sumCellsValues($carry, $relevantCell) {
         return $carry + $relevantCell['value'];
+    }
+
+    private function getSumCellsProperty($property) {
+        return function ($carry, $cell) use ($property) {
+            return $carry + $cell[$property];
+        };
     }
 }
