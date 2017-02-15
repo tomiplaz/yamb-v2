@@ -12,7 +12,15 @@
                 url: '/',
                 abstract: true,
                 templateUrl: 'src/root/root.html',
-                controller: 'RootCtrl as root'
+                controller: 'RootCtrl as root',
+                resolve: {
+                    rows: function(apiService) {
+                        return apiService.get('rows');
+                    },
+                    columns: function(apiService) {
+                        return apiService.get('columns');
+                    }
+                }
             });
     }
 })();

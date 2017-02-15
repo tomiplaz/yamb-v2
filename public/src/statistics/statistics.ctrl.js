@@ -5,8 +5,10 @@
         .module('yamb-v2.statistics')
         .controller('StatisticsCtrl', StatisticsCtrl);
     
-    StatisticsCtrl.$inject = [];
-    function StatisticsCtrl() {
+    StatisticsCtrl.$inject = ['cellsAverages'];
+    function StatisticsCtrl(cellsAverages) {
         var vm = this;
+
+        vm.cellsAverages = cellsAverages.plain();
     }
 })();

@@ -5,8 +5,8 @@
         .module('yamb-v2.root')
         .controller('RootCtrl', RootCtrl);
     
-    RootCtrl.$inject = ['userService', '$localStorage', '$state', '$rootScope'];
-    function RootCtrl(userService, $localStorage, $state, $rootScope) {
+    RootCtrl.$inject = ['rows', 'columns', 'userService', '$localStorage', '$state', '$rootScope'];
+    function RootCtrl(rows, columns, userService, $localStorage, $state, $rootScope) {
         var vm = this;
 
         activate();
@@ -14,6 +14,9 @@
         vm.logout = logout;
 
         function activate() {
+            $rootScope.rows = rows.plain();
+            $rootScope.columns = columns.plain();
+            
             vm.greeting = "Hello";
 
             vm.leftStates = [

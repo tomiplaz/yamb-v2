@@ -16,7 +16,7 @@ class StatisticsController extends Controller
      *
      * @return array
      */
-    public function getAvarageCellsValuesAndInputTurns(Request $request) {
+    public function getCellsAverages(Request $request) {
         $userId = $request->route('id');
         $cells = [];
         $rows = Row::all();
@@ -45,8 +45,8 @@ class StatisticsController extends Controller
                 } else {
                     $cellsValuesSum = array_reduce($relevantCells, $this->getSumCellsProperty('value'), 0);
                     $cellsInputTurnsSum = array_reduce($relevantCells, $this->getSumCellsProperty('input_turn'), 0);
-                    $cellsValuesAverage = $cellsValuesSum / count($relevantCells);
-                    $cellsInputTurnsAverage = ($cellsInputTurnsSum === 0 ? '-' : $cellsInputTurnsSum / count($relevantCells));
+                    $cellsValuesAverage = round($cellsValuesSum / count($relevantCells), 2);
+                    $cellsInputTurnsAverage = ($cellsInputTurnsSum === 0 ? '-' : round($cellsInputTurnsSum / count($relevantCells), 2));
                     $cellsAverages[$cellKey] = [
                         'averageValue' => $cellsValuesAverage,
                         'averageInputTurn' => $cellsInputTurnsAverage

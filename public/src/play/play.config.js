@@ -11,15 +11,7 @@
             .state('root.play', {
                 url: 'play',
                 templateUrl: 'src/play/play.html',
-                controller: 'PlayCtrl as play',
-                resolve: {
-                    columns: function(apiService) {
-                        return apiService.get('columns');
-                    },
-                    rows: function(apiService) {
-                        return apiService.get('rows');
-                    }
-                }
+                controller: 'PlayCtrl as play'
             });
     }
 })();

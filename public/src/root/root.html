@@ -19,8 +19,8 @@
                 <li ng-if="$last && user">
                     <a>{{ root.greeting + ', ' + user.name + '!' }}</a>
                 <li>
-                <li ng-repeat="state in root[side + 'States']" ng-class="{'active': (state.name | isState)}"
-                    ng-hide="state.name === 'root.login' && user">
+                <li ng-repeat="state in root[side + 'States']" ng-hide="user && side === 'right'"
+                    ng-class="{'active': (state.name | isState)}">
                     <a ui-sref="{{ state.name }}">{{ state.label }}</a>
                 </li>
                 <li ng-if="$last && user">

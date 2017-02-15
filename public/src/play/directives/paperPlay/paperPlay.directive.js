@@ -3,28 +3,26 @@
 
     angular
         .module('yamb-v2.play')
-        .directive('paper', paper);
+        .directive('paperPlay', paperPlay);
     
-    paper.$inject = ['diceService', 'calculationService'];
-    function paper(diceService, calculationService) {
+    paperPlay.$inject = ['diceService', 'calculationService', '$rootScope'];
+    function paperPlay(diceService, calculationService, $rootScope) {
         return {
             link: link,
-            templateUrl: 'src/play/directives/paper/paper.html',
+            templateUrl: 'src/play/directives/paperPlay/paperPlay.html',
             replace: true,
             scope: true
         };
 
-        function link(scope, elem, attrs) {
-            var rows = scope.play.rows;
-            var columns = scope.play.columns;
+        function link(scope) {
+            var rows = $rootScope.rows;
+            var columns = $rootScope.columns;
             var playableRows = rows.filter(isPlayable);
             var sumRows = rows.filter(isSum);
             var turnNumber = 0;
             var announcedCellKey = null;
 
             scope.cellClicked = cellClicked;
-
-            scope.$on('roll', updateAvailableCells);
 
             initCells();
 
@@ -104,7 +102,7 @@
                     function getSumsValues() {
                         var sumsValues = [];
 
-                        iterateCells(pushSumValue);
+                        iterateCells(pushSumValue, 'sum');
 
                         return sumsValues;
 

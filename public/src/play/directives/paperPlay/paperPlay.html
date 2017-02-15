@@ -1,15 +1,15 @@
 <table class="m-auto game-table">
     <tr>
-        <th class="cell" ng-click="bla()">!</th>
-        <th class="cell heading"ng-repeat="column in play.columns">
+        <th class="cell">!</th>
+        <th class="cell heading" ng-repeat="column in columns">
             {{ column.abbreviation }}
         </th>
     </tr>
-    <tr ng-repeat="row in play.rows">
+    <tr ng-repeat="row in rows">
         <th class="cell heading">
             {{ row.abbreviation }}
         </th>
-        <td class="cell" ng-repeat="column in play.columns"
+        <td class="cell" ng-repeat="column in columns"
             ng-init="cellKey = row.abbreviation + '_' + column.abbreviation"
             ng-class="{
                 'playable': cells[cellKey].isPlayable,

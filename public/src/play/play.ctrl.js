@@ -5,8 +5,8 @@
         .module('yamb-v2.play')
         .controller('PlayCtrl', PlayCtrl);
 
-    PlayCtrl.$inject = ['columns', 'rows', '$interval', '$scope', 'apiService', '$rootScope', 'toastr'];
-    function PlayCtrl(columns, rows, $interval, $scope, apiService, $rootScope, toastr) {
+    PlayCtrl.$inject = ['$scope', 'apiService', '$rootScope', 'toastr'];
+    function PlayCtrl($scope, apiService, $rootScope, toastr) {
         var vm = this;
 
         activate();
@@ -19,8 +19,6 @@
         vm.saveGame = saveGame;
 
         function activate() {
-            vm.columns = columns.plain();
-            vm.rows = rows.plain();
             vm.hasGameStarted = false;
             vm.rollNumber = 0;
             vm.isInputRequired = false;
@@ -31,8 +29,8 @@
 
             function onDestroy() {
                 // Handle on refresh, close, etc...
-                if ($rootScope.user && vm.hasGameStarted) {
-                    apiService.custom('users', vm.$rootScope.id, 'post', 'increment-unfinished-games');
+                if ($rootScope.user && vm.hasGameStarted && !vm.isGameFinished) {
+                    apiService.custom('users', $rootScope.user.id, 'post', 'game-unfinished');
                 }
             }
         }

@@ -22,10 +22,10 @@ Route::resource('rows', 'RowController', ['only' => ['index']]);
 Route::resource('columns', 'ColumnController', ['only' => ['index']]);
 
 Route::group(['prefix' => 'users'], function() {
-    Route::post('{id}/increment-unfinished-games', 'UserController@incrementUnfinishedGames');
+    Route::post('{id}/game-unfinished', 'UserController@incrementUnfinishedGames');
 });
 
 Route::group(['prefix' => 'statistics'], function() {
-    Route::get('average-cells-values-and-input-turns', 'StatisticsController@getAvarageCellsValuesAndInputTurns');
-    Route::get('{id}/average-cells-values-and-input-turns', 'StatisticsController@getAvarageCellsValuesAndInputTurns');
+    Route::get('cells-averages', 'StatisticsController@getCellsAverages');
+    Route::get('{id}/cells-averages', 'StatisticsController@getCellsAverages');
 });

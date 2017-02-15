@@ -1,0 +1,21 @@
+<table class="m-auto game-table">
+    <tr>
+        <th class="cell">!</th>
+        <th class="cell heading" ng-repeat="column in columns">
+            {{ column.abbreviation }}
+        </th>
+    </tr>
+    <tr ng-repeat="row in rows">
+        <th class="cell heading">
+            {{ row.abbreviation }}
+        </th>
+        <td class="cell" ng-repeat="column in columns"
+            ng-init="cellKey = row.abbreviation + '_' + column.abbreviation"
+            ng-class="{
+                'playable': isPlayable(row),
+                'sum': !isPlayable(row)
+            }"
+            ng-bind="cells[cellKey].averageValue">
+        </td>
+    </tr>
+</table>

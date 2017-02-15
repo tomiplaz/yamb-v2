@@ -116,15 +116,7 @@
             .state('root.play', {
                 url: 'play',
                 templateUrl: 'src/play/play.html',
-                controller: 'PlayCtrl as play',
-                resolve: {
-                    columns: function(apiService) {
-                        return apiService.get('columns');
-                    },
-                    rows: function(apiService) {
-                        return apiService.get('rows');
-                    }
-                }
+                controller: 'PlayCtrl as play'
             });
     }
 })();
@@ -135,8 +127,8 @@
         .module('yamb-v2.play')
         .controller('PlayCtrl', PlayCtrl);
 
-    PlayCtrl.$inject = ['columns', 'rows', '$interval', '$scope', 'apiService', '$rootScope', 'toastr'];
-    function PlayCtrl(columns, rows, $interval, $scope, apiService, $rootScope, toastr) {
+    PlayCtrl.$inject = ['$scope', 'apiService', '$rootScope', 'toastr'];
+    function PlayCtrl($scope, apiService, $rootScope, toastr) {
         var vm = this;
 
         activate();
@@ -149,8 +141,6 @@
         vm.saveGame = saveGame;
 
         function activate() {
-            vm.columns = columns.plain();
-            vm.rows = rows.plain();
             vm.hasGameStarted = false;
             vm.rollNumber = 0;
             vm.isInputRequired = false;
@@ -161,8 +151,8 @@
 
             function onDestroy() {
                 // Handle on refresh, close, etc...
-                if ($rootScope.user && vm.hasGameStarted) {
-                    apiService.custom('users', vm.$rootScope.id, 'post', 'increment-unfinished-games');
+                if ($rootScope.user && vm.hasGameStarted && !vm.isGameFinished) {
+                    apiService.custom('users', $rootScope.user.id, 'post', 'game-unfinished');
                 }
             }
         }
@@ -318,7 +308,15 @@
                 url: '/',
                 abstract: true,
                 templateUrl: 'src/root/root.html',
-                controller: 'RootCtrl as root'
+                controller: 'RootCtrl as root',
+                resolve: {
+                    rows: function(apiService) {
+                        return apiService.get('rows');
+                    },
+                    columns: function(apiService) {
+                        return apiService.get('columns');
+                    }
+                }
             });
     }
 })();
@@ -329,8 +327,8 @@
         .module('yamb-v2.root')
         .controller('RootCtrl', RootCtrl);
     
-    RootCtrl.$inject = ['userService', '$localStorage', '$state', '$rootScope'];
-    function RootCtrl(userService, $localStorage, $state, $rootScope) {
+    RootCtrl.$inject = ['rows', 'columns', 'userService', '$localStorage', '$state', '$rootScope'];
+    function RootCtrl(rows, columns, userService, $localStorage, $state, $rootScope) {
         var vm = this;
 
         activate();
@@ -338,6 +336,9 @@
         vm.logout = logout;
 
         function activate() {
+            $rootScope.rows = rows.plain();
+            $rootScope.columns = columns.plain();
+            
             vm.greeting = "Hello";
 
             vm.leftStates = [
@@ -403,7 +404,12 @@
             .state('root.statistics', {
                 url: 'statistics',
                 templateUrl: 'src/statistics/statistics.html',
-                controller: 'StatisticsCtrl as statistics'
+                controller: 'StatisticsCtrl as statistics',
+                resolve: {
+                    cellsAverages: function(apiService) {
+                        return apiService.custom('statistics', null, 'get', 'cells-averages');
+                    }
+                }
             });
     }
 })();
@@ -414,9 +420,11 @@
         .module('yamb-v2.statistics')
         .controller('StatisticsCtrl', StatisticsCtrl);
     
-    StatisticsCtrl.$inject = [];
-    function StatisticsCtrl() {
+    StatisticsCtrl.$inject = ['cellsAverages'];
+    function StatisticsCtrl(cellsAverages) {
         var vm = this;
+
+        vm.cellsAverages = cellsAverages.plain();
     }
 })();
 (function() {
@@ -822,28 +830,26 @@
 
     angular
         .module('yamb-v2.play')
-        .directive('paper', paper);
+        .directive('paperPlay', paperPlay);
     
-    paper.$inject = ['diceService', 'calculationService'];
-    function paper(diceService, calculationService) {
+    paperPlay.$inject = ['diceService', 'calculationService', '$rootScope'];
+    function paperPlay(diceService, calculationService, $rootScope) {
         return {
             link: link,
-            templateUrl: 'src/play/directives/paper/paper.html',
+            templateUrl: 'src/play/directives/paperPlay/paperPlay.html',
             replace: true,
             scope: true
         };
 
-        function link(scope, elem, attrs) {
-            var rows = scope.play.rows;
-            var columns = scope.play.columns;
+        function link(scope) {
+            var rows = $rootScope.rows;
+            var columns = $rootScope.columns;
             var playableRows = rows.filter(isPlayable);
             var sumRows = rows.filter(isSum);
             var turnNumber = 0;
             var announcedCellKey = null;
 
             scope.cellClicked = cellClicked;
-
-            scope.$on('roll', updateAvailableCells);
 
             initCells();
 
@@ -923,7 +929,7 @@
                     function getSumsValues() {
                         var sumsValues = [];
 
-                        iterateCells(pushSumValue);
+                        iterateCells(pushSumValue, 'sum');
 
                         return sumsValues;
 
@@ -1114,6 +1120,34 @@
                 function formatTimerValue(value) {
                     return (value < 10 ? "0" + value : value);
                 }
+            }
+        }
+    }
+})();
+
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.statistics')
+        .directive('paperStatic', paperStatic);
+    
+    paperStatic.$inject = [];
+    function paperStatic() {
+        return {
+            link: link,
+            templateUrl: 'src/statistics/directives/paperStatic/paperStatic.html',
+            replace: true,
+            scope: true
+        };
+
+        function link(scope) {
+            scope.cells = scope.statistics.cellsAverages;
+
+            scope.isPlayable = isPlayable;
+
+            function isPlayable(row) {
+                return row.abbreviation.indexOf('sum') === -1;
             }
         }
     }
