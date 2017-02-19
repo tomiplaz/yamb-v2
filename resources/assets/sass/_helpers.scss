@@ -1,0 +1,21 @@
+$types: (
+    margin: m,
+    padding: p
+);
+
+$directions: (
+    top: t,
+    right: r,
+    bottom: b,
+    left: l
+);
+
+@each $type, $type-abbreviation in $types {
+    @each $direction, $direction-abbreviation in $directions {
+        @for $n from 1 through 20 {
+            .#{$type-abbreviation}-#{$direction-abbreviation}-#{$n} {
+                #{$type}-#{$direction}: #{$n}px;
+            }
+        }
+    }
+}

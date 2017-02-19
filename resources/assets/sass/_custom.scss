@@ -7,6 +7,15 @@ body {
     margin: auto;
 }
 
+.collapse {
+    li.static {
+        @include pointer-disabled;
+    }
+    li.dynamic {
+        @include pointer-enabled;
+    }
+}
+
 .die {
     width: 35px;
     height: 35px;
@@ -23,7 +32,7 @@ body {
         @include box-shadow(0, 0, $dice-shadow-blur-radius, $dice-locked-shadow-spread-radius, $basic-red);
     }
 
-    &.disabled {
+    &.inactive {
         @include pointer-disabled;
     }
 }

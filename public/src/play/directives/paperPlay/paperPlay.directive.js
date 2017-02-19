@@ -24,10 +24,13 @@
 
             scope.cellClicked = cellClicked;
 
+            scope.$on('roll', updateAvailableCells);
+
             initCells();
 
             function initCells() {
                 scope.cells = {};
+
                 iterateCells(initCell);
 
                 function initCell(cellKey, row, column) {

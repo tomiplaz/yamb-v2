@@ -13,8 +13,17 @@
                 templateUrl: 'src/statistics/statistics.html',
                 controller: 'StatisticsCtrl as statistics',
                 resolve: {
-                    cellsAverages: function(apiService) {
-                        return apiService.custom('statistics', null, 'get', 'cells-averages');
+                    worldwide: function(apiService) {
+                        return apiService.custom('statistics', null, 'get');
+                    },
+                    personal: function(apiService, userService) {
+                        var userId = userService.getUserId();
+                        
+                        if (userId) {
+                            return apiService.custom('statistics', userId, 'get');
+                        } else {
+                            return null;
+                        }
                     }
                 }
             });

@@ -15,7 +15,7 @@
                 'playable': isPlayable(row),
                 'sum': !isPlayable(row)
             }"
-            ng-bind="cells[cellKey].averageValue">
+            ng-bind="statistics.cells[cellKey][statistics.cellDisplayProperty]">
         </td>
     </tr>
 </table>

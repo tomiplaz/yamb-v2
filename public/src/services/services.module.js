@@ -5,6 +5,7 @@
         .module('services', [
             'services.auth',
             'services.api',
-            'services.user'
+            'services.user',
+            'services.helper'
         ]);
 })();

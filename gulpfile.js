@@ -14,6 +14,7 @@ var jsFiles = [
 var scssFiles = [
     'resources/assets/sass/_variables.scss',
     'resources/assets/sass/_mixins.scss',
+    'resources/assets/sass/_helpers.scss',
     'resources/assets/sass/_custom.scss',
     'resources/assets/sass/main.scss'
 ];

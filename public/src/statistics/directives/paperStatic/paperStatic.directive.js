@@ -15,8 +15,6 @@
         };
 
         function link(scope) {
-            scope.cells = scope.statistics.cellsAverages;
-
             scope.isPlayable = isPlayable;
 
             function isPlayable(row) {

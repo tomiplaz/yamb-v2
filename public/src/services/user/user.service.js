@@ -8,24 +8,25 @@
     userService.$inject = ['$localStorage', 'jwtHelper', 'apiService', '$rootScope'];
     function userService($localStorage, jwtHelper, apiService, $rootScope) {
         return {
-            updateUser: updateUser
+            getUserId: getUserId,
+            getUser: getUser
         };
 
-        function updateUser() {
+        function getUserId() {
             if ($localStorage.token) {
                 var decodedToken = jwtHelper.decodeToken($localStorage.token);
+                return parseInt(decodedToken.sub);
+            } else {
+                return null;
+            }
+        }
 
-                return apiService
-                    .get('users', decodedToken.sub)
-                    .then(successCallback, errorCallback);
-                
-                function successCallback(response) {
-                    $rootScope.user = response.plain();
-                }
-
-                function errorCallback(response) {
-                    console.log("Error fetching user.");
-                }
+        function getUser() {
+            if ($localStorage.token) {
+                var decodedToken = jwtHelper.decodeToken($localStorage.token);
+                return apiService.get('users', decodedToken.sub);
+            } else {
+                return null;
             }
         }
     }

@@ -1,7 +1,53 @@
-<div class="row text-center">
-    <div class="col-xs-12 col-sm-12">
-        <div class="col-xs-12">
-            <paper-static></paper-static>
-        </div>
+<div class="row">
+    <button class="btn m-l-5 m-r-5" ng-repeat="scope in statistics.scopes track by $index"
+        ng-class="{'active': statistics.selected.scope === scope}"
+        ng-click="statistics.setSelected('scope', $index)">
+        {{ scope.label }}
+    </button>
+</div>
+
+<div class="row m-t-10">
+    <button class="btn m-l-5 m-r-5" ng-repeat="type in statistics.types track by $index"
+        ng-class="{'active': statistics.selected.type === type}"
+        ng-click="statistics.setSelected('type', $index)">
+        {{ type.label }}
+    </button>
+</div>
+
+<div class="row m-t-20 text-center" ng-if="statistics.cells">
+    <div class="col-xs-12">
+        <paper-static></paper-static>
+    </div>
+</div>
+
+<div class="row m-t-20 text-center" ng-if="statistics.other">
+    <div class="col-xs-12">
+        <span>Games Played (5 dice): {{ statistics.other.gamesPlayed.fiveDice }}</span>
+    </div>
+    <div class="col-xs-12">
+        <span>Games Played (5 dice): {{ statistics.other.gamesPlayed.sixDice }}</span>
+    </div>
+    
+    <div class="col-xs-12 m-t-10" ng-if="statistics.other.gamesPlayed.registeredUsers !== undefined">
+        <span>Games Played (registered): {{ statistics.other.gamesPlayed.registeredUsers }}</span>
+    </div>
+    <div class="col-xs-12" ng-if="statistics.other.gamesPlayed.anonymousUsers !== undefined">
+        <span>Games Played (anonymous): {{ statistics.other.gamesPlayed.anonymousUsers }}</span>
+    </div>
+
+    <div class="col-xs-12 m-t-10">
+        <span>Average Result (5 dice): {{ statistics.other.gameAverages.averageResult.fiveDice || '-' }}</span>
+    </div>
+    <div class="col-xs-12">
+        <span>Average Result (6 dice): {{ statistics.other.gameAverages.averageResult.sixDice || '-' }}</span>
+    </div>
+    
+    <div class="col-xs-12 m-t-10">
+        <span>Average Duration (5 dice): <span>
+        <span ng-bind="statistics.formatDuration(statistics.other.gameAverages.averageDuration.fiveDice)"></span>
+    </div>
+    <div class="col-xs-12">
+        <span>Average Duration (6 dice): </span>
+        <span ng-bind="statistics.formatDuration(statistics.other.gameAverages.averageDuration.sixDice)"></span>
     </div>
 </div>

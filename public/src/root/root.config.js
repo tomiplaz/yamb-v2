@@ -19,6 +19,9 @@
                     },
                     columns: function(apiService) {
                         return apiService.get('columns');
+                    },
+                    user: function(userService) {
+                        return userService.getUser();
                     }
                 }
             });

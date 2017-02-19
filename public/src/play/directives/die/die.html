@@ -2,7 +2,7 @@
     class="die"
     ng-class="{
         'locked': die.isLocked,
-        'disabled': die.isDisabled
+        'inactive': die.isDisabled
     }"
     ng-click="toggleDieLock()"
     ng-src="{{ 'img/dice/' + die.value + '.png' }}">

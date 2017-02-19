@@ -12,12 +12,27 @@ use App\Column;
 class StatisticsController extends Controller
 {
     /**
-     * Returns an avarage value of each cell.
+     * Get all statistics.
      *
      * @return array
      */
-    public function getCellsAverages(Request $request) {
+    public function getAll(Request $request)
+    {
         $userId = $request->route('id');
+        
+        return [
+            'cellsAverages' => $this->getCellsAverages($userId),
+            'otherStats' => $this->getOtherStats($userId)
+        ];
+    }
+
+    /**
+     * Get average values for each cell.
+     *
+     * @return array
+     */
+    private function getCellsAverages($userId)
+    {
         $cells = [];
         $rows = Row::all();
         $columns = Column::all();
@@ -58,19 +73,76 @@ class StatisticsController extends Controller
         return $cellsAverages;
     }
 
-    private function getFilterCellByRowAndColumnId($row, $column) {
+    /**
+     * Get stats not related to cells.
+     *
+     * @return array
+     */
+    private function getOtherStats($userId)
+    {
+        return [
+            'gamesPlayed' => $this->getGamesPlayed($userId),
+            'gameAverages' => $this->getGameAverages($userId)
+        ];
+    }
+
+    private function getFilterCellByRowAndColumnId($row, $column)
+    {
         return function ($cell) use ($row, $column) {
             return $cell['row_id'] === $row->id && $cell['column_id'] === $column->id;
         };
     }
 
-    private function sumCellsValues($carry, $relevantCell) {
+    private function sumCellsValues($carry, $relevantCell)
+    {
         return $carry + $relevantCell['value'];
     }
 
-    private function getSumCellsProperty($property) {
+    private function getSumCellsProperty($property)
+    {
         return function ($carry, $cell) use ($property) {
             return $carry + $cell[$property];
         };
+    }
+
+    private function getGamesPlayed($userId)
+    {
+        if ($userId) {
+            $games = User::find($userId)->games;
+        } else {
+            $games = Game::all();
+        }
+
+        $gamesPlayed = [
+            'fiveDice' => $games->where('number_of_dice', '5')->count(),
+            'sixDice' => $games->where('number_of_dice', '6')->count()
+        ];
+
+        if (!$userId) {
+            $gamesPlayed['registeredUsers'] = $games->where('user_id', '!=', null)->count();
+            $gamesPlayed['anonymousUsers'] = $games->where('user_id', null)->count();
+        }
+
+        return $gamesPlayed;
+    }
+
+    private function getGameAverages($userId)
+    {
+        if ($userId) {
+            $games = User::find($userId)->games;
+        } else {
+            $games = Game::all();
+        }
+
+        return [
+            'averageResult' => [
+                'fiveDice' => $games->where('number_of_dice', '5')->average('result'),
+                'sixDice' => $games->where('number_of_dice', '6')->average('result')
+            ],
+            'averageDuration' => [
+                'fiveDice' => $games->where('number_of_dice', '5')->average('duration'),
+                'sixDice' => $games->where('number_of_dice', '6')->average('duration')
+            ]
+        ];
     }
 }

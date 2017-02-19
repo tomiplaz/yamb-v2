@@ -5,9 +5,11 @@
         .module('yamb-v2.play')
         .controller('PlayCtrl', PlayCtrl);
 
-    PlayCtrl.$inject = ['$scope', 'apiService', '$rootScope', 'toastr'];
-    function PlayCtrl($scope, apiService, $rootScope, toastr) {
+    PlayCtrl.$inject = ['$scope', 'apiService', 'userService', 'toastr'];
+    function PlayCtrl($scope, apiService, userService, toastr) {
         var vm = this;
+
+        var userId = userService.getUserId();
 
         activate();
 
@@ -29,8 +31,8 @@
 
             function onDestroy() {
                 // Handle on refresh, close, etc...
-                if ($rootScope.user && vm.hasGameStarted && !vm.isGameFinished) {
-                    apiService.custom('users', $rootScope.user.id, 'post', 'game-unfinished');
+                if (userId && vm.hasGameStarted && !vm.isGameFinished) {
+                    apiService.custom('users', userId, 'post', 'game-unfinished');
                 }
             }
         }
@@ -87,7 +89,7 @@
 
             var data = {
                 game: {
-                    user_id: ($rootScope.user ? $rootScope.user.id : null),
+                    user_id: userId,
                     number_of_dice: vm.numberOfDice.toString(),
                     result: finalResult,
                     duration: $scope.timer.value

@@ -127,9 +127,11 @@
         .module('yamb-v2.play')
         .controller('PlayCtrl', PlayCtrl);
 
-    PlayCtrl.$inject = ['$scope', 'apiService', '$rootScope', 'toastr'];
-    function PlayCtrl($scope, apiService, $rootScope, toastr) {
+    PlayCtrl.$inject = ['$scope', 'apiService', 'userService', 'toastr'];
+    function PlayCtrl($scope, apiService, userService, toastr) {
         var vm = this;
+
+        var userId = userService.getUserId();
 
         activate();
 
@@ -151,8 +153,8 @@
 
             function onDestroy() {
                 // Handle on refresh, close, etc...
-                if ($rootScope.user && vm.hasGameStarted && !vm.isGameFinished) {
-                    apiService.custom('users', $rootScope.user.id, 'post', 'game-unfinished');
+                if (userId && vm.hasGameStarted && !vm.isGameFinished) {
+                    apiService.custom('users', userId, 'post', 'game-unfinished');
                 }
             }
         }
@@ -209,7 +211,7 @@
 
             var data = {
                 game: {
-                    user_id: ($rootScope.user ? $rootScope.user.id : null),
+                    user_id: userId,
                     number_of_dice: vm.numberOfDice.toString(),
                     result: finalResult,
                     duration: $scope.timer.value
@@ -315,6 +317,9 @@
                     },
                     columns: function(apiService) {
                         return apiService.get('columns');
+                    },
+                    user: function(userService) {
+                        return userService.getUser();
                     }
                 }
             });
@@ -327,8 +332,8 @@
         .module('yamb-v2.root')
         .controller('RootCtrl', RootCtrl);
     
-    RootCtrl.$inject = ['rows', 'columns', 'userService', '$localStorage', '$state', '$rootScope'];
-    function RootCtrl(rows, columns, userService, $localStorage, $state, $rootScope) {
+    RootCtrl.$inject = ['rows', 'columns', 'user', '$localStorage', '$state', '$rootScope'];
+    function RootCtrl(rows, columns, user, $localStorage, $state, $rootScope) {
         var vm = this;
 
         activate();
@@ -336,6 +341,7 @@
         vm.logout = logout;
 
         function activate() {
+            $rootScope.user = (user ? user.plain() : user);
             $rootScope.rows = rows.plain();
             $rootScope.columns = columns.plain();
             
@@ -370,8 +376,6 @@
                     label: 'Login'
                 }
             ];
-
-            userService.updateUser();
         }
 
         function logout() {
@@ -388,7 +392,8 @@
         .module('services', [
             'services.auth',
             'services.api',
-            'services.user'
+            'services.user',
+            'services.helper'
         ]);
 })();
 (function() {
@@ -406,8 +411,17 @@
                 templateUrl: 'src/statistics/statistics.html',
                 controller: 'StatisticsCtrl as statistics',
                 resolve: {
-                    cellsAverages: function(apiService) {
-                        return apiService.custom('statistics', null, 'get', 'cells-averages');
+                    worldwide: function(apiService) {
+                        return apiService.custom('statistics', null, 'get');
+                    },
+                    personal: function(apiService, userService) {
+                        var userId = userService.getUserId();
+                        
+                        if (userId) {
+                            return apiService.custom('statistics', userId, 'get');
+                        } else {
+                            return null;
+                        }
                     }
                 }
             });
@@ -420,11 +434,70 @@
         .module('yamb-v2.statistics')
         .controller('StatisticsCtrl', StatisticsCtrl);
     
-    StatisticsCtrl.$inject = ['cellsAverages'];
-    function StatisticsCtrl(cellsAverages) {
+    StatisticsCtrl.$inject = ['worldwide', 'personal', '$scope', 'helperService'];
+    function StatisticsCtrl(worldwide, personal, $scope, helperService) {
         var vm = this;
 
-        vm.cellsAverages = cellsAverages.plain();
+        activate();
+
+        vm.setSelected = setSelected;
+        vm.formatDuration = helperService.formatDuration;
+
+        function activate() {
+            vm.scopes = getScopes();
+            vm.types = getTypes();
+
+            vm.cells = null;
+            vm.other = null;
+
+            vm.worldwide = worldwide;
+            vm.personal = personal;
+
+            $scope.$watchGroup(['statistics.selected.scope', 'statistics.selected.type'], onSelectedChanged);
+
+            vm.selected = {
+                scope: vm.scopes[0],
+                type: vm.types[0]
+            };
+
+            function getScopes() {
+                return ['Worldwide', 'Personal'].map(mapItem);
+            }
+
+            function getTypes() {
+                return ['Values', 'Turns', 'Other'].map(mapItem);
+            }
+
+            function mapItem(item) {
+                return {
+                    key: item.toLowerCase(),
+                    label: item
+                };
+            }
+
+            function onSelectedChanged(newSelected) {
+                if (vm.selected.type.key === 'other') {
+                    vm.cells = null;
+                    vm.other = vm[vm.selected.scope.key].otherStats;
+                } else {
+                    vm.other = null;
+                    vm.cellDisplayProperty = getCellDisplayProperty(vm.selected.type.key);
+                    vm.cells = vm[vm.selected.scope.key].cellsAverages;
+                }
+
+                function getCellDisplayProperty(key) {
+                    if (key === 'turns') {
+                        return 'averageInputTurn';
+                    } else {
+                        return 'averageValue';
+                    }
+                }
+            }
+        }
+
+        function setSelected(key, index) {
+            vm.selected[key] = vm[key + 's'][index];
+        }
     }
 })();
 (function() {
@@ -742,30 +815,56 @@
     'use strict';
 
     angular
+        .module('services.helper', [])
+        .factory('helperService', helperService);
+    
+    helperService.$inject = [];
+    function helperService() {
+        return {
+            formatDuration: formatDuration
+        };
+
+        function formatDuration(miliseconds) {
+            console.log(miliseconds);
+            if (!miliseconds) {
+                return '-:-';
+            } else {
+                var seconds = Math.floor(miliseconds / 1000);
+                var minutes = Math.floor(seconds / 60);
+                return minutes + ':' + (seconds - minutes * 60);
+            }
+        }
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
         .module('services.user', ['angular-jwt'])
         .factory('userService', userService);
     
     userService.$inject = ['$localStorage', 'jwtHelper', 'apiService', '$rootScope'];
     function userService($localStorage, jwtHelper, apiService, $rootScope) {
         return {
-            updateUser: updateUser
+            getUserId: getUserId,
+            getUser: getUser
         };
 
-        function updateUser() {
+        function getUserId() {
             if ($localStorage.token) {
                 var decodedToken = jwtHelper.decodeToken($localStorage.token);
+                return parseInt(decodedToken.sub);
+            } else {
+                return null;
+            }
+        }
 
-                return apiService
-                    .get('users', decodedToken.sub)
-                    .then(successCallback, errorCallback);
-                
-                function successCallback(response) {
-                    $rootScope.user = response.plain();
-                }
-
-                function errorCallback(response) {
-                    console.log("Error fetching user.");
-                }
+        function getUser() {
+            if ($localStorage.token) {
+                var decodedToken = jwtHelper.decodeToken($localStorage.token);
+                return apiService.get('users', decodedToken.sub);
+            } else {
+                return null;
             }
         }
     }
@@ -851,10 +950,13 @@
 
             scope.cellClicked = cellClicked;
 
+            scope.$on('roll', updateAvailableCells);
+
             initCells();
 
             function initCells() {
                 scope.cells = {};
+
                 iterateCells(initCell);
 
                 function initCell(cellKey, row, column) {
@@ -1142,8 +1244,6 @@
         };
 
         function link(scope) {
-            scope.cells = scope.statistics.cellsAverages;
-
             scope.isPlayable = isPlayable;
 
             function isPlayable(row) {
