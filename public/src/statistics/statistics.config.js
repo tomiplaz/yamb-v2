@@ -14,13 +14,12 @@
                 controller: 'StatisticsCtrl as statistics',
                 resolve: {
                     worldwide: function(apiService) {
-                        return apiService.custom('statistics', null, 'get');
+                        return apiService.get('statistics');
                     },
                     personal: function(apiService, userService) {
                         var userId = userService.getUserId();
-                        
                         if (userId) {
-                            return apiService.custom('statistics', userId, 'get');
+                            return apiService.get('statistics', userId);
                         } else {
                             return null;
                         }

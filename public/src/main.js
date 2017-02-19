@@ -13,7 +13,8 @@
             'yamb-v2.register',
             'yamb-v2.login',
             'yamb-v2.play',
-            'yamb-v2.statistics'
+            'yamb-v2.statistics',
+            'yamb-v2.leaderboard'
         ])
         .config(config)
         .run(run);

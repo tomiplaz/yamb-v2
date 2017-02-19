@@ -27,9 +27,9 @@
 
         function get(resource, id) {
             if (id) {
-                return ApiRestangular.one(resource, id).get();
+                return ApiRestangular.one(resource, id).doGET();
             } else {
-                return ApiRestangular.all(resource).getList();
+                return ApiRestangular.all(resource).doGET();
             }
         }
 

@@ -51,7 +51,7 @@ class StatisticsController extends Controller
                 // Set cell's averages
                 $cellsAverages[$cellKey] = [
                     'averageValue' => round($relevantCells->avg('value'), 2),
-                    'averageInputTurn' => round($relevantCells->avg('input_turn'), 2)
+                    'averageInputTurn' => round($relevantCells->avg('input_turn'), 2) ?: '-'
                 ];
             }
         }

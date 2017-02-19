@@ -13,7 +13,8 @@
             'yamb-v2.register',
             'yamb-v2.login',
             'yamb-v2.play',
-            'yamb-v2.statistics'
+            'yamb-v2.statistics',
+            'yamb-v2.leaderboard'
         ])
         .config(config)
         .run(run);
@@ -60,6 +61,72 @@
     'use strict';
 
     angular
+        .module('yamb-v2.leaderboard', [])
+        .config(config);
+    
+    config.$inject = ['$stateProvider'];
+    function config($stateProvider) {
+        $stateProvider
+            .state('root.leaderboard', {
+                url: 'leaderboard',
+                templateUrl: 'src/leaderboard/leaderboard.html',
+                controller: 'LeaderboardCtrl as leaderboard',
+                resolve: {
+                    users: function(apiService) {
+                        return apiService.get('users');
+                    }
+                }
+            });
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.leaderboard')
+        .controller('LeaderboardCtrl', LeaderboardCtrl);
+    
+    LeaderboardCtrl.$inject = ['users', '$scope', 'helperService'];
+    function LeaderboardCtrl(worldwide, $scope, helperService) {
+        var vm = this;
+
+        activate();
+
+        function activate() {
+            vm.options = {
+                dice: getDiceOptions(),
+                types: getTypesOptions()
+            };
+
+            $scope.$watchGroup(['leaderboard.selected.dice', 'statistics.selected.type'], onSelectedChanged);
+
+            vm.selected = {
+                dice: vm.options.dice[0],
+                type: vm.options.types[0]
+            };
+
+            function getDiceOptions() {
+                return ['5 Dice', '6 Dice'].map(mapDiceOption);
+
+                function mapDiceOption(item) {
+                    return {};
+                }
+            }
+
+            function getTypesOptions() {
+                return ['Best', 'Average', 'Played'].map(mapTypeOption);
+
+                function mapTypeOption(item) {
+                    return {};
+                }
+            }
+        }
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
         .module('yamb-v2.login', [])
         .config(config);
     
@@ -97,52 +164,6 @@
                 $localStorage.token = success.token;
                 $rootScope.user = success.user;
                 $state.go('root.play');
-            }, function(error) {
-                console.log("Error", error);
-            });
-        }
-    }
-})();
-(function() {
-    'use strict';
-
-    angular
-        .module('yamb-v2.register', [])
-        .config(config);
-    
-    config.$inject = ['$stateProvider'];
-    function config($stateProvider) {
-        $stateProvider
-            .state('root.register', {
-                url: 'register',
-                templateUrl: 'src/register/register.html',
-                controller: 'RegisterCtrl as register'
-            });
-    }
-})();
-(function() {
-    'use strict';
-
-    angular
-        .module('yamb-v2.register')
-        .controller('RegisterCtrl', RegisterCtrl);
-    
-    RegisterCtrl.$inject = ['authService', '$state'];
-    function RegisterCtrl(authService, $state) {
-        var vm = this;
-
-        activate();
-
-        function activate() {
-            vm.title = "Register";
-            
-            vm.confirm = confirm;
-        }
-
-        function confirm() {
-            authService.register(vm.input).then(function(success) {
-                console.log("Success", success);
-                $state.go('login');
             }, function(error) {
                 console.log("Error", error);
             });
@@ -300,6 +321,52 @@
     'use strict';
 
     angular
+        .module('yamb-v2.register', [])
+        .config(config);
+    
+    config.$inject = ['$stateProvider'];
+    function config($stateProvider) {
+        $stateProvider
+            .state('root.register', {
+                url: 'register',
+                templateUrl: 'src/register/register.html',
+                controller: 'RegisterCtrl as register'
+            });
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.register')
+        .controller('RegisterCtrl', RegisterCtrl);
+    
+    RegisterCtrl.$inject = ['authService', '$state'];
+    function RegisterCtrl(authService, $state) {
+        var vm = this;
+
+        activate();
+
+        function activate() {
+            vm.title = "Register";
+            
+            vm.confirm = confirm;
+        }
+
+        function confirm() {
+            authService.register(vm.input).then(function(success) {
+                console.log("Success", success);
+                $state.go('login');
+            }, function(error) {
+                console.log("Error", error);
+            });
+        }
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
         .module('yamb-v2.root', [])
         .config(config);
     
@@ -412,13 +479,12 @@
                 controller: 'StatisticsCtrl as statistics',
                 resolve: {
                     worldwide: function(apiService) {
-                        return apiService.custom('statistics', null, 'get');
+                        return apiService.get('statistics');
                     },
                     personal: function(apiService, userService) {
                         var userId = userService.getUserId();
-                        
                         if (userId) {
-                            return apiService.custom('statistics', userId, 'get');
+                            return apiService.get('statistics', userId);
                         } else {
                             return null;
                         }
@@ -772,9 +838,9 @@
 
         function get(resource, id) {
             if (id) {
-                return ApiRestangular.one(resource, id).get();
+                return ApiRestangular.one(resource, id).doGET();
             } else {
-                return ApiRestangular.all(resource).getList();
+                return ApiRestangular.all(resource).doGET();
             }
         }
 
@@ -825,7 +891,6 @@
         };
 
         function formatDuration(miliseconds) {
-            console.log(miliseconds);
             if (!miliseconds) {
                 return '-:-';
             } else {
@@ -918,6 +983,67 @@
 
                 if (scope.play.rollNumber === 1) {
                     scope.die.isDisabled = false;
+                }
+            }
+        }
+    }
+})();
+
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.play')
+        .directive('timer', timer);
+    
+    timer.$inject = ['$interval'];
+    function timer($interval) {
+        return {
+            link: link,
+            templateUrl: 'src/play/directives/timer/timer.html',
+            replace: true,
+            scope: false
+        };
+
+        function link(scope, elem, attrs) {
+            var startTime, timerInterval, timeDiff, days, hours, minutes, seconds, miliseconds;
+
+            scope.timer = {
+                value: 0,
+                display: "00:00"
+            };
+
+            scope.$on('start', start);
+            scope.$on('stop', stop);
+
+            elem.on('$destroy', onDestroy);
+
+            function start() {
+                startTime = Date.now();
+                timerInterval = $interval(updateTimer, 1);
+            }
+
+            function stop() {
+                $interval.cancel(timerInterval);
+            }
+
+            function onDestroy() {
+                if (timerInterval) stop();
+            }
+
+            function updateTimer() {
+                timeDiff = Date.now() - startTime;
+                days = Math.floor(timeDiff / 1000 / 60 / 60 / 24);
+                hours = Math.floor((timeDiff - days * 24 * 60 * 60 * 1000) / 1000 / 60 / 60);
+                minutes = Math.floor((timeDiff - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000) / 1000 / 60);
+                seconds = Math.floor((timeDiff - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000 - minutes * 60 * 1000) / 1000);
+                miliseconds = timeDiff - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000 - minutes * 60 * 1000 - seconds * 1000;
+
+                scope.timer.value = timeDiff;
+                scope.timer.display = formatTimerValue(minutes) + ":" + formatTimerValue(seconds);
+
+                function formatTimerValue(value) {
+                    return (value < 10 ? "0" + value : value);
                 }
             }
         }
@@ -1161,67 +1287,6 @@
 
             function hasValue(value) {
                 return value !== null && value !== undefined;
-            }
-        }
-    }
-})();
-
-(function() {
-    'use strict';
-
-    angular
-        .module('yamb-v2.play')
-        .directive('timer', timer);
-    
-    timer.$inject = ['$interval'];
-    function timer($interval) {
-        return {
-            link: link,
-            templateUrl: 'src/play/directives/timer/timer.html',
-            replace: true,
-            scope: false
-        };
-
-        function link(scope, elem, attrs) {
-            var startTime, timerInterval, timeDiff, days, hours, minutes, seconds, miliseconds;
-
-            scope.timer = {
-                value: 0,
-                display: "00:00"
-            };
-
-            scope.$on('start', start);
-            scope.$on('stop', stop);
-
-            elem.on('$destroy', onDestroy);
-
-            function start() {
-                startTime = Date.now();
-                timerInterval = $interval(updateTimer, 1);
-            }
-
-            function stop() {
-                $interval.cancel(timerInterval);
-            }
-
-            function onDestroy() {
-                if (timerInterval) stop();
-            }
-
-            function updateTimer() {
-                timeDiff = Date.now() - startTime;
-                days = Math.floor(timeDiff / 1000 / 60 / 60 / 24);
-                hours = Math.floor((timeDiff - days * 24 * 60 * 60 * 1000) / 1000 / 60 / 60);
-                minutes = Math.floor((timeDiff - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000) / 1000 / 60);
-                seconds = Math.floor((timeDiff - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000 - minutes * 60 * 1000) / 1000);
-                miliseconds = timeDiff - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000 - minutes * 60 * 1000 - seconds * 1000;
-
-                scope.timer.value = timeDiff;
-                scope.timer.display = formatTimerValue(minutes) + ":" + formatTimerValue(seconds);
-
-                function formatTimerValue(value) {
-                    return (value < 10 ? "0" + value : value);
-                }
             }
         }
     }

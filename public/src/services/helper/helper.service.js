@@ -12,7 +12,6 @@
         };
 
         function formatDuration(miliseconds) {
-            console.log(miliseconds);
             if (!miliseconds) {
                 return '-:-';
             } else {
