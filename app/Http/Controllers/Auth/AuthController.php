@@ -32,6 +32,8 @@ class AuthController extends Controller
             return response()->json(['error' => 'could_not_create_token'], 500);
         }
 
-        return response()->json(compact('token'));
+        $user = User::where('email', $request->get('email'))->first();
+
+        return response()->json(compact('token', 'user'));
     }
 }

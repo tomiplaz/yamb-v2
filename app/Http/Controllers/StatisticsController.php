@@ -19,11 +19,11 @@ class StatisticsController extends Controller
     public function getAll(Request $request)
     {
         $userId = $request->route('id');
-        
-        return [
+
+        return response()->json([
             'cellsAverages' => $this->getCellsAverages($userId),
             'otherStats' => $this->getOtherStats($userId)
-        ];
+        ]);
     }
 
     /**
@@ -33,40 +33,26 @@ class StatisticsController extends Controller
      */
     private function getCellsAverages($userId)
     {
-        $cells = [];
-        $rows = Row::all();
-        $columns = Column::all();
-
-        // Get relevant cells
+        // Init query
         if ($userId) {
-            $cells = User::find($userId)->cells()->get()->toArray();
+            $cells = User::find($userId)->cells();
         } else {
-            $cells = Cell::all()->toArray();
+            $cells = Cell::getModel();
         }
 
-        // Calculate each cell's avarage value
-        foreach ($rows as $row) {
-            foreach ($columns as $column) {
+        $cellsAverages = [];
+
+        foreach (Row::all() as $row) {
+            foreach (Column::all() as $column) {
                 // Init cell key
                 $cellKey = $row->abbreviation . '_' . $column->abbreviation;
-                // Filter relevant cells
-                $relevantCells = array_filter($cells, $this->getFilterCellByRowAndColumnId($row, $column));
-                // Set avarage cell value
-                if (empty($relevantCells)) {
-                    $cellsAverages[$cellKey] = [
-                        'averageValue' => '-',
-                        'averageInputTurn' => '-'
-                    ];
-                } else {
-                    $cellsValuesSum = array_reduce($relevantCells, $this->getSumCellsProperty('value'), 0);
-                    $cellsInputTurnsSum = array_reduce($relevantCells, $this->getSumCellsProperty('input_turn'), 0);
-                    $cellsValuesAverage = round($cellsValuesSum / count($relevantCells), 2);
-                    $cellsInputTurnsAverage = ($cellsInputTurnsSum === 0 ? '-' : round($cellsInputTurnsSum / count($relevantCells), 2));
-                    $cellsAverages[$cellKey] = [
-                        'averageValue' => $cellsValuesAverage,
-                        'averageInputTurn' => $cellsInputTurnsAverage
-                    ];
-                }
+                // Query relevant cells
+                $relevantCells = (clone $cells)->where('row_id', $row->id)->where('column_id', $column->id);
+                // Set cell's averages
+                $cellsAverages[$cellKey] = [
+                    'averageValue' => round($relevantCells->avg('value'), 2),
+                    'averageInputTurn' => round($relevantCells->avg('input_turn'), 2)
+                ];
             }
         }
 
@@ -86,62 +72,57 @@ class StatisticsController extends Controller
         ];
     }
 
-    private function getFilterCellByRowAndColumnId($row, $column)
-    {
-        return function ($cell) use ($row, $column) {
-            return $cell['row_id'] === $row->id && $cell['column_id'] === $column->id;
-        };
-    }
-
-    private function sumCellsValues($carry, $relevantCell)
-    {
-        return $carry + $relevantCell['value'];
-    }
-
-    private function getSumCellsProperty($property)
-    {
-        return function ($carry, $cell) use ($property) {
-            return $carry + $cell[$property];
-        };
-    }
-
+    /**
+     * Get games played count.
+     *
+     * @return array
+     */
     private function getGamesPlayed($userId)
     {
+        // Init query
         if ($userId) {
-            $games = User::find($userId)->games;
+            $games = User::find($userId)->games();
         } else {
-            $games = Game::all();
+            $games = Game::getModel();
         }
 
+        // Set common counts
         $gamesPlayed = [
-            'fiveDice' => $games->where('number_of_dice', '5')->count(),
-            'sixDice' => $games->where('number_of_dice', '6')->count()
+            'fiveDice' => (clone $games)->where('number_of_dice', '5')->count(),
+            'sixDice' => (clone $games)->where('number_of_dice', '6')->count()
         ];
 
+        // Set additional global counts
         if (!$userId) {
-            $gamesPlayed['registeredUsers'] = $games->where('user_id', '!=', null)->count();
-            $gamesPlayed['anonymousUsers'] = $games->where('user_id', null)->count();
+            $gamesPlayed['registeredUsers'] = (clone $games)->where('user_id', '!=', null)->count();
+            $gamesPlayed['anonymousUsers'] = (clone $games)->where('user_id', null)->count();
         }
 
         return $gamesPlayed;
     }
 
+    /**
+     * Get game averages.
+     *
+     * @return array
+     */
     private function getGameAverages($userId)
     {
+        // Init query
         if ($userId) {
-            $games = User::find($userId)->games;
+            $games = User::find($userId)->games();
         } else {
-            $games = Game::all();
+            $games = Game::getModel();
         }
 
         return [
             'averageResult' => [
-                'fiveDice' => $games->where('number_of_dice', '5')->average('result'),
-                'sixDice' => $games->where('number_of_dice', '6')->average('result')
+                'fiveDice' => round((clone $games)->where('number_of_dice', '5')->avg('result'), 2),
+                'sixDice' => round((clone $games)->where('number_of_dice', '6')->avg('result'), 2)
             ],
             'averageDuration' => [
-                'fiveDice' => $games->where('number_of_dice', '5')->average('duration'),
-                'sixDice' => $games->where('number_of_dice', '6')->average('duration')
+                'fiveDice' => (clone $games)->where('number_of_dice', '5')->avg('duration'),
+                'sixDice' => (clone $games)->where('number_of_dice', '6')->avg('duration')
             ]
         ];
     }

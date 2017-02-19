@@ -80,8 +80,8 @@
         .module('yamb-v2.login')
         .controller('LoginCtrl', LoginCtrl);
 
-    LoginCtrl.$inject = ['authService', '$localStorage', '$state', 'userService'];
-    function LoginCtrl(authService, $localStorage, $state, userService) {
+    LoginCtrl.$inject = ['authService', '$localStorage', '$state', '$rootScope'];
+    function LoginCtrl(authService, $localStorage, $state, $rootScope) {
         var vm = this;
 
         activate();
@@ -95,8 +95,54 @@
         function confirm() {
             authService.login(vm.input).then(function(success) {
                 $localStorage.token = success.token;
-                userService.updateUser();
+                $rootScope.user = success.user;
                 $state.go('root.play');
+            }, function(error) {
+                console.log("Error", error);
+            });
+        }
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.register', [])
+        .config(config);
+    
+    config.$inject = ['$stateProvider'];
+    function config($stateProvider) {
+        $stateProvider
+            .state('root.register', {
+                url: 'register',
+                templateUrl: 'src/register/register.html',
+                controller: 'RegisterCtrl as register'
+            });
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.register')
+        .controller('RegisterCtrl', RegisterCtrl);
+    
+    RegisterCtrl.$inject = ['authService', '$state'];
+    function RegisterCtrl(authService, $state) {
+        var vm = this;
+
+        activate();
+
+        function activate() {
+            vm.title = "Register";
+            
+            vm.confirm = confirm;
+        }
+
+        function confirm() {
+            authService.register(vm.input).then(function(success) {
+                console.log("Success", success);
+                $state.go('login');
             }, function(error) {
                 console.log("Error", error);
             });
@@ -250,52 +296,6 @@
     }
 })();
 
-(function() {
-    'use strict';
-
-    angular
-        .module('yamb-v2.register', [])
-        .config(config);
-    
-    config.$inject = ['$stateProvider'];
-    function config($stateProvider) {
-        $stateProvider
-            .state('root.register', {
-                url: 'register',
-                templateUrl: 'src/register/register.html',
-                controller: 'RegisterCtrl as register'
-            });
-    }
-})();
-(function() {
-    'use strict';
-
-    angular
-        .module('yamb-v2.register')
-        .controller('RegisterCtrl', RegisterCtrl);
-    
-    RegisterCtrl.$inject = ['authService', '$state'];
-    function RegisterCtrl(authService, $state) {
-        var vm = this;
-
-        activate();
-
-        function activate() {
-            vm.title = "Register";
-            
-            vm.confirm = confirm;
-        }
-
-        function confirm() {
-            authService.register(vm.input).then(function(success) {
-                console.log("Success", success);
-                $state.go('login');
-            }, function(error) {
-                console.log("Error", error);
-            });
-        }
-    }
-})();
 (function() {
     'use strict';
 

@@ -37,6 +37,15 @@ class User extends Authenticatable
     ];
 
     /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = [
+        'best_results', 'average_results', 'average_duration', 'games_played'
+    ];
+
+    /**
      * Encrypt password before storing it.
      *
      * @param  string  $value
@@ -44,6 +53,58 @@ class User extends Authenticatable
     public function setPasswordAttribute($value)
     {
         $this->attributes['password'] = bcrypt($value);
+    }
+
+    /**
+     * Get user's number of games played.
+     *
+     * @return array
+     */
+    public function getGamesPlayedAttribute()
+    {
+        return [
+            'fiveDice' => $this->games()->where('number_of_dice', '5')->count(),
+            'sixDice' => $this->games()->where('number_of_dice', '6')->count()
+        ];
+    }
+
+    /**
+     * Get user's best results.
+     *
+     * @return array
+     */
+    public function getBestResultsAttribute()
+    {
+        return [
+            'fiveDice' => $this->games()->where('number_of_dice', '5')->max('result'),
+            'sixDice' => $this->games()->where('number_of_dice', '6')->max('result')
+        ];
+    }
+
+    /**
+     * Get user's average results.
+     *
+     * @return array
+     */
+    public function getAverageResultsAttribute()
+    {
+        return [
+            'fiveDice' => $this->games()->where('number_of_dice', '5')->avg('result'),
+            'sixDice' => $this->games()->where('number_of_dice', '6')->avg('result')
+        ];
+    }
+
+    /**
+     * Get user's average duration.
+     *
+     * @return array
+     */
+    public function getAverageDurationAttribute()
+    {
+        return [
+            'fiveDice' => $this->games()->where('number_of_dice', '5')->avg('duration'),
+            'sixDice' => $this->games()->where('number_of_dice', '6')->avg('duration')
+        ];
     }
 
     /**

@@ -5,8 +5,8 @@
         .module('yamb-v2.login')
         .controller('LoginCtrl', LoginCtrl);
 
-    LoginCtrl.$inject = ['authService', '$localStorage', '$state', 'userService'];
-    function LoginCtrl(authService, $localStorage, $state, userService) {
+    LoginCtrl.$inject = ['authService', '$localStorage', '$state', '$rootScope'];
+    function LoginCtrl(authService, $localStorage, $state, $rootScope) {
         var vm = this;
 
         activate();
@@ -20,7 +20,7 @@
         function confirm() {
             authService.login(vm.input).then(function(success) {
                 $localStorage.token = success.token;
-                userService.updateUser();
+                $rootScope.user = success.user;
                 $state.go('root.play');
             }, function(error) {
                 console.log("Error", error);
