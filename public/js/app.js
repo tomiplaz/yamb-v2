@@ -510,8 +510,11 @@
         vm.formatDuration = helperService.formatDuration;
 
         function activate() {
-            vm.scopes = getScopes();
-            vm.types = getTypes();
+            vm.options = {
+                dice: getDiceOptions(),
+                scope: getScopeOptions(),
+                type: getTypeOptions()
+            };
 
             vm.cells = null;
             vm.other = null;
@@ -519,24 +522,40 @@
             vm.worldwide = worldwide;
             vm.personal = personal;
 
-            $scope.$watchGroup(['statistics.selected.scope', 'statistics.selected.type'], onSelectedChanged);
+            $scope.$watchGroup([
+                'statistics.selected.dice',
+                'statistics.selected.scope',
+                'statistics.selected.type'
+            ], onSelectedChanged);
 
             vm.selected = {
-                scope: vm.scopes[0],
-                type: vm.types[0]
+                dice: vm.options.dice[0],
+                scope: vm.options.scope[0],
+                type: vm.options.type[0]
             };
 
-            function getScopes() {
+            function getDiceOptions() {
+                return ['5', '6'].map(mapDiceOption);
+
+                function mapDiceOption(item) {
+                    return {
+                        key: item + '_dice',
+                        label: item + ' Dice'
+                    };
+                }
+            }
+
+            function getScopeOptions() {
                 return ['Worldwide', 'Personal'].map(mapItem);
             }
 
-            function getTypes() {
-                return ['Values', 'Turns', 'Other'].map(mapItem);
+            function getTypeOptions() {
+                return ['Value', 'Input Turn', 'Other'].map(mapItem);
             }
 
             function mapItem(item) {
                 return {
-                    key: item.toLowerCase(),
+                    key: item.toLowerCase().replace(' ', '_'),
                     label: item
                 };
             }
@@ -544,25 +563,16 @@
             function onSelectedChanged(newSelected) {
                 if (vm.selected.type.key === 'other') {
                     vm.cells = null;
-                    vm.other = vm[vm.selected.scope.key].otherStats;
+                    vm.other = vm[vm.selected.scope.key].other_stats;
                 } else {
                     vm.other = null;
-                    vm.cellDisplayProperty = getCellDisplayProperty(vm.selected.type.key);
-                    vm.cells = vm[vm.selected.scope.key].cellsAverages;
-                }
-
-                function getCellDisplayProperty(key) {
-                    if (key === 'turns') {
-                        return 'averageInputTurn';
-                    } else {
-                        return 'averageValue';
-                    }
+                    vm.cells = vm[vm.selected.scope.key].cells_averages[vm.selected.dice.key];
                 }
             }
         }
 
-        function setSelected(key, index) {
-            vm.selected[key] = vm[key + 's'][index];
+        function setSelected(key, item) {
+            vm.selected[key] = item;
         }
     }
 })();
@@ -891,7 +901,7 @@
         };
 
         function formatDuration(miliseconds) {
-            if (!miliseconds) {
+            if (typeof miliseconds !== 'number' || isNaN(miliseconds)) {
                 return '-:-';
             } else {
                 var seconds = Math.floor(miliseconds / 1000);
@@ -983,67 +993,6 @@
 
                 if (scope.play.rollNumber === 1) {
                     scope.die.isDisabled = false;
-                }
-            }
-        }
-    }
-})();
-
-(function() {
-    'use strict';
-
-    angular
-        .module('yamb-v2.play')
-        .directive('timer', timer);
-    
-    timer.$inject = ['$interval'];
-    function timer($interval) {
-        return {
-            link: link,
-            templateUrl: 'src/play/directives/timer/timer.html',
-            replace: true,
-            scope: false
-        };
-
-        function link(scope, elem, attrs) {
-            var startTime, timerInterval, timeDiff, days, hours, minutes, seconds, miliseconds;
-
-            scope.timer = {
-                value: 0,
-                display: "00:00"
-            };
-
-            scope.$on('start', start);
-            scope.$on('stop', stop);
-
-            elem.on('$destroy', onDestroy);
-
-            function start() {
-                startTime = Date.now();
-                timerInterval = $interval(updateTimer, 1);
-            }
-
-            function stop() {
-                $interval.cancel(timerInterval);
-            }
-
-            function onDestroy() {
-                if (timerInterval) stop();
-            }
-
-            function updateTimer() {
-                timeDiff = Date.now() - startTime;
-                days = Math.floor(timeDiff / 1000 / 60 / 60 / 24);
-                hours = Math.floor((timeDiff - days * 24 * 60 * 60 * 1000) / 1000 / 60 / 60);
-                minutes = Math.floor((timeDiff - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000) / 1000 / 60);
-                seconds = Math.floor((timeDiff - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000 - minutes * 60 * 1000) / 1000);
-                miliseconds = timeDiff - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000 - minutes * 60 * 1000 - seconds * 1000;
-
-                scope.timer.value = timeDiff;
-                scope.timer.display = formatTimerValue(minutes) + ":" + formatTimerValue(seconds);
-
-                function formatTimerValue(value) {
-                    return (value < 10 ? "0" + value : value);
                 }
             }
         }
@@ -1296,19 +1245,86 @@
     'use strict';
 
     angular
+        .module('yamb-v2.play')
+        .directive('timer', timer);
+    
+    timer.$inject = ['$interval'];
+    function timer($interval) {
+        return {
+            link: link,
+            templateUrl: 'src/play/directives/timer/timer.html',
+            replace: true,
+            scope: false
+        };
+
+        function link(scope, elem, attrs) {
+            var startTime, timerInterval, timeDiff, days, hours, minutes, seconds, miliseconds;
+
+            scope.timer = {
+                value: 0,
+                display: "00:00"
+            };
+
+            scope.$on('start', start);
+            scope.$on('stop', stop);
+
+            elem.on('$destroy', onDestroy);
+
+            function start() {
+                startTime = Date.now();
+                timerInterval = $interval(updateTimer, 1);
+            }
+
+            function stop() {
+                $interval.cancel(timerInterval);
+            }
+
+            function onDestroy() {
+                if (timerInterval) stop();
+            }
+
+            function updateTimer() {
+                timeDiff = Date.now() - startTime;
+                days = Math.floor(timeDiff / 1000 / 60 / 60 / 24);
+                hours = Math.floor((timeDiff - days * 24 * 60 * 60 * 1000) / 1000 / 60 / 60);
+                minutes = Math.floor((timeDiff - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000) / 1000 / 60);
+                seconds = Math.floor((timeDiff - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000 - minutes * 60 * 1000) / 1000);
+                miliseconds = timeDiff - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000 - minutes * 60 * 1000 - seconds * 1000;
+
+                scope.timer.value = timeDiff;
+                scope.timer.display = formatTimerValue(minutes) + ":" + formatTimerValue(seconds);
+
+                function formatTimerValue(value) {
+                    return (value < 10 ? "0" + value : value);
+                }
+            }
+        }
+    }
+})();
+
+(function() {
+    'use strict';
+
+    angular
         .module('yamb-v2.statistics')
         .directive('paperStatic', paperStatic);
     
-    paperStatic.$inject = [];
-    function paperStatic() {
+    paperStatic.$inject = ['$rootScope'];
+    function paperStatic($rootScope) {
         return {
             link: link,
             templateUrl: 'src/statistics/directives/paperStatic/paperStatic.html',
             replace: true,
-            scope: true
+            scope: {
+                cells: '=',
+                key: '='
+            }
         };
 
         function link(scope) {
+            scope.rows = $rootScope.rows;
+            scope.columns = $rootScope.columns;
+            
             scope.isPlayable = isPlayable;
 
             function isPlayable(row) {

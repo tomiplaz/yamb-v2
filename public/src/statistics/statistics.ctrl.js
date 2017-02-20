@@ -15,8 +15,11 @@
         vm.formatDuration = helperService.formatDuration;
 
         function activate() {
-            vm.scopes = getScopes();
-            vm.types = getTypes();
+            vm.options = {
+                dice: getDiceOptions(),
+                scope: getScopeOptions(),
+                type: getTypeOptions()
+            };
 
             vm.cells = null;
             vm.other = null;
@@ -24,24 +27,40 @@
             vm.worldwide = worldwide;
             vm.personal = personal;
 
-            $scope.$watchGroup(['statistics.selected.scope', 'statistics.selected.type'], onSelectedChanged);
+            $scope.$watchGroup([
+                'statistics.selected.dice',
+                'statistics.selected.scope',
+                'statistics.selected.type'
+            ], onSelectedChanged);
 
             vm.selected = {
-                scope: vm.scopes[0],
-                type: vm.types[0]
+                dice: vm.options.dice[0],
+                scope: vm.options.scope[0],
+                type: vm.options.type[0]
             };
 
-            function getScopes() {
+            function getDiceOptions() {
+                return ['5', '6'].map(mapDiceOption);
+
+                function mapDiceOption(item) {
+                    return {
+                        key: item + '_dice',
+                        label: item + ' Dice'
+                    };
+                }
+            }
+
+            function getScopeOptions() {
                 return ['Worldwide', 'Personal'].map(mapItem);
             }
 
-            function getTypes() {
-                return ['Values', 'Turns', 'Other'].map(mapItem);
+            function getTypeOptions() {
+                return ['Value', 'Input Turn', 'Other'].map(mapItem);
             }
 
             function mapItem(item) {
                 return {
-                    key: item.toLowerCase(),
+                    key: item.toLowerCase().replace(' ', '_'),
                     label: item
                 };
             }
@@ -49,25 +68,16 @@
             function onSelectedChanged(newSelected) {
                 if (vm.selected.type.key === 'other') {
                     vm.cells = null;
-                    vm.other = vm[vm.selected.scope.key].otherStats;
+                    vm.other = vm[vm.selected.scope.key].other_stats;
                 } else {
                     vm.other = null;
-                    vm.cellDisplayProperty = getCellDisplayProperty(vm.selected.type.key);
-                    vm.cells = vm[vm.selected.scope.key].cellsAverages;
-                }
-
-                function getCellDisplayProperty(key) {
-                    if (key === 'turns') {
-                        return 'averageInputTurn';
-                    } else {
-                        return 'averageValue';
-                    }
+                    vm.cells = vm[vm.selected.scope.key].cells_averages[vm.selected.dice.key];
                 }
             }
         }
 
-        function setSelected(key, index) {
-            vm.selected[key] = vm[key + 's'][index];
+        function setSelected(key, item) {
+            vm.selected[key] = item;
         }
     }
 })();

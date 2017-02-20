@@ -30,4 +30,14 @@ class Cell extends Model
     ];
 
     public $timestamps = false;
+
+    /**
+     * Get cell's game.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function game()
+    {
+        return $this->belongsTo('App\Game');
+    }
 }

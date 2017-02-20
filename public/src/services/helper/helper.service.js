@@ -12,7 +12,7 @@
         };
 
         function formatDuration(miliseconds) {
-            if (!miliseconds) {
+            if (typeof miliseconds !== 'number' || isNaN(miliseconds)) {
                 return '-:-';
             } else {
                 var seconds = Math.floor(miliseconds / 1000);

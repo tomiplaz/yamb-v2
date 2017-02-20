@@ -62,10 +62,14 @@ class User extends Authenticatable
      */
     public function getGamesPlayedAttribute()
     {
-        return [
-            'fiveDice' => $this->games()->where('number_of_dice', '5')->count(),
-            'sixDice' => $this->games()->where('number_of_dice', '6')->count()
-        ];
+        $gamesPlayed = [];
+
+        foreach (['5', '6'] as $numberOfDice) {
+            $numberOfDiceKey = $numberOfDice . '_dice';
+            $gamesPlayed[$numberOfDiceKey] = $this->games()->where('number_of_dice', $numberOfDice)->count();
+        }
+
+        return $gamesPlayed;
     }
 
     /**
@@ -75,10 +79,14 @@ class User extends Authenticatable
      */
     public function getBestResultsAttribute()
     {
-        return [
-            'fiveDice' => $this->games()->where('number_of_dice', '5')->max('result'),
-            'sixDice' => $this->games()->where('number_of_dice', '6')->max('result')
-        ];
+        $bestResults = [];
+
+        foreach (['5', '6'] as $numberOfDice) {
+            $numberOfDiceKey = $numberOfDice . '_dice';
+            $bestResults[$numberOfDiceKey] = $this->games()->where('number_of_dice', $numberOfDice)->max('result');
+        }
+
+        return $bestResults;
     }
 
     /**
@@ -88,10 +96,16 @@ class User extends Authenticatable
      */
     public function getAverageResultsAttribute()
     {
-        return [
-            'fiveDice' => $this->games()->where('number_of_dice', '5')->avg('result'),
-            'sixDice' => $this->games()->where('number_of_dice', '6')->avg('result')
-        ];
+        $avarageResults = [];
+
+        foreach (['5', '6'] as $numberOfDice) {
+            $numberOfDiceKey = $numberOfDice . '_dice';
+            $avarageResults[$numberOfDiceKey] = round(
+                $this->games()->where('number_of_dice', $numberOfDice)->avg('result'), 2
+            );
+        }
+
+        return $avarageResults;
     }
 
     /**
@@ -101,10 +115,16 @@ class User extends Authenticatable
      */
     public function getAverageDurationAttribute()
     {
-        return [
-            'fiveDice' => $this->games()->where('number_of_dice', '5')->avg('duration'),
-            'sixDice' => $this->games()->where('number_of_dice', '6')->avg('duration')
-        ];
+        $avarageDuration = [];
+
+        foreach (['5', '6'] as $numberOfDice) {
+            $numberOfDiceKey = $numberOfDice . '_dice';
+            $avarageDuration[$numberOfDiceKey] = round(
+                $this->games()->where('number_of_dice', $numberOfDice)->avg('duration'), 2
+            );
+        }
+
+        return $avarageDuration;
     }
 
     /**
