@@ -2,7 +2,7 @@
     'use strict';
 
     angular
-        .module('services.user', ['angular-jwt'])
+        .module('yamb-v2.services')
         .factory('userService', userService);
     
     userService.$inject = ['$localStorage', 'jwtHelper', 'apiService', '$rootScope'];

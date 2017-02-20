@@ -2,7 +2,7 @@
     'use strict';
 
     angular
-        .module('services.auth', ['restangular'])
+        .module('commonServices.auth', ['restangular'])
         .factory('authService', authService);
 
     authService.$inject = ['Restangular'];

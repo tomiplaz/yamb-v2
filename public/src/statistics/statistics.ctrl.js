@@ -12,13 +12,12 @@
         activate();
 
         vm.setSelected = setSelected;
-        vm.formatDuration = helperService.formatDuration;
 
         function activate() {
             vm.options = {
-                dice: getDiceOptions(),
-                scope: getScopeOptions(),
-                type: getTypeOptions()
+                dice: helperService.getDiceOptions(),
+                scope: helperService.getScopeOptions(),
+                type: helperService.getTypeOptions('statistics')
             };
 
             vm.cells = null;
@@ -39,33 +38,7 @@
                 type: vm.options.type[0]
             };
 
-            function getDiceOptions() {
-                return ['5', '6'].map(mapDiceOption);
-
-                function mapDiceOption(item) {
-                    return {
-                        key: item + '_dice',
-                        label: item + ' Dice'
-                    };
-                }
-            }
-
-            function getScopeOptions() {
-                return ['Worldwide', 'Personal'].map(mapItem);
-            }
-
-            function getTypeOptions() {
-                return ['Value', 'Input Turn', 'Other'].map(mapItem);
-            }
-
-            function mapItem(item) {
-                return {
-                    key: item.toLowerCase().replace(' ', '_'),
-                    label: item
-                };
-            }
-
-            function onSelectedChanged(newSelected) {
+            function onSelectedChanged() {
                 if (vm.selected.type.key === 'other') {
                     vm.cells = null;
                     vm.other = vm[vm.selected.scope.key].other_stats;

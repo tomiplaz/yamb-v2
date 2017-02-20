@@ -7,7 +7,9 @@
             'angular-jwt',
             'ngStorage',
             'toastr',
-            'services',
+            'commonServices',
+            'yamb-v2.services',
+            'yamb-v2.filters',
             'yamb-v2.root',
             'yamb-v2.home',
             'yamb-v2.register',
@@ -87,39 +89,36 @@
         .controller('LeaderboardCtrl', LeaderboardCtrl);
     
     LeaderboardCtrl.$inject = ['users', '$scope', 'helperService'];
-    function LeaderboardCtrl(worldwide, $scope, helperService) {
+    function LeaderboardCtrl(users, $scope, helperService) {
         var vm = this;
 
         activate();
 
+        vm.setSelected = setSelected;
+
         function activate() {
             vm.options = {
-                dice: getDiceOptions(),
-                types: getTypesOptions()
+                dice: helperService.getDiceOptions(),
+                type: helperService.getTypeOptions('leaderboard')
             };
 
-            $scope.$watchGroup(['leaderboard.selected.dice', 'statistics.selected.type'], onSelectedChanged);
+            $scope.$watchGroup([
+                'leaderboard.selected.dice',
+                'leaderboard.selected.type'
+            ], onSelectedChanged);
 
             vm.selected = {
                 dice: vm.options.dice[0],
-                type: vm.options.types[0]
+                type: vm.options.type[0]
             };
 
-            function getDiceOptions() {
-                return ['5 Dice', '6 Dice'].map(mapDiceOption);
-
-                function mapDiceOption(item) {
-                    return {};
-                }
+            function onSelectedChanged() {
+                //
             }
+        }
 
-            function getTypesOptions() {
-                return ['Best', 'Average', 'Played'].map(mapTypeOption);
-
-                function mapTypeOption(item) {
-                    return {};
-                }
-            }
+        function setSelected(key, item) {
+            vm.selected[key] = item;
         }
     }
 })();
@@ -456,17 +455,6 @@
     'use strict';
 
     angular
-        .module('services', [
-            'services.auth',
-            'services.api',
-            'services.user',
-            'services.helper'
-        ]);
-})();
-(function() {
-    'use strict';
-
-    angular
         .module('yamb-v2.statistics', [])
         .config(config);
     
@@ -507,13 +495,12 @@
         activate();
 
         vm.setSelected = setSelected;
-        vm.formatDuration = helperService.formatDuration;
 
         function activate() {
             vm.options = {
-                dice: getDiceOptions(),
-                scope: getScopeOptions(),
-                type: getTypeOptions()
+                dice: helperService.getDiceOptions(),
+                scope: helperService.getScopeOptions(),
+                type: helperService.getTypeOptions('statistics')
             };
 
             vm.cells = null;
@@ -534,33 +521,7 @@
                 type: vm.options.type[0]
             };
 
-            function getDiceOptions() {
-                return ['5', '6'].map(mapDiceOption);
-
-                function mapDiceOption(item) {
-                    return {
-                        key: item + '_dice',
-                        label: item + ' Dice'
-                    };
-                }
-            }
-
-            function getScopeOptions() {
-                return ['Worldwide', 'Personal'].map(mapItem);
-            }
-
-            function getTypeOptions() {
-                return ['Value', 'Input Turn', 'Other'].map(mapItem);
-            }
-
-            function mapItem(item) {
-                return {
-                    key: item.toLowerCase().replace(' ', '_'),
-                    label: item
-                };
-            }
-
-            function onSelectedChanged(newSelected) {
+            function onSelectedChanged() {
                 if (vm.selected.type.key === 'other') {
                     vm.cells = null;
                     vm.other = vm[vm.selected.scope.key].other_stats;
@@ -575,6 +536,27 @@
             vm.selected[key] = item;
         }
     }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.filters', []);
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('commonServices', [
+            'commonServices.auth',
+            'commonServices.api'
+        ]);
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.services', ['angular-jwt']);
 })();
 (function() {
     'use strict';
@@ -823,7 +805,26 @@
     'use strict';
 
     angular
-        .module('services.api', ['restangular'])
+        .module('yamb-v2.filters')
+        .filter('formatDuration', formatDuration);
+    
+    function formatDuration() {
+        return function(miliseconds) {
+            if (typeof miliseconds !== 'number' || isNaN(miliseconds)) {
+                return '-:-';
+            } else {
+                var seconds = Math.floor(miliseconds / 1000);
+                var minutes = Math.floor(seconds / 60);
+                return minutes + ':' + (seconds - minutes * 60);
+            }
+        };
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('commonServices.api', ['restangular'])
         .factory('ApiRestangular', ApiRestangular)
         .factory('apiService', apiService);
     
@@ -868,7 +869,7 @@
     'use strict';
 
     angular
-        .module('services.auth', ['restangular'])
+        .module('commonServices.auth', ['restangular'])
         .factory('authService', authService);
 
     authService.$inject = ['Restangular'];
@@ -891,23 +892,53 @@
     'use strict';
 
     angular
-        .module('services.helper', [])
+        .module('yamb-v2.services')
         .factory('helperService', helperService);
     
     helperService.$inject = [];
     function helperService() {
         return {
-            formatDuration: formatDuration
+            getDiceOptions: getDiceOptions,
+            getScopeOptions: getScopeOptions,
+            getTypeOptions: getTypeOptions
         };
 
-        function formatDuration(miliseconds) {
-            if (typeof miliseconds !== 'number' || isNaN(miliseconds)) {
-                return '-:-';
-            } else {
-                var seconds = Math.floor(miliseconds / 1000);
-                var minutes = Math.floor(seconds / 60);
-                return minutes + ':' + (seconds - minutes * 60);
+        function getDiceOptions() {
+            return ['5', '6'].map(mapDiceOption);
+
+            function mapDiceOption(item) {
+                return {
+                    key: item + '_dice',
+                    label: item + ' Dice'
+                };
             }
+        }
+
+        function getScopeOptions() {
+            return ['Worldwide', 'Personal'].map(mapItem);
+        }
+
+        function getTypeOptions(state) {
+            var options = getOptions(state);
+
+            return options.map(mapItem);
+
+            function getOptions(state) {
+                if (state === 'statistics') {
+                    return ['Value', 'Input Turn', 'Other'];
+                } else if (state === 'leaderboard') {
+                    return ['Best', 'Average', 'Played'];
+                } else {
+                    return [];
+                }
+            }
+        }
+
+        function mapItem(item) {
+            return {
+                key: item.toLowerCase().replace(' ', '_'),
+                label: item
+            };
         }
     }
 })();
@@ -915,7 +946,7 @@
     'use strict';
 
     angular
-        .module('services.user', ['angular-jwt'])
+        .module('yamb-v2.services')
         .factory('userService', userService);
     
     userService.$inject = ['$localStorage', 'jwtHelper', 'apiService', '$rootScope'];

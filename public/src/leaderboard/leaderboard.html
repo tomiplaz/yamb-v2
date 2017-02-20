@@ -1,3 +1,15 @@
 <div class="row">
-    Leaderboard
+    <button class="btn m-l-5 m-r-5" ng-repeat="dice in leaderboard.options.dice track by $index"
+        ng-class="{'active': leaderboard.selected.dice === dice}"
+        ng-click="leaderboard.setSelected('dice', dice)">
+        {{ dice.label }}
+    </button>
+</div>
+
+<div class="row m-t-10">
+    <button class="btn m-l-5 m-r-5" ng-repeat="type in leaderboard.options.type track by $index"
+        ng-class="{'active': leaderboard.selected.type === type}"
+        ng-click="leaderboard.setSelected('type', type)">
+        {{ type.label }}
+    </button>
 </div>

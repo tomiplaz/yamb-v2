@@ -2,16 +2,11 @@
     'use strict';
 
     angular
-        .module('services.helper', [])
-        .factory('helperService', helperService);
+        .module('yamb-v2.filters')
+        .filter('formatDuration', formatDuration);
     
-    helperService.$inject = [];
-    function helperService() {
-        return {
-            formatDuration: formatDuration
-        };
-
-        function formatDuration(miliseconds) {
+    function formatDuration() {
+        return function(miliseconds) {
             if (typeof miliseconds !== 'number' || isNaN(miliseconds)) {
                 return '-:-';
             } else {
@@ -19,6 +14,6 @@
                 var minutes = Math.floor(seconds / 60);
                 return minutes + ':' + (seconds - minutes * 60);
             }
-        }
+        };
     }
 })();

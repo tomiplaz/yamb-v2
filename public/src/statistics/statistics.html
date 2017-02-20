@@ -35,6 +35,6 @@
     </div>
     <div class="col-xs-12" ng-repeat="(key, value) in statistics.other.game_averages[statistics.selected.dice.key]"
         ng-class="{'m-t-20': $first, 'm-t-5': !$first}">
-        <span>Avarage {{ key }}: {{ key === 'duration' ? statistics.formatDuration(value) : value }}</span>
+        <span>Avarage {{ key }}: {{ key === 'duration' ? (value | formatDuration) : value }}</span>
     </div>
 </div>

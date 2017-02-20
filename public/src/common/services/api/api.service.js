@@ -2,7 +2,7 @@
     'use strict';
 
     angular
-        .module('services.api', ['restangular'])
+        .module('commonServices.api', ['restangular'])
         .factory('ApiRestangular', ApiRestangular)
         .factory('apiService', apiService);
     
