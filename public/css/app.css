@@ -545,3 +545,11 @@ body {
       background-color: #f00;
       pointer-events: auto;
       cursor: pointer; }
+
+.table__clickable:hover {
+  text-decoration: underline;
+  pointer-events: auto;
+  cursor: pointer; }
+
+.table th {
+  text-align: center; }

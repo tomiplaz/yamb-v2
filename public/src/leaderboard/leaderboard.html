@@ -13,3 +13,28 @@
         {{ type.label }}
     </button>
 </div>
+
+<div class="m-t-20">
+    <div class="col-xs-12 col-sm-6 col-md-4 col-sm-offset-3 col-md-offset-4">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th ng-bind="leaderboard.selected.type.label"></th>
+                </tr>
+                <tr ng-repeat="user in leaderboard.users | orderBy : leaderboard.orderByPredicate">
+                    <td ng-bind="$index + 1"></td>
+                    <td class="table__clickable" ng-bind="user.name"
+                        ng-click="leaderboard.userClicked(user)"></td>
+                    <td ng-bind="user[leaderboard.selected.type.key][leaderboard.selected.dice.key] || '-'"
+                        ng-class="{
+                            'table__clickable': leaderboard.selected.type.key === 'best_results' &&
+                                user[leaderboard.selected.type.key][leaderboard.selected.dice.key]
+                        }">
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>

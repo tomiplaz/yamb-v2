@@ -1,9 +1,8 @@
-<nav class="navbar navbar-default">
+<nav class="navbar navbar-default" role="navigation">
     <div class="container-fluid">
         <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed"
-                data-toggle="collapse" data-target="#navbar-collapse"
-                aria-expanded="false">
+            <button type="button" class="navbar-toggle"
+                ng-click="root.isNavCollapsed = !root.isNavCollapsed">
                 <span class="sr-only">Toggle navigation</span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
@@ -14,18 +13,23 @@
             </a>
         </div>
 
-        <div class="collapse navbar-collapse" id="navbar-collapse">
-            <ul ng-repeat="side in ['left', 'right']" class="nav navbar-nav navbar-{{ side }}">
+        <div class="collapse navbar-collapse" uib-collapse="root.isNavCollapsed">
+            <ul class="nav navbar-nav navbar-{{ side }}" ng-repeat="side in ['left', 'right']">
                 <hr class="hidden-sm hidden-md hidden-lg" ng-if="$last">
+
                 <li class="static" ng-if="$last && user">
                     <a>{{ root.greeting + ', ' + user.name + '!' }}</a>
                 <li>
-                <li ng-repeat="state in root[side + 'States']" ng-hide="user && side === 'right'"
+
+                <li ng-repeat="state in root[side + 'States']"
+                    ng-hide="user && side === 'right'"
                     ng-class="{'active': (state.name | isState)}"
-                    data-toggle="collapse" data-target="#navbar-collapse">
+                    ng-click="root.isNavCollapsed = !root.isNavCollapsed">
                     <a ui-sref="{{ state.name }}">{{ state.label }}</a>
                 </li>
-                <li class="dynamic" ng-if="$last && user" data-toggle="collapse" data-target="#navbar-collapse">
+
+                <li class="dynamic" ng-if="$last && user"
+                    ng-click="root.isNavCollapsed = !root.isNavCollapsed">
                     <a ng-click="root.logout()">Logout</a>
                 </li>
             </ul>

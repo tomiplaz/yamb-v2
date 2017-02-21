@@ -76,3 +76,12 @@ body {
         }
     }
 }
+
+.table__clickable:hover {
+    text-decoration: underline;
+    @include pointer-enabled;
+}
+
+.table th {
+    text-align: center;
+}

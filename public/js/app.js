@@ -4,6 +4,9 @@
     angular
         .module('yamb-v2', [
             'ui.router',
+            'ui.bootstrap',
+            'ngAnimate',
+            'ngTouch',
             'angular-jwt',
             'ngStorage',
             'toastr',
@@ -35,34 +38,6 @@
     'use strict';
 
     angular
-        .module('yamb-v2.home', [])
-        .config(config);
-    
-    config.$inject = ['$stateProvider'];
-    function config($stateProvider) {
-        $stateProvider
-            .state('root.home', {
-                url: 'home',
-                templateUrl: 'src/home/home.html',
-                controller: 'HomeCtrl as home'
-            });
-    }
-})();
-(function() {
-    'use strict';
-
-    angular
-        .module('yamb-v2.home')
-        .controller('HomeCtrl', HomeCtrl);
-
-    function HomeCtrl() {
-        var vm = this;
-    }
-})();
-(function() {
-    'use strict';
-
-    angular
         .module('yamb-v2.leaderboard', [])
         .config(config);
     
@@ -88,19 +63,22 @@
         .module('yamb-v2.leaderboard')
         .controller('LeaderboardCtrl', LeaderboardCtrl);
     
-    LeaderboardCtrl.$inject = ['users', '$scope', 'helperService'];
-    function LeaderboardCtrl(users, $scope, helperService) {
+    LeaderboardCtrl.$inject = ['users', '$scope', 'helperService', '$uibModal', 'apiService'];
+    function LeaderboardCtrl(users, $scope, helperService, $uibModal, apiService) {
         var vm = this;
 
         activate();
 
         vm.setSelected = setSelected;
+        vm.userClicked = userClicked;
 
         function activate() {
             vm.options = {
                 dice: helperService.getDiceOptions(),
                 type: helperService.getTypeOptions('leaderboard')
             };
+
+            vm.users = users;
 
             $scope.$watchGroup([
                 'leaderboard.selected.dice',
@@ -113,12 +91,41 @@
             };
 
             function onSelectedChanged() {
-                //
+                vm.orderByPredicate = getOrderByPredicate(
+                    vm.selected.type.key,
+                    vm.selected.dice.key
+                );
+
+                function getOrderByPredicate() {
+                    var args = arguments;
+
+                    return function(item) {
+                        return item[args[0]][args[1]];
+                    }
+                }
             }
         }
 
         function setSelected(key, item) {
             vm.selected[key] = item;
+        }
+
+        function userClicked(user) {
+            var modalInstance = $uibModal.open({
+                animation: true,
+                component: 'userInfoModal',
+                resolve: {
+                    user: function () {
+                        return user;
+                    }
+                }
+            });
+
+            modalInstance.result.then(function() {
+                //
+            }, function() {
+
+            });
         }
     }
 })();
@@ -167,6 +174,34 @@
                 console.log("Error", error);
             });
         }
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.home', [])
+        .config(config);
+    
+    config.$inject = ['$stateProvider'];
+    function config($stateProvider) {
+        $stateProvider
+            .state('root.home', {
+                url: 'home',
+                templateUrl: 'src/home/home.html',
+                controller: 'HomeCtrl as home'
+            });
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.home')
+        .controller('HomeCtrl', HomeCtrl);
+
+    function HomeCtrl() {
+        var vm = this;
     }
 })();
 (function() {
@@ -919,17 +954,30 @@
         }
 
         function getTypeOptions(state) {
-            var options = getOptions(state);
-
-            return options.map(mapItem);
+            return getOptions(state);
 
             function getOptions(state) {
                 if (state === 'statistics') {
-                    return ['Value', 'Input Turn', 'Other'];
+                    return ['Value', 'Input Turn', 'Other'].map(mapItem);
                 } else if (state === 'leaderboard') {
-                    return ['Best', 'Average', 'Played'];
+                    return ['Best', 'Average', 'Played'].map(mapLeaderboardTypeOption);
                 } else {
                     return [];
+                }
+            }
+
+            function mapLeaderboardTypeOption(item) {
+                return {
+                    key: getKeyLabel(item).toLowerCase().replace(' ', '_'),
+                    label: item,
+                };
+
+                function getKeyLabel(item) {
+                    if (item === 'Played') {
+                        return ('Games ' + item)
+                    } else {
+                        return (item + ' Results')
+                    }
                 }
             }
         }
@@ -972,6 +1020,29 @@
             } else {
                 return null;
             }
+        }
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.leaderboard')
+        .component('userInfoModal', {
+            templateUrl: 'src/leaderboard/components/userInfoModal/userInfoModal.component.html',
+            bindings: {
+                resolve: '<'
+            },
+            controller: controller
+        });
+    
+    function controller() {
+        var $ctrl = this;
+
+        $ctrl.$onInit = onInit;
+
+        function onInit() {
+            $ctrl.user = $ctrl.resolve.user;
         }
     }
 })();

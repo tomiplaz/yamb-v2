@@ -4,6 +4,9 @@
     angular
         .module('yamb-v2', [
             'ui.router',
+            'ui.bootstrap',
+            'ngAnimate',
+            'ngTouch',
             'angular-jwt',
             'ngStorage',
             'toastr',

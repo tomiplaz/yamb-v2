@@ -29,17 +29,30 @@
         }
 
         function getTypeOptions(state) {
-            var options = getOptions(state);
-
-            return options.map(mapItem);
+            return getOptions(state);
 
             function getOptions(state) {
                 if (state === 'statistics') {
-                    return ['Value', 'Input Turn', 'Other'];
+                    return ['Value', 'Input Turn', 'Other'].map(mapItem);
                 } else if (state === 'leaderboard') {
-                    return ['Best', 'Average', 'Played'];
+                    return ['Best', 'Average', 'Played'].map(mapLeaderboardTypeOption);
                 } else {
                     return [];
+                }
+            }
+
+            function mapLeaderboardTypeOption(item) {
+                return {
+                    key: getKeyLabel(item).toLowerCase().replace(' ', '_'),
+                    label: item,
+                };
+
+                function getKeyLabel(item) {
+                    if (item === 'Played') {
+                        return ('Games ' + item)
+                    } else {
+                        return (item + ' Results')
+                    }
                 }
             }
         }
