@@ -445,7 +445,8 @@
             $rootScope.user = (user ? user.plain() : user);
             $rootScope.rows = rows.plain();
             $rootScope.columns = columns.plain();
-            
+
+            vm.isNavCollapsed = true;
             vm.greeting = "Hello";
 
             vm.leftStates = [
