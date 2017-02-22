@@ -10,7 +10,8 @@
         return {
             getDiceOptions: getDiceOptions,
             getScopeOptions: getScopeOptions,
-            getTypeOptions: getTypeOptions
+            getTypeOptions: getTypeOptions,
+            getStatKeys: getStatKeys
         };
 
         function getDiceOptions() {
@@ -53,6 +54,32 @@
                     } else {
                         return (item + ' Results')
                     }
+                }
+            }
+        }
+
+        function getStatKeys() {
+            var labels = [
+                'Last game', 'Best result', 'Average result', 'Average duration', 'Games played'/*, 'Unfinished games'*/
+            ];
+
+            return labels.map(mapStatKey);
+
+            function mapStatKey(label) {
+                return {
+                    key: getKey(label),
+                    label: label
+                };
+
+                function getKey(label) {
+                    if (label.indexOf('Last') !== -1) {
+                        label += '_timestamp';
+                    }
+                    if (label.indexOf('result') !== -1) {
+                        label += 's';
+                    }
+
+                    return label.replace(' ', '_').toLowerCase();
                 }
             }
         }

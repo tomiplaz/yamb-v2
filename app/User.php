@@ -42,7 +42,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $appends = [
-        'best_results', 'average_results', 'average_duration', 'games_played'
+        'best_results', 'average_results', 'average_duration', 'games_played', 'last_game_timestamp'
     ];
 
     /**
@@ -125,6 +125,27 @@ class User extends Authenticatable
         }
 
         return $avarageDuration;
+    }
+
+    /**
+     * Get user's last game timestamp.
+     *
+     * @return array
+     */
+    public function getLastGameTimestampAttribute()
+    {
+        $lastGameTimestamp = [];
+
+        foreach (['5', '6'] as $numberOfDice) {
+            $numberOfDiceKey = $numberOfDice . '_dice';
+            $lastGame = $this->games()
+                ->where('number_of_dice', $numberOfDice)
+                ->orderBy('created_at', 'desc')
+                ->first();
+            $lastGameTimestamp[$numberOfDiceKey] = ($lastGame ? $lastGame->created_at : null);
+        }
+
+        return $lastGameTimestamp;
     }
 
     /**

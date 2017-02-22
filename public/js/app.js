@@ -38,6 +38,34 @@
     'use strict';
 
     angular
+        .module('yamb-v2.home', [])
+        .config(config);
+    
+    config.$inject = ['$stateProvider'];
+    function config($stateProvider) {
+        $stateProvider
+            .state('root.home', {
+                url: 'home',
+                templateUrl: 'src/home/home.html',
+                controller: 'HomeCtrl as home'
+            });
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.home')
+        .controller('HomeCtrl', HomeCtrl);
+
+    function HomeCtrl() {
+        var vm = this;
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
         .module('yamb-v2.leaderboard', [])
         .config(config);
     
@@ -174,34 +202,6 @@
                 console.log("Error", error);
             });
         }
-    }
-})();
-(function() {
-    'use strict';
-
-    angular
-        .module('yamb-v2.home', [])
-        .config(config);
-    
-    config.$inject = ['$stateProvider'];
-    function config($stateProvider) {
-        $stateProvider
-            .state('root.home', {
-                url: 'home',
-                templateUrl: 'src/home/home.html',
-                controller: 'HomeCtrl as home'
-            });
-    }
-})();
-(function() {
-    'use strict';
-
-    angular
-        .module('yamb-v2.home')
-        .controller('HomeCtrl', HomeCtrl);
-
-    function HomeCtrl() {
-        var vm = this;
     }
 })();
 (function() {
@@ -935,7 +935,8 @@
         return {
             getDiceOptions: getDiceOptions,
             getScopeOptions: getScopeOptions,
-            getTypeOptions: getTypeOptions
+            getTypeOptions: getTypeOptions,
+            getStatKeys: getStatKeys
         };
 
         function getDiceOptions() {
@@ -978,6 +979,32 @@
                     } else {
                         return (item + ' Results')
                     }
+                }
+            }
+        }
+
+        function getStatKeys() {
+            var labels = [
+                'Last game', 'Best result', 'Average result', 'Average duration', 'Games played'/*, 'Unfinished games'*/
+            ];
+
+            return labels.map(mapStatKey);
+
+            function mapStatKey(label) {
+                return {
+                    key: getKey(label),
+                    label: label
+                };
+
+                function getKey(label) {
+                    if (label.indexOf('Last') !== -1) {
+                        label += '_timestamp';
+                    }
+                    if (label.indexOf('result') !== -1) {
+                        label += 's';
+                    }
+
+                    return label.replace(' ', '_').toLowerCase();
                 }
             }
         }
@@ -1036,13 +1063,34 @@
             controller: controller
         });
     
-    function controller() {
+    controller.$inject = ['helperService', '$scope']
+    function controller(helperService, $scope) {
         var $ctrl = this;
 
         $ctrl.$onInit = onInit;
+        $ctrl.setSelected = setSelected;
 
         function onInit() {
+            $ctrl.statKeys = helperService.getStatKeys();
+            $ctrl.diceOptions = helperService.getDiceOptions();
+
             $ctrl.user = $ctrl.resolve.user;
+
+            $scope.$watchGroup(watchSelectedDiceOption, onSelectedChanged);
+
+            $ctrl.selectedDiceOption = $ctrl.diceOptions[0];
+
+            function watchSelectedDiceOption() {
+                return $ctrl.selectedDiceOption;
+            }
+
+            function onSelectedChanged() {
+
+            }
+        }
+
+        function setSelected(diceOption) {
+            $ctrl.selectedDiceOption = diceOption;
         }
     }
 })();
