@@ -21,8 +21,8 @@ Route::resource('rows', 'RowController', ['only' => ['index']]);
 
 Route::resource('columns', 'ColumnController', ['only' => ['index']]);
 
-Route::group(['prefix' => 'users'], function() {
-    Route::post('{id}/game-unfinished', 'UserController@incrementUnfinishedGames');
+Route::group(['prefix' => 'games'], function() {
+    Route::post('game-started', 'GameController@gameStarted');
 });
 
 Route::group(['prefix' => 'statistics'], function() {

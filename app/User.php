@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
@@ -42,7 +43,8 @@ class User extends Authenticatable
      * @var array
      */
     protected $appends = [
-        'best_results', 'average_results', 'average_duration', 'games_played', 'last_game_timestamp'
+        'games_played', 'unfinished_games', 'best_results', 'average_results', 'average_duration',
+        'last_game_timestamp'
     ];
 
     /**
@@ -70,6 +72,27 @@ class User extends Authenticatable
         }
 
         return $gamesPlayed;
+    }
+
+    /**
+     * Get user's number of unfinished games.
+     *
+     * @return array
+     */
+    public function getUnfinishedGamesAttribute()
+    {
+        $unfinishedGames = [];
+
+        foreach (['5', '6'] as $numberOfDice) {
+            $numberOfDiceKey = $numberOfDice . '_dice';
+            $gamesStarted = DB::table('games_started')
+                ->where('number_of_dice', $numberOfDice)->where('user_id', $this->id)->count();
+            $gamesFinished = $this->games()
+                ->where('number_of_dice', $numberOfDice)->count();
+            $unfinishedGames[$numberOfDiceKey] = $gamesStarted - $gamesFinished;
+        }
+
+        return $unfinishedGames;
     }
 
     /**

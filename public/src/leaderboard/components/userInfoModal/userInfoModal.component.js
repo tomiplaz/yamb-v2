@@ -11,8 +11,8 @@
             controller: controller
         });
     
-    controller.$inject = ['helperService', '$scope']
-    function controller(helperService, $scope) {
+    controller.$inject = ['helperService']
+    function controller(helperService) {
         var $ctrl = this;
 
         $ctrl.$onInit = onInit;
@@ -24,17 +24,7 @@
 
             $ctrl.user = $ctrl.resolve.user;
 
-            $scope.$watchGroup(watchSelectedDiceOption, onSelectedChanged);
-
             $ctrl.selectedDiceOption = $ctrl.diceOptions[0];
-
-            function watchSelectedDiceOption() {
-                return $ctrl.selectedDiceOption;
-            }
-
-            function onSelectedChanged() {
-
-            }
         }
 
         function setSelected(diceOption) {

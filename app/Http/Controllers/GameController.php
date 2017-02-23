@@ -32,6 +32,10 @@ class GameController extends Controller
             $game = Game::create($request->get('game'));
             $game->cells()->createMany($request->get('cells'));
 
+            DB::table('games_finished')->insert(
+                array_only($request->get('game'), ['user_id'])
+            );
+
             DB::commit();
             return response('OK', 200);
         } catch (Exception $e) {
@@ -53,5 +57,20 @@ class GameController extends Controller
         } else {
             return response('Game with given ID does not exist!', 404);
         }
+    }
+
+    /**
+     * Store that game has started.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function gameStarted(Request $request)
+    {
+        $data = $request->only('user_id');
+
+        DB::table('games_started')->insert($data);
+
+        return response('OK', 200);
     }
 }

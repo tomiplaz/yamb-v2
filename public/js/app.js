@@ -244,27 +244,21 @@
         vm.saveGame = saveGame;
 
         function activate() {
-            vm.hasGameStarted = false;
             vm.rollNumber = 0;
             vm.isInputRequired = false;
             vm.isAnnouncementRequired = false;
-            vm.isGameFinished = false;
-
-            $scope.$on('$destroy', onDestroy);
-
-            function onDestroy() {
-                // Handle on refresh, close, etc...
-                if (userId && vm.hasGameStarted && !vm.isGameFinished) {
-                    apiService.custom('users', userId, 'post', 'game-unfinished');
-                }
-            }
         }
 
         function startGame(numberOfDice) {
+            // Handle game start correctly (number of dice selection)
             vm.numberOfDice = numberOfDice;
-            vm.diceIndices = getDiceIndices();
+            vm.diceIndices = getDiceIndices(numberOfDice);
 
-            vm.hasGameStarted = true;
+            apiService.custom('games', null, 'post', 'game-started', {
+                user_id: userId,
+                number_of_dice: numberOfDice
+            });
+
             $scope.$broadcast('start');
             roll();
         }
@@ -274,14 +268,14 @@
             $scope.$broadcast('roll');
 
             if (vm.rollNumber === 3) {
-                setIsInputRequired(true)
+                setIsInputRequired(true);
             }
         }
 
-        function getDiceIndices() {
+        function getDiceIndices(numberOfDice) {
             var diceIndices = [];
 
-            for (var i = 0; i < vm.numberOfDice; i++) {
+            for (var i = 0; i < numberOfDice; i++) {
                 diceIndices.push(i);
             }
 
@@ -305,7 +299,6 @@
         }
 
         function saveGame(cells, finalResult) {
-            vm.isGameFinished = true;
             vm.finalResult = finalResult;
 
             $scope.$broadcast('stop');
@@ -1064,8 +1057,8 @@
             controller: controller
         });
     
-    controller.$inject = ['helperService', '$scope']
-    function controller(helperService, $scope) {
+    controller.$inject = ['helperService']
+    function controller(helperService) {
         var $ctrl = this;
 
         $ctrl.$onInit = onInit;
@@ -1077,17 +1070,7 @@
 
             $ctrl.user = $ctrl.resolve.user;
 
-            $scope.$watchGroup(watchSelectedDiceOption, onSelectedChanged);
-
             $ctrl.selectedDiceOption = $ctrl.diceOptions[0];
-
-            function watchSelectedDiceOption() {
-                return $ctrl.selectedDiceOption;
-            }
-
-            function onSelectedChanged() {
-
-            }
         }
 
         function setSelected(diceOption) {
@@ -1191,7 +1174,6 @@
                         column: column,
                         isPlayable: isPlayable(row),
                         isAvailable: false,
-                        //value: (isPlayable(row) && row.abbreviation !== '1' ? 7 : null),
                         value: null,
                         inputTurn: null
                     };

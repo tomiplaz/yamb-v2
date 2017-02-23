@@ -1,13 +1,16 @@
-<div class="row text-center" ng-show="play.hasGameStarted">
+<div class="row text-center">
     <div class="col-xs-12 col-sm-12">
         <div class="col-xs-12">
             <die ng-repeat="i in play.diceIndices" index="{{ i }}"></die>
         </div>
 
         <div class="col-xs-12">
-            <button class="btn" ng-click="play.roll()"
+            <button class="btn" ng-click="play.roll()" ng-if="play.rollNumber !== 0"
                 ng-disabled="play.isInputRequired || play.isAnnouncementRequired">
                 Roll
+            </button>
+            <button class="btn" ng-click="play.startGame(5)" ng-if="play.rollNumber === 0">
+                Start
             </button>
         </div>
 
@@ -19,25 +22,6 @@
     <div class="col-xs-12 col-sm-12">
         <div class="col-xs-12">
             <paper-play></paper-play>
-        </div>
-    </div>
-</div>
-
-<div class="row" ng-hide="play.hasGameStarted">
-    <div class="col-xs-12" ng-repeat="n in [5, 6]">
-        <button class="btn" ng-click="play.startGame(n)">
-            {{ n }} Dice
-        </button>
-    </div>
-</div>
-
-<div ng-show="play.isGameFinished">
-    <div class="row">
-        <div class="col-xs-6 text-right">
-            Result:
-        </div>
-        <div class="col-xs-6 text-left">
-            {{ play.finalResult }}
         </div>
     </div>
 </div>
