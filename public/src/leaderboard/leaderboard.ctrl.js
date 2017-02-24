@@ -5,8 +5,8 @@
         .module('yamb-v2.leaderboard')
         .controller('LeaderboardCtrl', LeaderboardCtrl);
     
-    LeaderboardCtrl.$inject = ['users', '$scope', 'helperService', '$uibModal', 'apiService'];
-    function LeaderboardCtrl(users, $scope, helperService, $uibModal, apiService) {
+    LeaderboardCtrl.$inject = ['users', '$scope', 'helperService', 'apiService', 'modalService'];
+    function LeaderboardCtrl(users, $scope, helperService, apiService, modalService) {
         var vm = this;
 
         activate();
@@ -53,21 +53,10 @@
         }
 
         function userClicked(user) {
-            var modalInstance = $uibModal.open({
-                animation: true,
-                component: 'userInfoModal',
-                resolve: {
-                    user: function () {
-                        return user;
-                    }
-                }
-            });
-
-            modalInstance.result.then(function() {
-                //
-            }, function() {
-
-            });
+            var modal = modalService.getModalInstance(
+                modalService.MODALS.USER_INFO,
+                {user: user}
+            );
         }
     }
 })();

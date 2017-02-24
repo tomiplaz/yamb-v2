@@ -71,7 +71,7 @@ body {
         }
 
         &.available {
-            background-color: $available-cell-color;
+            border: 2px solid $basic-red;
             @include pointer-enabled;
         }
     }

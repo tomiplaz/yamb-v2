@@ -19,7 +19,8 @@
             'yamb-v2.login',
             'yamb-v2.play',
             'yamb-v2.statistics',
-            'yamb-v2.leaderboard'
+            'yamb-v2.leaderboard',
+            'yamb-v2.rules'
         ])
         .config(config)
         .run(run);
@@ -91,8 +92,8 @@
         .module('yamb-v2.leaderboard')
         .controller('LeaderboardCtrl', LeaderboardCtrl);
     
-    LeaderboardCtrl.$inject = ['users', '$scope', 'helperService', '$uibModal', 'apiService'];
-    function LeaderboardCtrl(users, $scope, helperService, $uibModal, apiService) {
+    LeaderboardCtrl.$inject = ['users', '$scope', 'helperService', 'apiService', 'modalService'];
+    function LeaderboardCtrl(users, $scope, helperService, apiService, modalService) {
         var vm = this;
 
         activate();
@@ -139,21 +140,10 @@
         }
 
         function userClicked(user) {
-            var modalInstance = $uibModal.open({
-                animation: true,
-                component: 'userInfoModal',
-                resolve: {
-                    user: function () {
-                        return user;
-                    }
-                }
-            });
-
-            modalInstance.result.then(function() {
-                //
-            }, function() {
-
-            });
+            var modal = modalService.getModalInstance(
+                modalService.MODALS.USER_INFO,
+                {user: user}
+            );
         }
     }
 })();
@@ -477,6 +467,41 @@
             delete $localStorage.token;
             $rootScope.user = null;
             $state.go('root.home');
+        }
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.rules', [])
+        .config(config);
+    
+    config.$inject = ['$stateProvider'];
+    function config($stateProvider) {
+        $stateProvider
+            .state('root.rules', {
+                url: 'rules',
+                templateUrl: 'src/rules/rules.html',
+                controller: 'RulesCtrl as rules'
+            });
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.rules')
+        .controller('RulesCtrl', RulesCtrl);
+    
+    RulesCtrl.$inject = [];
+    function RulesCtrl() {
+        var vm = this;
+
+        activate();
+
+        function activate() {
+            //
         }
     }
 })();
@@ -979,7 +1004,7 @@
 
         function getStatKeys() {
             var labels = [
-                'Last game', 'Best result', 'Average result', 'Average duration', 'Games played'/*, 'Unfinished games'*/
+                'Last game', 'Best result', 'Average result', 'Average duration', 'Games played', 'Games unfinished'
             ];
 
             return labels.map(mapStatKey);
@@ -1008,6 +1033,55 @@
                 key: item.toLowerCase().replace(' ', '_'),
                 label: item
             };
+        }
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.services')
+        .factory('modalService', modalService);
+    
+    modalService.$inject = ['$uibModal'];
+    function modalService($uibModal) {
+        var service = {
+            MODALS: {
+                USER_INFO: 'userInfoModal',
+                GAME_INFO: 'gameInfoModal'
+            },
+            getModalInstance: getModalInstance
+        };
+
+        return service;
+
+        function getModalInstance(modalName, data) {
+            var modalInstance = $uibModal.open({
+                animation: true,
+                component: modalName,
+                resolve: getResolveObject(modalName, data)
+            });
+
+            modalInstance.result.then(dullFunction, dullFunction);
+
+            return modalInstance;
+
+            function getResolveObject(modalName, data) {
+                switch (modalName) {
+                    case service.MODALS.USER_INFO:
+                        return {
+                            user: function() {
+                                return data.user;
+                            }
+                        };
+                    default:
+                        return null;
+                }
+            }
+            
+            function dullFunction() {
+                return;
+            }
         }
     }
 })();

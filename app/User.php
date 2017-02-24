@@ -43,7 +43,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $appends = [
-        'games_played', 'unfinished_games', 'best_results', 'average_results', 'average_duration',
+        'games_played', 'games_unfinished', 'best_results', 'average_results', 'average_duration',
         'last_game_timestamp'
     ];
 
@@ -79,9 +79,9 @@ class User extends Authenticatable
      *
      * @return array
      */
-    public function getUnfinishedGamesAttribute()
+    public function getGamesUnfinishedAttribute()
     {
-        $unfinishedGames = [];
+        $gamesUnfinished = [];
 
         foreach (['5', '6'] as $numberOfDice) {
             $numberOfDiceKey = $numberOfDice . '_dice';
@@ -89,10 +89,10 @@ class User extends Authenticatable
                 ->where('number_of_dice', $numberOfDice)->where('user_id', $this->id)->count();
             $gamesFinished = $this->games()
                 ->where('number_of_dice', $numberOfDice)->count();
-            $unfinishedGames[$numberOfDiceKey] = $gamesStarted - $gamesFinished;
+            $gamesUnfinished[$numberOfDiceKey] = $gamesStarted - $gamesFinished;
         }
 
-        return $unfinishedGames;
+        return $gamesUnfinished;
     }
 
     /**

@@ -32,10 +32,6 @@ class GameController extends Controller
             $game = Game::create($request->get('game'));
             $game->cells()->createMany($request->get('cells'));
 
-            DB::table('games_finished')->insert(
-                array_only($request->get('game'), ['user_id'])
-            );
-
             DB::commit();
             return response('OK', 200);
         } catch (Exception $e) {

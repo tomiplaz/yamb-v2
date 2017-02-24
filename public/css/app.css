@@ -536,13 +536,13 @@ body {
     pointer-events: none;
     cursor: default; }
     .game-table .cell.playable {
-      background-color: #999; }
+      background-color: #ddd; }
     .game-table .cell.heading {
-      background-color: #728; }
+      background-color: #666; }
     .game-table .cell.sum {
-      background-color: #673; }
+      background-color: #999; }
     .game-table .cell.available {
-      background-color: #f00;
+      border: 2px solid #f22;
       pointer-events: auto;
       cursor: pointer; }
 

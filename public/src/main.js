@@ -19,7 +19,8 @@
             'yamb-v2.login',
             'yamb-v2.play',
             'yamb-v2.statistics',
-            'yamb-v2.leaderboard'
+            'yamb-v2.leaderboard',
+            'yamb-v2.rules'
         ])
         .config(config)
         .run(run);

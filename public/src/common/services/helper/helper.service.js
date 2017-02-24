@@ -60,7 +60,7 @@
 
         function getStatKeys() {
             var labels = [
-                'Last game', 'Best result', 'Average result', 'Average duration', 'Games played'/*, 'Unfinished games'*/
+                'Last game', 'Best result', 'Average result', 'Average duration', 'Games played', 'Games unfinished'
             ];
 
             return labels.map(mapStatKey);

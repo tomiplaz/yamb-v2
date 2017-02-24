@@ -18,10 +18,10 @@
     </div>
     <div class="row m-t-5" ng-repeat="statKey in $ctrl.statKeys track by $index">
         <span>{{ statKey.label }}: </span>
-        <span ng-if="$ctrl.user[statKey.key][$ctrl.selectedDiceOption.key] || statKey.key === 'games_played'"
+        <span ng-if="$ctrl.user[statKey.key][$ctrl.selectedDiceOption.key] || statKey.key.indexOf('games') !== -1"
             ng-bind="$ctrl.user[statKey.key][$ctrl.selectedDiceOption.key]">
         </span>
-        <span ng-if="!$ctrl.user[statKey.key][$ctrl.selectedDiceOption.key] && statKey.key !== 'games_played'"
+        <span ng-if="!$ctrl.user[statKey.key][$ctrl.selectedDiceOption.key] && statKey.key.indexOf('games') === -1"
             ng-bind="'-'">
         </span>
     </div>
