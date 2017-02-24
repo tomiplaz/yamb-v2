@@ -5,14 +5,15 @@
         .module('yamb-v2.play')
         .controller('PlayCtrl', PlayCtrl);
 
-    PlayCtrl.$inject = ['$scope', 'apiService', 'userService', 'toastr'];
-    function PlayCtrl($scope, apiService, userService, toastr) {
+    PlayCtrl.$inject = ['$scope', 'apiService', 'userService', 'toastr', 'helperService'];
+    function PlayCtrl($scope, apiService, userService, toastr, helperService) {
         var vm = this;
 
         var userId = userService.getUserId();
 
         activate();
 
+        vm.setSelectedDiceOption = setSelectedDiceOption;
         vm.startGame = startGame;
         vm.roll = roll;
         vm.resetRollNumber = resetRollNumber;
@@ -21,19 +22,26 @@
         vm.saveGame = saveGame;
 
         function activate() {
+            vm.diceOptions = helperService.getDiceOptions();
+            setSelectedDiceOption(vm.diceOptions[0]);
+
             vm.rollNumber = 0;
+            vm.hasGameStarted = false;
             vm.isInputRequired = false;
             vm.isAnnouncementRequired = false;
         }
 
-        function startGame(numberOfDice) {
-            // Handle game start correctly (number of dice selection)
-            vm.numberOfDice = numberOfDice;
-            vm.diceIndices = getDiceIndices(numberOfDice);
+        function setSelectedDiceOption(diceOption) {
+            vm.selectedDiceOption = diceOption;
+        }
+
+        function startGame() {
+            vm.hasGameStarted = true;
+            vm.diceIndices = getDiceIndices(vm.selectedDiceOption.value);
 
             apiService.custom('games', null, 'post', 'game-started', {
                 user_id: userId,
-                number_of_dice: numberOfDice
+                number_of_dice: vm.selectedDiceOption.value.toString()
             });
 
             $scope.$broadcast('start');
@@ -83,7 +91,7 @@
             var data = {
                 game: {
                     user_id: userId,
-                    number_of_dice: vm.numberOfDice.toString(),
+                    number_of_dice: vm.selectedDiceOption.value.toString(),
                     result: finalResult,
                     duration: $scope.timer.value
                 },

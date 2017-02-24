@@ -36,6 +36,18 @@
                                 return data.user;
                             }
                         };
+                    case service.MODALS.GAME_INFO:
+                        return {
+                            user: function() {
+                                return data.user;
+                            },
+                            bestGames: function(apiService) {
+                                return apiService.custom('users', data.user.id, 'get', 'best-games');
+                            },
+                            diceKey: function() {
+                                return data.diceKey;
+                            }
+                        }
                     default:
                         return null;
                 }

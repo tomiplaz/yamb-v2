@@ -13,6 +13,7 @@
 
         vm.setSelected = setSelected;
         vm.userClicked = userClicked;
+        vm.bestResultClicked = bestResultClicked;
 
         function activate() {
             vm.options = {
@@ -57,6 +58,15 @@
                 modalService.MODALS.USER_INFO,
                 {user: user}
             );
+        }
+
+        function bestResultClicked(user, diceKey) {
+            if (vm.selected.type.key === 'best_results') {
+                var modal = modalService.getModalInstance(
+                    modalService.MODALS.GAME_INFO,
+                    {user: user, diceKey: diceKey}
+                );
+            }
         }
     }
 })();

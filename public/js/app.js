@@ -100,6 +100,7 @@
 
         vm.setSelected = setSelected;
         vm.userClicked = userClicked;
+        vm.bestResultClicked = bestResultClicked;
 
         function activate() {
             vm.options = {
@@ -144,6 +145,15 @@
                 modalService.MODALS.USER_INFO,
                 {user: user}
             );
+        }
+
+        function bestResultClicked(user, diceKey) {
+            if (vm.selected.type.key === 'best_results') {
+                var modal = modalService.getModalInstance(
+                    modalService.MODALS.GAME_INFO,
+                    {user: user, diceKey: diceKey}
+                );
+            }
         }
     }
 })();
@@ -218,14 +228,15 @@
         .module('yamb-v2.play')
         .controller('PlayCtrl', PlayCtrl);
 
-    PlayCtrl.$inject = ['$scope', 'apiService', 'userService', 'toastr'];
-    function PlayCtrl($scope, apiService, userService, toastr) {
+    PlayCtrl.$inject = ['$scope', 'apiService', 'userService', 'toastr', 'helperService'];
+    function PlayCtrl($scope, apiService, userService, toastr, helperService) {
         var vm = this;
 
         var userId = userService.getUserId();
 
         activate();
 
+        vm.setSelectedDiceOption = setSelectedDiceOption;
         vm.startGame = startGame;
         vm.roll = roll;
         vm.resetRollNumber = resetRollNumber;
@@ -234,19 +245,26 @@
         vm.saveGame = saveGame;
 
         function activate() {
+            vm.diceOptions = helperService.getDiceOptions();
+            setSelectedDiceOption(vm.diceOptions[0]);
+
             vm.rollNumber = 0;
+            vm.hasGameStarted = false;
             vm.isInputRequired = false;
             vm.isAnnouncementRequired = false;
         }
 
-        function startGame(numberOfDice) {
-            // Handle game start correctly (number of dice selection)
-            vm.numberOfDice = numberOfDice;
-            vm.diceIndices = getDiceIndices(numberOfDice);
+        function setSelectedDiceOption(diceOption) {
+            vm.selectedDiceOption = diceOption;
+        }
+
+        function startGame() {
+            vm.hasGameStarted = true;
+            vm.diceIndices = getDiceIndices(vm.selectedDiceOption.value);
 
             apiService.custom('games', null, 'post', 'game-started', {
                 user_id: userId,
-                number_of_dice: numberOfDice
+                number_of_dice: vm.selectedDiceOption.value.toString()
             });
 
             $scope.$broadcast('start');
@@ -296,7 +314,7 @@
             var data = {
                 game: {
                     user_id: userId,
-                    number_of_dice: vm.numberOfDice.toString(),
+                    number_of_dice: vm.selectedDiceOption.value.toString(),
                     result: finalResult,
                     duration: $scope.timer.value
                 },
@@ -865,7 +883,7 @@
     function formatDuration() {
         return function(miliseconds) {
             if (typeof miliseconds !== 'number' || isNaN(miliseconds)) {
-                return '-:-';
+                return '-';
             } else {
                 var seconds = Math.floor(miliseconds / 1000);
                 var minutes = Math.floor(seconds / 60);
@@ -959,12 +977,13 @@
         };
 
         function getDiceOptions() {
-            return ['5', '6'].map(mapDiceOption);
+            return [5, 6].map(mapDiceOption);
 
-            function mapDiceOption(item) {
+            function mapDiceOption(value) {
                 return {
-                    key: item + '_dice',
-                    label: item + ' Dice'
+                    key: value + '_dice',
+                    label: value + ' Dice',
+                    value: value
                 };
             }
         }
@@ -1074,6 +1093,18 @@
                                 return data.user;
                             }
                         };
+                    case service.MODALS.GAME_INFO:
+                        return {
+                            user: function() {
+                                return data.user;
+                            },
+                            bestGames: function(apiService) {
+                                return apiService.custom('users', data.user.id, 'get', 'best-games');
+                            },
+                            diceKey: function() {
+                                return data.diceKey;
+                            }
+                        }
                     default:
                         return null;
                 }
@@ -1123,6 +1154,41 @@
 
     angular
         .module('yamb-v2.leaderboard')
+        .component('gameInfoModal', {
+            templateUrl: 'src/leaderboard/components/gameInfoModal/gameInfoModal.component.html',
+            bindings: {
+                resolve: '<'
+            },
+            controller: controller
+        });
+    
+    function controller() {
+        var $ctrl = this;
+
+        $ctrl.$onInit = onInit;
+
+        function onInit() {
+            var bestGames = $ctrl.resolve.bestGames.plain();
+
+            $ctrl.user = $ctrl.resolve.user;
+            $ctrl.game = bestGames[$ctrl.resolve.diceKey];
+            $ctrl.cells = {};
+            
+            $ctrl.game.cells.forEach(setCellProperty);
+
+            function setCellProperty(cell) {
+                $ctrl.cells[cell.cell_key] = {
+                    value: cell.value
+                };
+            }
+        }
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.leaderboard')
         .component('userInfoModal', {
             templateUrl: 'src/leaderboard/components/userInfoModal/userInfoModal.component.html',
             bindings: {
@@ -1131,12 +1197,12 @@
             controller: controller
         });
     
-    controller.$inject = ['helperService']
+    controller.$inject = ['helperService'];
     function controller(helperService) {
         var $ctrl = this;
 
         $ctrl.$onInit = onInit;
-        $ctrl.setSelected = setSelected;
+        $ctrl.setSelectedDiceOption = setSelectedDiceOption;
 
         function onInit() {
             $ctrl.statKeys = helperService.getStatKeys();
@@ -1147,7 +1213,7 @@
             $ctrl.selectedDiceOption = $ctrl.diceOptions[0];
         }
 
-        function setSelected(diceOption) {
+        function setSelectedDiceOption(diceOption) {
             $ctrl.selectedDiceOption = diceOption;
         }
     }

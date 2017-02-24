@@ -11,12 +11,12 @@
             controller: controller
         });
     
-    controller.$inject = ['helperService']
+    controller.$inject = ['helperService'];
     function controller(helperService) {
         var $ctrl = this;
 
         $ctrl.$onInit = onInit;
-        $ctrl.setSelected = setSelected;
+        $ctrl.setSelectedDiceOption = setSelectedDiceOption;
 
         function onInit() {
             $ctrl.statKeys = helperService.getStatKeys();
@@ -27,7 +27,7 @@
             $ctrl.selectedDiceOption = $ctrl.diceOptions[0];
         }
 
-        function setSelected(diceOption) {
+        function setSelectedDiceOption(diceOption) {
             $ctrl.selectedDiceOption = diceOption;
         }
     }

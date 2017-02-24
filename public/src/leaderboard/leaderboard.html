@@ -28,6 +28,7 @@
                     <td class="table__clickable" ng-bind="user.name"
                         ng-click="leaderboard.userClicked(user)"></td>
                     <td ng-bind="user[leaderboard.selected.type.key][leaderboard.selected.dice.key] || '-'"
+                        ng-click="leaderboard.bestResultClicked(user, leaderboard.selected.dice.key)"
                         ng-class="{
                             'table__clickable': leaderboard.selected.type.key === 'best_results' &&
                                 user[leaderboard.selected.type.key][leaderboard.selected.dice.key]

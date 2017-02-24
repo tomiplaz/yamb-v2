@@ -542,7 +542,9 @@ body {
     .game-table .cell.sum {
       background-color: #999; }
     .game-table .cell.available {
-      border: 2px solid #f22;
+      -moz-box-shadow: 0 0 3px 0 #f22;
+      -webkit-box-shadow: 0 0 3px 0 #f22;
+      box-shadow: 0 0 3px 0 #f22;
       pointer-events: auto;
       cursor: pointer; }
 

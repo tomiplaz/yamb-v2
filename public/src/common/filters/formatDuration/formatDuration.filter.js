@@ -8,7 +8,7 @@
     function formatDuration() {
         return function(miliseconds) {
             if (typeof miliseconds !== 'number' || isNaN(miliseconds)) {
-                return '-:-';
+                return '-';
             } else {
                 var seconds = Math.floor(miliseconds / 1000);
                 var minutes = Math.floor(seconds / 60);

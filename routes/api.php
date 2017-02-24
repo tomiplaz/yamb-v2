@@ -21,6 +21,10 @@ Route::resource('rows', 'RowController', ['only' => ['index']]);
 
 Route::resource('columns', 'ColumnController', ['only' => ['index']]);
 
+Route::group(['prefix' => 'users'], function() {
+    Route::get('{id}/best-games', 'UserController@getBestGames');
+});
+
 Route::group(['prefix' => 'games'], function() {
     Route::post('game-started', 'GameController@gameStarted');
 });

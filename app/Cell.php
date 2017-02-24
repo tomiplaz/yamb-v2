@@ -29,7 +29,26 @@ class Cell extends Model
         'input_turn' => 'int'
     ];
 
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = [
+        'cell_key'
+    ];
+
     public $timestamps = false;
+
+    /**
+     * Get cell's key.
+     *
+     * @return string
+     */
+    public function getCellKeyAttribute()
+    {
+        return $this->row()->first()->abbreviation . '_' . $this->column()->first()->abbreviation;
+    }
 
     /**
      * Get cell's game.
@@ -39,5 +58,25 @@ class Cell extends Model
     public function game()
     {
         return $this->belongsTo('App\Game');
+    }
+
+    /**
+     * Get cell's row.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function row()
+    {
+        return $this->belongsTo('App\Row');
+    }
+
+    /**
+     * Get cell's column.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function column()
+    {
+        return $this->belongsTo('App\Column');
     }
 }

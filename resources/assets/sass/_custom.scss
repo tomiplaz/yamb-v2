@@ -71,7 +71,7 @@ body {
         }
 
         &.available {
-            border: 2px solid $basic-red;
+            @include box-shadow(0, 0, $available-cell-shadow-blur-radius, 0, $basic-red);
             @include pointer-enabled;
         }
     }

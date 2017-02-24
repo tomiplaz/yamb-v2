@@ -1,27 +1,38 @@
 <div class="row text-center">
-    <div class="col-xs-12 col-sm-12">
-        <div class="col-xs-12">
-            <die ng-repeat="i in play.diceIndices" index="{{ i }}"></die>
-        </div>
-
-        <div class="col-xs-12">
-            <button class="btn" ng-click="play.roll()" ng-if="play.rollNumber !== 0"
-                ng-disabled="play.isInputRequired || play.isAnnouncementRequired">
-                Roll
-            </button>
-            <button class="btn" ng-click="play.startGame(5)" ng-if="play.rollNumber === 0">
-                Start
-            </button>
-        </div>
-
-        <timer class="col-xs-12"></timer>
-
-        <div class="col-xs-12" ng-bind="play.rollNumber"></div>
+    <div class="col-xs-12" ng-if="!play.hasGameStarted">
+        <button class="btn m-l-5 m-r-5" ng-repeat="diceOption in play.diceOptions track by $index"
+            ng-class="{'active': play.selectedDiceOption === diceOption}"
+            ng-click="play.setSelectedDiceOption(diceOption)">
+            {{ diceOption.label }}
+        </button>
     </div>
 
-    <div class="col-xs-12 col-sm-12">
-        <div class="col-xs-12">
-            <paper-play></paper-play>
-        </div>
+    <div class="col-xs-12 m-t-10" ng-if="!play.hasGameStarted">
+        <button class="btn" ng-click="play.startGame()">
+            Start
+        </button>
+    </div>
+
+    <div class="col-xs-12">
+        <die ng-repeat="i in play.diceIndices" index="{{ i }}"></die>
+    </div>
+
+    <div class="col-xs-12 m-t-10" ng-if="play.hasGameStarted">
+        <button class="btn" ng-disabled="play.isInputRequired || play.isAnnouncementRequired"
+            ng-click="play.roll()">
+            Roll
+        </button>
+    </div>
+
+    <div class="col-xs-12 m-t-10">
+        <timer></timer>
+    </div>
+
+    <div class="col-xs-12 m-t-10">
+        <span>Roll: {{ play.rollNumber }}</span>
+    </div>
+
+    <div class="col-xs-12 m-t-20">
+        <paper-play></paper-play>
     </div>
 </div>

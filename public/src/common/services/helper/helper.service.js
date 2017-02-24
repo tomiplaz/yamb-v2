@@ -15,12 +15,13 @@
         };
 
         function getDiceOptions() {
-            return ['5', '6'].map(mapDiceOption);
+            return [5, 6].map(mapDiceOption);
 
-            function mapDiceOption(item) {
+            function mapDiceOption(value) {
                 return {
-                    key: item + '_dice',
-                    label: item + ' Dice'
+                    key: value + '_dice',
+                    label: value + ' Dice',
+                    value: value
                 };
             }
         }

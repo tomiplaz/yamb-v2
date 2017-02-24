@@ -12,14 +12,15 @@
     <div class="row m-t-20 m-b-10">
         <button class="btn m-l-5 m-r-5" ng-repeat="diceOption in $ctrl.diceOptions track by $index"
             ng-class="{'active': $ctrl.selectedDiceOption === diceOption}"
-            ng-click="$ctrl.setSelected(diceOption)">
+            ng-click="$ctrl.setSelectedDiceOption(diceOption)">
             {{ diceOption.label }}
         </button>
     </div>
     <div class="row m-t-5" ng-repeat="statKey in $ctrl.statKeys track by $index">
         <span>{{ statKey.label }}: </span>
         <span ng-if="$ctrl.user[statKey.key][$ctrl.selectedDiceOption.key] || statKey.key.indexOf('games') !== -1"
-            ng-bind="$ctrl.user[statKey.key][$ctrl.selectedDiceOption.key]">
+            ng-init="value = $ctrl.user[statKey.key][$ctrl.selectedDiceOption.key]"
+            ng-bind="statKey.key === 'average_duration' ? (value | formatDuration) : value">
         </span>
         <span ng-if="!$ctrl.user[statKey.key][$ctrl.selectedDiceOption.key] && statKey.key.indexOf('games') === -1"
             ng-bind="'-'">
