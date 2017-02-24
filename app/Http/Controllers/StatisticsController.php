@@ -8,6 +8,7 @@ use App\Cell;
 use App\User;
 use App\Row;
 use App\Column;
+use Illuminate\Support\Facades\DB;
 
 class StatisticsController extends Controller
 {
@@ -74,48 +75,10 @@ class StatisticsController extends Controller
     private function getOtherStats($userId)
     {
         return [
+            'game_averages' => $this->getGameAverages($userId),
             'games_played' => $this->getGamesPlayed($userId),
-            'game_averages' => $this->getGameAverages($userId)
+            'games_unfinished' => $this->getGamesUnfinished($userId)
         ];
-    }
-
-    /**
-     * Get games played count.
-     *
-     * @return array
-     */
-    private function getGamesPlayed($userId)
-    {
-        $gamesPlayed = [];
-
-        // Init query
-        if ($userId) {
-            $games = User::find($userId)->games();
-        } else {
-            $games = Game::getModel();
-        }
-
-        foreach (['5', '6'] as $numberOfDice) {
-            $numberOfDiceKey = $numberOfDice . '_dice';
-
-            // Set common counts
-            $gamesPlayed[$numberOfDiceKey] = [
-                'total' => (clone $games)->where('number_of_dice', $numberOfDice)->count()
-            ];
-
-            // Set user-wise counts
-            if (!$userId) {
-                foreach (['registered', 'anonymous'] as $key) {
-                    $operator = ($key === 'registered' ? '!=' : '=');
-                    $gamesPlayed[$numberOfDiceKey][$key] = (clone $games)
-                        ->where('number_of_dice', $numberOfDice)
-                        ->where('user_id', $operator, null)
-                        ->count();
-                }
-            }
-        }
-
-        return $gamesPlayed;
     }
 
     /**
@@ -144,5 +107,96 @@ class StatisticsController extends Controller
         }
 
         return $gameAverages;
+    }
+
+    /**
+     * Get games played count.
+     *
+     * @return array
+     */
+    private function getGamesPlayed($userId)
+    {
+        $gamesPlayed = [];
+
+        // Init query
+        if ($userId) {
+            $games = User::find($userId)->games();
+        } else {
+            $games = Game::getModel();
+        }
+
+        foreach (['5', '6'] as $numberOfDice) {
+            $numberOfDiceKey = $numberOfDice . '_dice';
+
+            // Set common counts
+            $gamesPlayed[$numberOfDiceKey] = [
+                'total' => (clone $games)->where('number_of_dice', $numberOfDice)->count()
+            ];
+
+            // Set registration-wise counts
+            if (!$userId) {
+                foreach (['registered', 'anonymous'] as $key) {
+                    $operator = ($key === 'registered' ? '!=' : '=');
+                    $gamesPlayed[$numberOfDiceKey][$key] = (clone $games)
+                        ->where('number_of_dice', $numberOfDice)
+                        ->where('user_id', $operator, null)
+                        ->count();
+                }
+            }
+        }
+
+        return $gamesPlayed;
+    }
+
+    /**
+     * Get games unfinished count.
+     *
+     * @return array
+     */
+    private function getGamesUnfinished($userId)
+    {
+        $gamesUnfinished = [];
+
+        // Init query
+        if ($userId) {
+            $gamesStartedQuery = DB::table('games_started')->where('user_id', $userId);
+            $gamesFinishedQuery = User::find($userId)->games();
+        } else {
+            $gamesStartedQuery = DB::table('games_started');
+            $gamesFinishedQuery = Game::getModel();
+        }
+
+        foreach (['5', '6'] as $numberOfDice) {
+            $numberOfDiceKey = $numberOfDice . '_dice';
+            $gamesStarted = (clone $gamesStartedQuery)
+                ->where('number_of_dice', $numberOfDice)
+                ->count();
+            $gamesFinished = (clone $gamesFinishedQuery)
+                ->where('number_of_dice', $numberOfDice)
+                ->count();
+
+            // Set common counts
+            $gamesUnfinished[$numberOfDiceKey] = [
+                'total' => $gamesStarted - $gamesFinished
+            ];
+
+            // Set registration-wise counts
+            if (!$userId) {
+                foreach (['registered', 'anonymous'] as $key) {
+                    $operator = ($key === 'registered' ? '!=' : '=');
+                    $gamesStarted = (clone $gamesStartedQuery)
+                        ->where('number_of_dice', $numberOfDice)
+                        ->where('user_id', $operator, null)
+                        ->count();
+                    $gamesFinished = (clone $gamesFinishedQuery)
+                        ->where('number_of_dice', $numberOfDice)
+                        ->where('user_id', $operator, null)
+                        ->count();
+                    $gamesUnfinished[$numberOfDiceKey][$key] = $gamesStarted - $gamesFinished;
+                }
+            }
+        }
+
+        return $gamesUnfinished;
     }
 }

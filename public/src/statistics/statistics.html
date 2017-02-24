@@ -29,12 +29,16 @@
 </div>
 
 <div class="row m-t-20 text-center" ng-if="statistics.other">
-    <div class="col-xs-12" ng-repeat="(key, value) in statistics.other.games_played[statistics.selected.dice.key]"
+    <div class="col-xs-12" ng-repeat="(key, value) in statistics.other.game_averages[statistics.selected.dice.key]"
         ng-class="{'m-t-5': !$first}">
+        <span>Avarage {{ key }}: {{ key === 'duration' ? (value | formatDuration) : value }}</span>
+    </div>
+    <div class="col-xs-12" ng-repeat="(key, value) in statistics.other.games_played[statistics.selected.dice.key]"
+        ng-class="{'m-t-20': $first, 'm-t-5': !$first}">
         <span>Games played ({{ key }}): {{ value }}</span>
     </div>
-    <div class="col-xs-12" ng-repeat="(key, value) in statistics.other.game_averages[statistics.selected.dice.key]"
+    <div class="col-xs-12" ng-repeat="(key, value) in statistics.other.games_unfinished[statistics.selected.dice.key]"
         ng-class="{'m-t-20': $first, 'm-t-5': !$first}">
-        <span>Avarage {{ key }}: {{ key === 'duration' ? (value | formatDuration) : value }}</span>
+        <span>Games unfinished ({{ key }}): {{ value }}</span>
     </div>
 </div>
