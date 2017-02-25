@@ -106,7 +106,7 @@ class User extends Authenticatable
 
         foreach (['5', '6'] as $numberOfDice) {
             $numberOfDiceKey = $numberOfDice . '_dice';
-            $bestResults[$numberOfDiceKey] = $this->games()->where('number_of_dice', $numberOfDice)->max('result');
+            $bestResults[$numberOfDiceKey] = intval($this->games()->where('number_of_dice', $numberOfDice)->max('result'));
         }
 
         return $bestResults;

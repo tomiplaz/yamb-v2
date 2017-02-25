@@ -1,24 +1,27 @@
+<h3>Statistics</h3>
+
 <div class="row">
     <button class="btn m-l-5 m-r-5" ng-repeat="dice in statistics.options.dice track by $index"
         ng-class="{'active': statistics.selected.dice === dice}"
-        ng-click="statistics.setSelected('dice', dice)">
-        {{ dice.label }}
+        ng-click="statistics.setSelected('dice', dice)"
+        ng-bind="dice.label">
     </button>
 </div>
 
 <div class="row m-t-10">
     <button class="btn m-l-5 m-r-5" ng-repeat="scope in statistics.options.scope track by $index"
         ng-class="{'active': statistics.selected.scope === scope}"
-        ng-click="statistics.setSelected('scope', scope)">
-        {{ scope.label }}
+        ng-click="statistics.setSelected('scope', scope)"
+        ng-bind="scope.label"
+        ng-disabled="scope.key === 'personal' && !statistics.personal">
     </button>
 </div>
 
 <div class="row m-t-10">
     <button class="btn m-l-5 m-r-5" ng-repeat="type in statistics.options.type track by $index"
         ng-class="{'active': statistics.selected.type === type}"
-        ng-click="statistics.setSelected('type', type)">
-        {{ type.label }}
+        ng-click="statistics.setSelected('type', type)"
+        ng-bind="type.label">
     </button>
 </div>
 
@@ -31,14 +34,17 @@
 <div class="row m-t-20 text-center" ng-if="statistics.other">
     <div class="col-xs-12" ng-repeat="(key, value) in statistics.other.game_averages[statistics.selected.dice.key]"
         ng-class="{'m-t-5': !$first}">
-        <span>Avarage {{ key }}: {{ key === 'duration' ? (value | formatDuration) : value }}</span>
+        <span ng-bind="'Average ' + key + ': '"></span>
+        <span ng-bind="value | formatValue : key"></span>
     </div>
     <div class="col-xs-12" ng-repeat="(key, value) in statistics.other.games_played[statistics.selected.dice.key]"
         ng-class="{'m-t-20': $first, 'm-t-5': !$first}">
-        <span>Games played ({{ key }}): {{ value }}</span>
+        <span ng-bind="'Games played (' + key + '): '"></span>
+        <span ng-bind="value"></span>
     </div>
     <div class="col-xs-12" ng-repeat="(key, value) in statistics.other.games_unfinished[statistics.selected.dice.key]"
         ng-class="{'m-t-20': $first, 'm-t-5': !$first}">
-        <span>Games unfinished ({{ key }}): {{ value }}</span>
+        <span ng-bind="'Games unfinished (' + key + '): '"></span>
+        <span ng-bind="value"></span>
     </div>
 </div>

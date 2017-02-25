@@ -548,7 +548,7 @@ body {
       pointer-events: auto;
       cursor: pointer; }
 
-.table__clickable:hover {
+.table__clickable {
   text-decoration: underline;
   pointer-events: auto;
   cursor: pointer; }

@@ -1,39 +1,44 @@
+<h3>Leaderboard</h3>
+
 <div class="row">
     <button class="btn m-l-5 m-r-5" ng-repeat="dice in leaderboard.options.dice track by $index"
         ng-class="{'active': leaderboard.selected.dice === dice}"
-        ng-click="leaderboard.setSelected('dice', dice)">
-        {{ dice.label }}
+        ng-click="leaderboard.setSelected('dice', dice)"
+        ng-bind="dice.label">
     </button>
 </div>
 
 <div class="row m-t-10">
     <button class="btn m-l-5 m-r-5" ng-repeat="type in leaderboard.options.type track by $index"
         ng-class="{'active': leaderboard.selected.type === type}"
-        ng-click="leaderboard.setSelected('type', type)">
-        {{ type.label }}
+        ng-click="leaderboard.setSelected('type', type)"
+        ng-bind="type.label">
     </button>
 </div>
 
-<div class="m-t-20">
-    <div class="col-xs-12 col-sm-6 col-md-4 col-sm-offset-3 col-md-offset-4">
+<div class="row m-t-20">
+    <div class="col-xs-12 col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4">
         <div class="table-responsive">
             <table class="table table-striped">
                 <tr>
                     <th>#</th>
                     <th>Name</th>
                     <th ng-bind="leaderboard.selected.type.label"></th>
+                    <th>Unfinished</th>
                 </tr>
-                <tr ng-repeat="user in leaderboard.users | orderBy : leaderboard.orderByPredicate">
+                <tr ng-repeat="user in leaderboard.users | orderBy : leaderboard.orderByPredicate : true | limitTo : 10">
                     <td ng-bind="$index + 1"></td>
                     <td class="table__clickable" ng-bind="user.name"
                         ng-click="leaderboard.userClicked(user)"></td>
-                    <td ng-bind="user[leaderboard.selected.type.key][leaderboard.selected.dice.key] || '-'"
+                    <td ng-bind="user[leaderboard.selected.type.key][leaderboard.selected.dice.key] |
+                        formatValue : leaderboard.selected.type.key"
                         ng-click="leaderboard.bestResultClicked(user, leaderboard.selected.dice.key)"
                         ng-class="{
                             'table__clickable': leaderboard.selected.type.key === 'best_results' &&
                                 user[leaderboard.selected.type.key][leaderboard.selected.dice.key]
                         }">
                     </td>
+                    <td ng-bind="user.games_unfinished[leaderboard.selected.dice.key]"></td>
                 </tr>
             </table>
         </div>

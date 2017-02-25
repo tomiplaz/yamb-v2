@@ -92,8 +92,8 @@
         .module('yamb-v2.leaderboard')
         .controller('LeaderboardCtrl', LeaderboardCtrl);
     
-    LeaderboardCtrl.$inject = ['users', '$scope', 'helperService', 'apiService', 'modalService'];
-    function LeaderboardCtrl(users, $scope, helperService, apiService, modalService) {
+    LeaderboardCtrl.$inject = ['users', 'helperService', 'apiService', 'modalService'];
+    function LeaderboardCtrl(users, helperService, apiService, modalService) {
         var vm = this;
 
         activate();
@@ -108,36 +108,34 @@
                 type: helperService.getTypeOptions('leaderboard')
             };
 
-            vm.users = users;
-
-            $scope.$watchGroup([
-                'leaderboard.selected.dice',
-                'leaderboard.selected.type'
-            ], onSelectedChanged);
+            vm.users = (users ? users.plain() : users);
 
             vm.selected = {
                 dice: vm.options.dice[0],
                 type: vm.options.type[0]
             };
 
-            function onSelectedChanged() {
-                vm.orderByPredicate = getOrderByPredicate(
-                    vm.selected.type.key,
-                    vm.selected.dice.key
-                );
+            onSelectedChanged();
+        }
 
-                function getOrderByPredicate() {
-                    var args = arguments;
+        function onSelectedChanged() {
+            vm.orderByPredicate = getOrderByPredicate(
+                vm.selected.type.key,
+                vm.selected.dice.key
+            );
 
-                    return function(item) {
-                        return item[args[0]][args[1]];
-                    }
+            function getOrderByPredicate() {
+                var args = arguments;
+
+                return function(item) {
+                    return item[args[0]][args[1]];
                 }
             }
         }
 
         function setSelected(key, item) {
             vm.selected[key] = item;
+            onSelectedChanged();
         }
 
         function userClicked(user) {
@@ -380,13 +378,7 @@
     function RegisterCtrl(authService, $state) {
         var vm = this;
 
-        activate();
-
-        function activate() {
-            vm.title = "Register";
-            
-            vm.confirm = confirm;
-        }
+        vm.confirm = confirm;
 
         function confirm() {
             authService.register(vm.input).then(function(success) {
@@ -560,8 +552,8 @@
         .module('yamb-v2.statistics')
         .controller('StatisticsCtrl', StatisticsCtrl);
     
-    StatisticsCtrl.$inject = ['worldwide', 'personal', '$scope', 'helperService'];
-    function StatisticsCtrl(worldwide, personal, $scope, helperService) {
+    StatisticsCtrl.$inject = ['worldwide', 'personal', 'helperService'];
+    function StatisticsCtrl(worldwide, personal, helperService) {
         var vm = this;
 
         activate();
@@ -581,31 +573,28 @@
             vm.worldwide = worldwide;
             vm.personal = personal;
 
-            $scope.$watchGroup([
-                'statistics.selected.dice',
-                'statistics.selected.scope',
-                'statistics.selected.type'
-            ], onSelectedChanged);
-
             vm.selected = {
                 dice: vm.options.dice[0],
                 scope: vm.options.scope[0],
                 type: vm.options.type[0]
             };
 
-            function onSelectedChanged() {
-                if (vm.selected.type.key === 'other') {
-                    vm.cells = null;
-                    vm.other = vm[vm.selected.scope.key].other_stats;
-                } else {
-                    vm.other = null;
-                    vm.cells = vm[vm.selected.scope.key].cells_averages[vm.selected.dice.key];
-                }
+            onSelectedChanged();
+        }
+
+        function onSelectedChanged() {
+            if (vm.selected.type.key === 'other') {
+                vm.cells = null;
+                vm.other = vm[vm.selected.scope.key].other_stats;
+            } else {
+                vm.other = null;
+                vm.cells = vm[vm.selected.scope.key].cells_averages[vm.selected.dice.key];
             }
         }
 
         function setSelected(key, item) {
             vm.selected[key] = item;
+            onSelectedChanged();
         }
     }
 })();
@@ -878,16 +867,25 @@
 
     angular
         .module('yamb-v2.filters')
-        .filter('formatDuration', formatDuration);
+        .filter('formatValue', formatValue);
     
-    function formatDuration() {
-        return function(miliseconds) {
-            if (typeof miliseconds !== 'number' || isNaN(miliseconds)) {
-                return '-';
-            } else {
-                var seconds = Math.floor(miliseconds / 1000);
-                var minutes = Math.floor(seconds / 60);
-                return minutes + ':' + (seconds - minutes * 60);
+    function formatValue() {
+        return function(value, key) {
+            switch (key) {
+                case 'duration':
+                case 'average_duration':
+                    if (typeof value !== 'number' || isNaN(value) || value === 0) {
+                        return '-';
+                    } else {
+                        var seconds = Math.floor(value / 1000);
+                        var minutes = Math.floor(seconds / 60);
+                        return minutes + ':' + (seconds - minutes * 60);
+                    }
+                case 'games_played':
+                case 'games_unfinished':
+                    return value;
+                default:
+                    return (value ? value : '-');
             }
         };
     }
@@ -1210,7 +1208,7 @@
 
             $ctrl.user = $ctrl.resolve.user;
 
-            $ctrl.selectedDiceOption = $ctrl.diceOptions[0];
+            setSelectedDiceOption($ctrl.diceOptions[0]);
         }
 
         function setSelectedDiceOption(diceOption) {

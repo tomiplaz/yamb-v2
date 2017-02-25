@@ -77,7 +77,7 @@ body {
     }
 }
 
-.table__clickable:hover {
+.table__clickable {
     text-decoration: underline;
     @include pointer-enabled;
 }

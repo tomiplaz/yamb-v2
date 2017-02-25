@@ -9,13 +9,7 @@
     function RegisterCtrl(authService, $state) {
         var vm = this;
 
-        activate();
-
-        function activate() {
-            vm.title = "Register";
-            
-            vm.confirm = confirm;
-        }
+        vm.confirm = confirm;
 
         function confirm() {
             authService.register(vm.input).then(function(success) {

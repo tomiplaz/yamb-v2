@@ -5,8 +5,8 @@
         .module('yamb-v2.statistics')
         .controller('StatisticsCtrl', StatisticsCtrl);
     
-    StatisticsCtrl.$inject = ['worldwide', 'personal', '$scope', 'helperService'];
-    function StatisticsCtrl(worldwide, personal, $scope, helperService) {
+    StatisticsCtrl.$inject = ['worldwide', 'personal', 'helperService'];
+    function StatisticsCtrl(worldwide, personal, helperService) {
         var vm = this;
 
         activate();
@@ -26,31 +26,28 @@
             vm.worldwide = worldwide;
             vm.personal = personal;
 
-            $scope.$watchGroup([
-                'statistics.selected.dice',
-                'statistics.selected.scope',
-                'statistics.selected.type'
-            ], onSelectedChanged);
-
             vm.selected = {
                 dice: vm.options.dice[0],
                 scope: vm.options.scope[0],
                 type: vm.options.type[0]
             };
 
-            function onSelectedChanged() {
-                if (vm.selected.type.key === 'other') {
-                    vm.cells = null;
-                    vm.other = vm[vm.selected.scope.key].other_stats;
-                } else {
-                    vm.other = null;
-                    vm.cells = vm[vm.selected.scope.key].cells_averages[vm.selected.dice.key];
-                }
+            onSelectedChanged();
+        }
+
+        function onSelectedChanged() {
+            if (vm.selected.type.key === 'other') {
+                vm.cells = null;
+                vm.other = vm[vm.selected.scope.key].other_stats;
+            } else {
+                vm.other = null;
+                vm.cells = vm[vm.selected.scope.key].cells_averages[vm.selected.dice.key];
             }
         }
 
         function setSelected(key, item) {
             vm.selected[key] = item;
+            onSelectedChanged();
         }
     }
 })();

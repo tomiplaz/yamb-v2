@@ -1,14 +1,19 @@
-<h1>{{ login.title }}</h1>
+<h3>Login</h3>
+
 <form name="login.form">
-    <div class="form-group">
-        <label class="sr-only" for="email">Email</label>
-        <input type="email" class="form-control" id="email" placeholder="Email"
-            ng-model="login.input.email" required>
+    <div class="row">
+        <div class="form-group col-xs-12 col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4">
+            <label class="sr-only" for="email">Email</label>
+            <input type="email" class="form-control" id="email" placeholder="Email"
+                ng-model="login.input.email" required>
+        </div>
     </div>
-    <div class="form-group">
-        <label class="sr-only" for="password">Password</label>
-        <input type="password" class="form-control" id="password" placeholder="Password"
-            ng-model="login.input.password" required>
+    <div class="row">
+        <div class="form-group col-xs-12 col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4">
+            <label class="sr-only" for="password">Password</label>
+            <input type="password" class="form-control" id="password" placeholder="Password"
+                ng-model="login.input.password" required>
+        </div>
     </div>
     <button class="btn btn-default" ng-click="login.confirm()"
         ng-disabled="login.form.$invalid">

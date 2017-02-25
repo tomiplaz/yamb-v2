@@ -18,14 +18,14 @@
                 <hr class="hidden-sm hidden-md hidden-lg" ng-if="$last">
 
                 <li class="static" ng-if="$last && user">
-                    <a>{{ root.greeting + ', ' + user.name + '!' }}</a>
+                    <a ng-bind="root.greeting + ', ' + user.name + '!'"></a>
                 <li>
 
                 <li ng-repeat="state in root[side + 'States']"
                     ng-hide="user && side === 'right'"
                     ng-class="{'active': (state.name | isState)}"
                     ng-click="root.isNavCollapsed = !root.isNavCollapsed">
-                    <a ui-sref="{{ state.name }}">{{ state.label }}</a>
+                    <a ui-sref="{{ state.name }}" ng-bind="state.label"></a>
                 </li>
 
                 <li class="dynamic" ng-if="$last && user"

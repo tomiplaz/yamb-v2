@@ -24,7 +24,7 @@
 
             $ctrl.user = $ctrl.resolve.user;
 
-            $ctrl.selectedDiceOption = $ctrl.diceOptions[0];
+            setSelectedDiceOption($ctrl.diceOptions[0]);
         }
 
         function setSelectedDiceOption(diceOption) {

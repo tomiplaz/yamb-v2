@@ -5,8 +5,8 @@
         .module('yamb-v2.leaderboard')
         .controller('LeaderboardCtrl', LeaderboardCtrl);
     
-    LeaderboardCtrl.$inject = ['users', '$scope', 'helperService', 'apiService', 'modalService'];
-    function LeaderboardCtrl(users, $scope, helperService, apiService, modalService) {
+    LeaderboardCtrl.$inject = ['users', 'helperService', 'apiService', 'modalService'];
+    function LeaderboardCtrl(users, helperService, apiService, modalService) {
         var vm = this;
 
         activate();
@@ -21,36 +21,34 @@
                 type: helperService.getTypeOptions('leaderboard')
             };
 
-            vm.users = users;
-
-            $scope.$watchGroup([
-                'leaderboard.selected.dice',
-                'leaderboard.selected.type'
-            ], onSelectedChanged);
+            vm.users = (users ? users.plain() : users);
 
             vm.selected = {
                 dice: vm.options.dice[0],
                 type: vm.options.type[0]
             };
 
-            function onSelectedChanged() {
-                vm.orderByPredicate = getOrderByPredicate(
-                    vm.selected.type.key,
-                    vm.selected.dice.key
-                );
+            onSelectedChanged();
+        }
 
-                function getOrderByPredicate() {
-                    var args = arguments;
+        function onSelectedChanged() {
+            vm.orderByPredicate = getOrderByPredicate(
+                vm.selected.type.key,
+                vm.selected.dice.key
+            );
 
-                    return function(item) {
-                        return item[args[0]][args[1]];
-                    }
+            function getOrderByPredicate() {
+                var args = arguments;
+
+                return function(item) {
+                    return item[args[0]][args[1]];
                 }
             }
         }
 
         function setSelected(key, item) {
             vm.selected[key] = item;
+            onSelectedChanged();
         }
 
         function userClicked(user) {

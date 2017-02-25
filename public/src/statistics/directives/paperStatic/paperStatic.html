@@ -1,14 +1,12 @@
 <table class="m-auto game-table">
     <tr>
         <th class="cell">Yamb</th>
-        <th class="cell heading" ng-repeat="column in columns">
-            {{ column.abbreviation }}
+        <th class="cell heading" ng-repeat="column in columns"
+            ng-bind="column.abbreviation">
         </th>
     </tr>
     <tr ng-repeat="row in rows">
-        <th class="cell heading">
-            {{ row.abbreviation }}
-        </th>
+        <th class="cell heading" ng-bind="row.abbreviation"></th>
         <td class="cell" ng-repeat="column in columns"
             ng-init="cellKey = row.abbreviation + '_' + column.abbreviation"
             ng-class="{
