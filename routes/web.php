@@ -11,15 +11,17 @@
 |
 */
 
-Route::get('/', function () {
-    return view('index');
-});
+Route::group(['domain' => env('APP_URL')], function() {
+    Route::get('/', function () {
+        return view('index');
+    });
 
-Route::post('register', 'Auth\AuthController@register');
+    Route::post('register', 'Auth\AuthController@register');
 
-Route::post('login', 'Auth\AuthController@login');
+    Route::post('login', 'Auth\AuthController@login');
 
-// Redirect to index to let Angular handle routes
-Route::get('{any?}', function () {
-    return view('index');
+    // Redirect to index to let Angular handle routes
+    Route::get('{any?}', function () {
+        return view('index');
+    });
 });
