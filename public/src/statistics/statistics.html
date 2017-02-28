@@ -25,13 +25,13 @@
     </button>
 </div>
 
-<div class="row m-t-20 text-center" ng-if="statistics.cells">
+<div class="row m-t-20" ng-if="statistics.cells">
     <div class="col-xs-12">
         <paper-static cells="statistics.cells" key="statistics.selected.type.key"></paper-static>
     </div>
 </div>
 
-<div class="row m-t-20 text-center" ng-if="statistics.other">
+<div class="row m-t-20" ng-if="statistics.other">
     <div class="col-xs-12" ng-repeat="(key, value) in statistics.other.game_averages[statistics.selected.dice.key]"
         ng-class="{'m-t-5': !$first}">
         <span ng-bind="'Average ' + key + ': '"></span>

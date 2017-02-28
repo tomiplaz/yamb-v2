@@ -37,6 +37,10 @@
                 {
                     name: 'root.statistics',
                     label: 'Statistics'
+                },
+                {
+                    name: 'root.about',
+                    label: 'About'
                 }
             ];
 

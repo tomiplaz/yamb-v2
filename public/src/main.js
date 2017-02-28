@@ -20,7 +20,8 @@
             'yamb-v2.play',
             'yamb-v2.statistics',
             'yamb-v2.leaderboard',
-            'yamb-v2.rules'
+            'yamb-v2.rules',
+            'yamb-v2.about'
         ])
         .config(config)
         .run(run);

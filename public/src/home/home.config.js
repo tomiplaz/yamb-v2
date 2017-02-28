@@ -11,7 +11,12 @@
             .state('root.home', {
                 url: 'home',
                 templateUrl: 'src/home/home.html',
-                controller: 'HomeCtrl as home'
+                controller: 'HomeCtrl as home',
+                resolve: {
+                    lastGame: function(apiService) {
+                        return apiService.custom('games', null, 'get', 'last-game');
+                    }
+                }
             });
     }
 })();

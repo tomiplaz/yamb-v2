@@ -69,4 +69,16 @@ class GameController extends Controller
 
         return response('OK', 200);
     }
+
+    /**
+     * Get last game played.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getLastGame()
+    {
+        $lastGame = Game::with('user')->orderBy('id', 'desc')->first();
+
+        return response()->json($lastGame);
+    }
 }

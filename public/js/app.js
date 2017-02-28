@@ -20,7 +20,8 @@
             'yamb-v2.play',
             'yamb-v2.statistics',
             'yamb-v2.leaderboard',
-            'yamb-v2.rules'
+            'yamb-v2.rules',
+            'yamb-v2.about'
         ])
         .config(config)
         .run(run);
@@ -39,6 +40,22 @@
     'use strict';
 
     angular
+        .module('yamb-v2.about', [])
+        .config(config);
+    
+    config.$inject = ['$stateProvider'];
+    function config($stateProvider) {
+        $stateProvider
+            .state('root.about', {
+                url: 'about',
+                templateUrl: 'src/about/about.html'
+            });
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
         .module('yamb-v2.home', [])
         .config(config);
     
@@ -48,7 +65,12 @@
             .state('root.home', {
                 url: 'home',
                 templateUrl: 'src/home/home.html',
-                controller: 'HomeCtrl as home'
+                controller: 'HomeCtrl as home',
+                resolve: {
+                    lastGame: function(apiService) {
+                        return apiService.custom('games', null, 'get', 'last-game');
+                    }
+                }
             });
     }
 })();
@@ -59,8 +81,11 @@
         .module('yamb-v2.home')
         .controller('HomeCtrl', HomeCtrl);
 
-    function HomeCtrl() {
+    HomeCtrl.$inject = ['lastGame'];
+    function HomeCtrl(lastGame) {
         var vm = this;
+
+        vm.lastGame = (lastGame ? lastGame.plain() : lastGame);
     }
 })();
 (function() {
@@ -458,6 +483,10 @@
                 {
                     name: 'root.statistics',
                     label: 'Statistics'
+                },
+                {
+                    name: 'root.about',
+                    label: 'About'
                 }
             ];
 

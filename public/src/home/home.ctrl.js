@@ -5,7 +5,10 @@
         .module('yamb-v2.home')
         .controller('HomeCtrl', HomeCtrl);
 
-    function HomeCtrl() {
+    HomeCtrl.$inject = ['lastGame'];
+    function HomeCtrl(lastGame) {
         var vm = this;
+
+        vm.lastGame = (lastGame ? lastGame.plain() : lastGame);
     }
 })();
