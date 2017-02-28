@@ -5,8 +5,8 @@
         .module('yamb-v2.login')
         .controller('LoginCtrl', LoginCtrl);
 
-    LoginCtrl.$inject = ['authService', '$localStorage', '$state', '$rootScope'];
-    function LoginCtrl(authService, $localStorage, $state, $rootScope) {
+    LoginCtrl.$inject = ['authService', '$localStorage', '$state', '$rootScope', 'toastr'];
+    function LoginCtrl(authService, $localStorage, $state, $rootScope, toastr) {
         var vm = this;
 
         activate();
@@ -23,7 +23,11 @@
                 $rootScope.user = success.user;
                 $state.go('root.play');
             }, function(error) {
-                console.log("Error", error);
+                if (error.status === 401) {
+                    toastr.error("Invalid credentials!", "Error");
+                } else {
+                    toastr.error("Something went wrong.", "Error");
+                }
             });
         }
     }

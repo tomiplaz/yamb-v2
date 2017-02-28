@@ -5,18 +5,18 @@
         .module('yamb-v2.register')
         .controller('RegisterCtrl', RegisterCtrl);
     
-    RegisterCtrl.$inject = ['authService', '$state'];
-    function RegisterCtrl(authService, $state) {
+    RegisterCtrl.$inject = ['authService', '$state', 'toastr'];
+    function RegisterCtrl(authService, $state, toastr) {
         var vm = this;
 
         vm.confirm = confirm;
 
         function confirm() {
             authService.register(vm.input).then(function(success) {
-                console.log("Success", success);
-                $state.go('login');
+                toastr.success("You have registered successfully! Please log in.", "Success");
+                $state.go('root.login');
             }, function(error) {
-                console.log("Error", error);
+                toastr.error("Something went wrong.", "Error");
             });
         }
     }
