@@ -1,6 +1,6 @@
 <h3>Leaderboard</h3>
 
-<div class="row">
+<div class="row m-t-20">
     <button class="btn m-l-5 m-r-5" ng-repeat="dice in leaderboard.options.dice track by $index"
         ng-class="{'active': leaderboard.selected.dice === dice}"
         ng-click="leaderboard.setSelected('dice', dice)"

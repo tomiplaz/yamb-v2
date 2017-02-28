@@ -26,6 +26,7 @@
     "angular-jwt": "^0.1.9",
     "angular-animate": "^1.6.2",
     "angular-touch": "^1.6.2",
-    "angular-bootstrap": "^2.5.0"
+    "angular-bootstrap": "^2.5.0",
+    "angular-messages": "^1.6.2"
   }
 }

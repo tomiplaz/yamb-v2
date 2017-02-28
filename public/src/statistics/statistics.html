@@ -1,6 +1,6 @@
 <h3>Statistics</h3>
 
-<div class="row">
+<div class="row m-t-20">
     <button class="btn m-l-5 m-r-5" ng-repeat="dice in statistics.options.dice track by $index"
         ng-class="{'active': statistics.selected.dice === dice}"
         ng-click="statistics.setSelected('dice', dice)"

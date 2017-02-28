@@ -10,6 +10,7 @@
             'angular-jwt',
             'ngStorage',
             'toastr',
+            'ngMessages',
             'commonServices',
             'yamb-v2.services',
             'yamb-v2.filters',

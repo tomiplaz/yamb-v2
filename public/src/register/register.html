@@ -1,32 +1,48 @@
 <h3>Register</h3>
 
-<form name="register.form">
+<form class="m-t-20" name="register.form">
     <div class="row">
         <div class="form-group col-xs-12 col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4">
-            <label class="sr-only" for="email">Name</label>
-            <input type="text" class="form-control" id="name" placeholder="Name"
-                ng-model="register.input.name" required>
+            <label class="sr-only" for="name">Name</label>
+            <input type="text" class="form-control" id="name" name="name" placeholder="Name"
+                ng-model="register.input.name" required ng-minlength="5" ng-maxlength="20" pattern="^[a-zA-Z0-9-_]+$">
+            <div class="text-right" ng-messages="register.form.name.$error">
+                <div ng-message="required" class="validation-message">Required</div>
+                <div ng-message="minlength" class="validation-message">Too short</div>
+                <div ng-message="maxlength" class="validation-message">Too long</div>
+                <div ng-message="pattern" class="validation-message">Invalid format</div>
+            </div>
         </div>
     </div>
     <div class="row">
         <div class="form-group col-xs-12 col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4">
             <label class="sr-only" for="email">Email</label>
-            <input type="email" class="form-control" id="email" placeholder="Email"
-                ng-model="register.input.email" required>
+            <input type="email" class="form-control" id="email" name="email" placeholder="Email"
+                ng-model="register.input.email" required pattern="">
+            <div class="text-right" ng-messages="register.form.email.$error">
+                <div ng-message="required" class="validation-message">Required</div>
+            </div>
         </div>
     </div>
     <div class="row">
         <div class="form-group col-xs-12 col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4">
             <label class="sr-only" for="password">Password</label>
-            <input type="password" class="form-control" id="password" placeholder="Password"
+            <input type="password" class="form-control" id="password" name="password" placeholder="Password"
                 ng-model="register.input.password" required pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$">
+            <div class="text-right" ng-messages="register.form.password.$error">
+                <div ng-message="required" class="validation-message">Required</div>
+                <div ng-message="pattern" class="validation-message">Invalid format</div>
+            </div>
         </div>
     </div>
     <div class="row">
         <div class="form-group col-xs-12 col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4">
             <label class="sr-only" for="confirmPassword">Confirm Password</label>
-            <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm Password"
+            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Confirm Password"
                 ng-model="register.input.password_confirmation" required>
+            <div class="text-right" ng-messages="register.form.confirmPassword.$error">
+                <div ng-message="required" class="validation-message">Required</div>
+            </div>
         </div>
     </div>
     <button class="btn btn-default" ng-click="register.confirm()"

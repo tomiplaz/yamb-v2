@@ -1,6 +1,6 @@
 body {
     text-align: center;
-    background-color: lightblue;
+    background-color: #7ac659;
 }
 
 .m-auto {
@@ -84,4 +84,9 @@ body {
 
 .table th {
     text-align: center;
+}
+
+.validation-message {
+    font-size: 0.9em;
+    margin-right: 2px;
 }
