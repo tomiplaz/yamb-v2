@@ -2,11 +2,17 @@
 
 <h4 class="m-t-20">Last game played</h4>
 
-<div class="row m-t-10">
+<div class="row m-t-10" ng-if="!home.lastGame">
+    <div class="col-xs-12">
+        <span>No games have been played!</span>
+    </div>
+</div>
+
+<div class="row m-t-10" ng-if="home.lastGame">
     <div class="col-xs-12">
         <span>Player: </span>
         <span ng-if="home.lastGame.user" ng-bind="home.lastGame.user.name"></span>
-        <span ng-if="!home.lastGame.user">Anonymous</span>
+        <span ng-if="!home.lastGame.user">? (anonymous)</span>
     </div>
     <div class="col-xs-12 m-t-5">
         <span>Result: </span>

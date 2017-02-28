@@ -79,6 +79,6 @@ class GameController extends Controller
     {
         $lastGame = Game::with('user')->orderBy('id', 'desc')->first();
 
-        return response()->json($lastGame);
+        return response($lastGame);
     }
 }
