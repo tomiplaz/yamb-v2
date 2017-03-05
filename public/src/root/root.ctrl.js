@@ -59,6 +59,7 @@
         function logout() {
             delete $localStorage.token;
             $rootScope.user = null;
+            vm.isNavCollapsed = true;
             $state.go('root.home');
         }
     }

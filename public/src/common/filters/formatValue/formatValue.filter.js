@@ -15,13 +15,21 @@
                     } else {
                         var seconds = Math.floor(value / 1000);
                         var minutes = Math.floor(seconds / 60);
-                        return minutes + ':' + (seconds - minutes * 60);
+                        return formatTimeValue(minutes) + ':' + formatTimeValue(seconds - minutes * 60);
                     }
                 case 'games_played':
                 case 'games_unfinished':
                     return value;
                 default:
                     return (value ? value : '-');
+            }
+
+            function formatTimeValue(value) {
+                if (value < 10) {
+                    return '0' + value;
+                } else {
+                    return value;
+                }
             }
         };
     }

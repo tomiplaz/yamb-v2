@@ -5,8 +5,8 @@
         .module('yamb-v2.play')
         .controller('PlayCtrl', PlayCtrl);
 
-    PlayCtrl.$inject = ['$scope', 'apiService', 'userService', 'toastr', 'helperService'];
-    function PlayCtrl($scope, apiService, userService, toastr, helperService) {
+    PlayCtrl.$inject = ['$scope', 'apiService', 'userService', 'toastr', 'helperService', 'modalService', '$state'];
+    function PlayCtrl($scope, apiService, userService, toastr, helperService, modalService, $state) {
         var vm = this;
 
         var userId = userService.getUserId();
@@ -100,7 +100,8 @@
 
             apiService
                 .create('games', data)
-                .then(successCallback, errorCallback);
+                .then(successCallback, errorCallback)
+                .finally(finallyCallback);
 
             function getMappedCells(cells) {
                 var mappedCells = [];
@@ -119,11 +120,23 @@
 
             function successCallback(response) {
                 toastr.success("Game saved successfully!", "Game saved");
-                // Hide paper, show result and how it stands on leaderboard
+
+                var modal = modalService.getModalInstance(
+                    modalService.MODALS.GAME_INFO,
+                    {
+                        user: userService.getUser(),
+                        game: response,
+                        diceKey: vm.selectedDiceOption.key
+                    }
+                );
             }
 
             function errorCallback(response) {
-                toastr.error(response, "Error");
+                toastr.error("Final result was " + finalResult + ".", "Game not saved");
+            }
+
+            function finallyCallback() {
+                $state.reload();
             }
         }
     }

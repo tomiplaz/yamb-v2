@@ -19,7 +19,7 @@
         <base href="/">
     </head>
 
-    <body ng-app="yamb-v2">
+    <body ng-app="yamb-v2" class="m-b-20">
         <div class="container-fluid" ui-view></div>
 
         <script type="text/javascript" src="js/deps.js"></script>

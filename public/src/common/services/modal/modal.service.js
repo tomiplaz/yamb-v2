@@ -42,7 +42,18 @@
                                 return data.user;
                             },
                             bestGames: function(apiService) {
-                                return apiService.custom('users', data.user.id, 'get', 'best-games');
+                                if (!data.game) {
+                                    return apiService.custom('users', data.user.id, 'get', 'best-games');
+                                } else {
+                                    return null;
+                                }
+                            },
+                            game: function() {
+                                if (data.game) {
+                                    return data.game;
+                                } else {
+                                    return null;
+                                }
                             },
                             diceKey: function() {
                                 return data.diceKey;

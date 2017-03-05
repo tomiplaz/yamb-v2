@@ -256,8 +256,8 @@
         .module('yamb-v2.play')
         .controller('PlayCtrl', PlayCtrl);
 
-    PlayCtrl.$inject = ['$scope', 'apiService', 'userService', 'toastr', 'helperService'];
-    function PlayCtrl($scope, apiService, userService, toastr, helperService) {
+    PlayCtrl.$inject = ['$scope', 'apiService', 'userService', 'toastr', 'helperService', 'modalService', '$state'];
+    function PlayCtrl($scope, apiService, userService, toastr, helperService, modalService, $state) {
         var vm = this;
 
         var userId = userService.getUserId();
@@ -351,7 +351,8 @@
 
             apiService
                 .create('games', data)
-                .then(successCallback, errorCallback);
+                .then(successCallback, errorCallback)
+                .finally(finallyCallback);
 
             function getMappedCells(cells) {
                 var mappedCells = [];
@@ -370,11 +371,23 @@
 
             function successCallback(response) {
                 toastr.success("Game saved successfully!", "Game saved");
-                // Hide paper, show result and how it stands on leaderboard
+
+                var modal = modalService.getModalInstance(
+                    modalService.MODALS.GAME_INFO,
+                    {
+                        user: userService.getUser(),
+                        game: response,
+                        diceKey: vm.selectedDiceOption.key
+                    }
+                );
             }
 
             function errorCallback(response) {
-                toastr.error(response, "Error");
+                toastr.error("Final result was " + finalResult + ".", "Game not saved");
+            }
+
+            function finallyCallback() {
+                $state.reload();
             }
         }
     }
@@ -510,6 +523,7 @@
         function logout() {
             delete $localStorage.token;
             $rootScope.user = null;
+            vm.isNavCollapsed = true;
             $state.go('root.home');
         }
     }
@@ -913,13 +927,21 @@
                     } else {
                         var seconds = Math.floor(value / 1000);
                         var minutes = Math.floor(seconds / 60);
-                        return minutes + ':' + (seconds - minutes * 60);
+                        return formatTimeValue(minutes) + ':' + formatTimeValue(seconds - minutes * 60);
                     }
                 case 'games_played':
                 case 'games_unfinished':
                     return value;
                 default:
                     return (value ? value : '-');
+            }
+
+            function formatTimeValue(value) {
+                if (value < 10) {
+                    return '0' + value;
+                } else {
+                    return value;
+                }
             }
         };
     }
@@ -1131,7 +1153,18 @@
                                 return data.user;
                             },
                             bestGames: function(apiService) {
-                                return apiService.custom('users', data.user.id, 'get', 'best-games');
+                                if (!data.game) {
+                                    return apiService.custom('users', data.user.id, 'get', 'best-games');
+                                } else {
+                                    return null;
+                                }
+                            },
+                            game: function() {
+                                if (data.game) {
+                                    return data.game;
+                                } else {
+                                    return null;
+                                }
                             },
                             diceKey: function() {
                                 return data.diceKey;
@@ -1200,11 +1233,14 @@
         $ctrl.$onInit = onInit;
 
         function onInit() {
-            var bestGames = $ctrl.resolve.bestGames.plain();
-
             $ctrl.user = $ctrl.resolve.user;
-            $ctrl.game = bestGames[$ctrl.resolve.diceKey];
             $ctrl.cells = {};
+
+            if ($ctrl.resolve.bestGames) {
+                $ctrl.game = $ctrl.resolve.bestGames[$ctrl.resolve.diceKey];
+            } else {
+                $ctrl.game = $ctrl.resolve.game;
+            }
             
             $ctrl.game.cells.forEach(setCellProperty);
 

@@ -32,8 +32,10 @@ class GameController extends Controller
             $game = Game::create($request->get('game'));
             $game->cells()->createMany($request->get('cells'));
 
+            $game = Game::with('cells')->where('id', $game->id)->first();
+
             DB::commit();
-            return response('OK', 200);
+            return response($game);
         } catch (Exception $e) {
             DB::rollBack();
             return response($e->getMessage(), 500);

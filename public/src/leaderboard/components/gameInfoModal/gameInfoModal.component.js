@@ -17,11 +17,14 @@
         $ctrl.$onInit = onInit;
 
         function onInit() {
-            var bestGames = $ctrl.resolve.bestGames.plain();
-
             $ctrl.user = $ctrl.resolve.user;
-            $ctrl.game = bestGames[$ctrl.resolve.diceKey];
             $ctrl.cells = {};
+
+            if ($ctrl.resolve.bestGames) {
+                $ctrl.game = $ctrl.resolve.bestGames[$ctrl.resolve.diceKey];
+            } else {
+                $ctrl.game = $ctrl.resolve.game;
+            }
             
             $ctrl.game.cells.forEach(setCellProperty);
 
