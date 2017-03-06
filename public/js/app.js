@@ -680,7 +680,8 @@
             getFullHouseValue: getFullHouseValue,
             getQuadsValue: getQuadsValue,
             getYambValue: getYambValue,
-            getMinMaxValue: getMinMaxValue,
+            getMinValue: getMinValue,
+            getMaxValue: getMaxValue,
             getOneToSixValue: getOneToSixValue,
             getCalculateSum: getCalculateSum,
             getFinalResult: getFinalResult
@@ -689,9 +690,12 @@
         function getStraightValue(rollNumber, diceValues) {
             return isStraight() ? 66 - (rollNumber - 1) * 10 : 0;
 
-            function isStraight() {
-                var sortedString = diceValues.sort().join('');
-                return (sortedString.indexOf('12345') !== -1 || sortedString.indexOf('23456') !== -1);
+            function isStraight() {                
+                return [1, 2, 3, 4, 5].every(isAmongDiceValues) || [2, 3, 4, 5, 6].every(isAmongDiceValues);
+                
+                function isAmongDiceValues(number) {
+                    return diceValues.indexOf(number) !== -1;
+                }
             }
         }
 
@@ -757,6 +761,16 @@
                 }
                 return false;
             }
+        }
+
+        function getMinValue(diceValues) {
+            var sorted = diceValues.sort();
+            return sorted.slice(0, -1).reduce(sumReduction, 0);
+        }
+
+        function getMaxValue(diceValues) {
+            var sorted = diceValues.sort().reverse();
+            return sorted.slice(0, -1).reduce(sumReduction, 0);
         }
 
         function getMinMaxValue(diceValues) {
@@ -1425,8 +1439,9 @@
                         case 'yamb':
                             return calculationService.getYambValue(diceValues);
                         case 'min':
+                            return calculationService.getMinValue(diceValues);
                         case 'max':
-                            return calculationService.getMinMaxValue(diceValues);
+                            return calculationService.getMaxValue(diceValues);
                         default:
                             return calculationService.getOneToSixValue(cell, diceValues);
                     }

@@ -65,10 +65,7 @@ class GameController extends Controller
      */
     public function gameStarted(Request $request)
     {
-        $data = $request->only('user_id');
-
-        DB::table('games_started')->insert($data);
-
+        DB::table('games_started')->insert($request->all());
         return response('OK', 200);
     }
 
@@ -80,7 +77,6 @@ class GameController extends Controller
     public function getLastGame()
     {
         $lastGame = Game::with('user')->orderBy('id', 'desc')->first();
-
         return response($lastGame);
     }
 }

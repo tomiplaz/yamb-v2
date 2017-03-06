@@ -82,8 +82,9 @@
                         case 'yamb':
                             return calculationService.getYambValue(diceValues);
                         case 'min':
+                            return calculationService.getMinValue(diceValues);
                         case 'max':
-                            return calculationService.getMinMaxValue(diceValues);
+                            return calculationService.getMaxValue(diceValues);
                         default:
                             return calculationService.getOneToSixValue(cell, diceValues);
                     }
