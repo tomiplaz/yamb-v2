@@ -16,9 +16,11 @@
         vm.setSelectedDiceOption = setSelectedDiceOption;
         vm.startGame = startGame;
         vm.roll = roll;
-        vm.resetRollNumber = resetRollNumber;
+        vm.undo = undo;
+        vm.setRollNumber = setRollNumber;
         vm.setIsInputRequired = setIsInputRequired;
         vm.setIsAnnouncementRequired = setIsAnnouncementRequired;
+        vm.setIsUndoAvailable = setIsUndoAvailable;
         vm.saveGame = saveGame;
 
         function activate() {
@@ -29,6 +31,7 @@
             vm.hasGameStarted = false;
             vm.isInputRequired = false;
             vm.isAnnouncementRequired = false;
+            vm.isUndoAvailable = false;
         }
 
         function setSelectedDiceOption(diceOption) {
@@ -50,11 +53,17 @@
         
         function roll() {
             incrementRollNumber();
+            setIsUndoAvailable(false);
+
             $scope.$broadcast('roll');
 
             if (vm.rollNumber === 3) {
                 setIsInputRequired(true);
             }
+        }
+
+        function undo() {
+            $scope.$broadcast('undo');
         }
 
         function getDiceIndices(numberOfDice) {
@@ -71,8 +80,8 @@
             ++vm.rollNumber;
         }
 
-        function resetRollNumber() {
-            vm.rollNumber = 0;
+        function setRollNumber(value) {
+            vm.rollNumber = value;
         }
 
         function setIsInputRequired(value) {
@@ -81,6 +90,10 @@
 
         function setIsAnnouncementRequired(value) {
             vm.isAnnouncementRequired = value;
+        }
+
+        function setIsUndoAvailable(value) {
+            vm.isUndoAvailable = value;
         }
 
         function saveGame(cells, finalResult) {

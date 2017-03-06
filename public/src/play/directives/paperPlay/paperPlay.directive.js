@@ -21,10 +21,13 @@
             var sumRows = rows.filter(isSum);
             var turnNumber = 0;
             var announcedCellKey = null;
+            var savedState = null;
 
             scope.cellClicked = cellClicked;
 
             scope.$on('roll', updateAvailableCells);
+
+            scope.$on('undo', handleUndo);
 
             initCells();
 
@@ -48,25 +51,29 @@
             function cellClicked(cellKey) {
                 var cell = scope.cells[cellKey];
 
+                updateSavedState(cellKey);
+
                 if (cell.isAvailable) {
                     if (cell.column.abbreviation === 'ann' && !announcedCellKey) {
                         resetCellsAvailability();
                         announcedCellKey = cellKey;
                         scope.play.setIsAnnouncementRequired(false);
-                        scope.cells[cellKey].isAvailable = true;
+                        cell.isAvailable = true;
                     } else {
                         cell.value = getCalculatedCellValue();
                         cell.inputTurn = ++turnNumber;
 
                         announcedCellKey = null;
                         resetCellsAvailability();
-                        scope.play.resetRollNumber();
+                        scope.play.setRollNumber(0);
                         scope.play.setIsInputRequired(false);
                         diceService.unlockAndDisableDice();
 
                         calculateSums();
                         calculateFinalResult();
                     }
+
+                    scope.play.setIsUndoAvailable(true);
                 }
 
                 function getCalculatedCellValue() {
@@ -202,6 +209,31 @@
 
                     return true;
                 }
+            }
+
+            function handleUndo() {
+                scope.play.setIsUndoAvailable(false);
+
+                if (announcedCellKey) {
+                    announcedCellKey = null;
+                } else {
+                    turnNumber--;
+                    scope.play.setRollNumber(savedState.rollNumber);
+                    scope.play.setIsInputRequired(savedState.isInputRequired);
+                }
+
+                scope.cells[savedState.cellKey] = savedState.cell;
+                updateAvailableCells();
+            }
+
+            function updateSavedState(cellKey) {
+                // Try without copy also
+                savedState = {
+                    cellKey: cellKey,
+                    cell: angular.copy(scope.cells[cellKey]),
+                    rollNumber: angular.copy(scope.play.rollNumber),
+                    isInputRequired: angular.copy(scope.play.isInputRequired)
+                };
             }
 
             function resetCellsAvailability() {
