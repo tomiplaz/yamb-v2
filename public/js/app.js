@@ -765,12 +765,16 @@
 
         function getMinValue(diceValues) {
             var sorted = diceValues.sort();
-            return sorted.slice(0, -1).reduce(sumReduction, 0);
+            sorted.length = 5;
+
+            return sorted.reduce(sumReduction, 0);
         }
 
         function getMaxValue(diceValues) {
             var sorted = diceValues.sort().reverse();
-            return sorted.slice(0, -1).reduce(sumReduction, 0);
+            sorted.length = 5;
+
+            return sorted.reduce(sumReduction, 0);
         }
 
         function getMinMaxValue(diceValues) {
