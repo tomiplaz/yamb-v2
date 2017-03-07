@@ -24,7 +24,8 @@
             ng-disabled="play.isInputRequired || play.isAnnouncementRequired">
             Roll
         </button>
-        <button class="btn" ng-click="play.undo()">
+        <button class="btn" ng-click="play.undo()"
+            ng-disabled="play.isUndoDisabled">
             Undo
         </button>
     </div>

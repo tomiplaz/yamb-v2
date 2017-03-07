@@ -271,7 +271,7 @@
         vm.setRollNumber = setRollNumber;
         vm.setIsInputRequired = setIsInputRequired;
         vm.setIsAnnouncementRequired = setIsAnnouncementRequired;
-        vm.setIsUndoAvailable = setIsUndoAvailable;
+        vm.setIsUndoDisabled = setIsUndoDisabled;
         vm.saveGame = saveGame;
 
         function activate() {
@@ -282,7 +282,7 @@
             vm.hasGameStarted = false;
             vm.isInputRequired = false;
             vm.isAnnouncementRequired = false;
-            vm.isUndoAvailable = false;
+            vm.isUndoDisabled = true;
         }
 
         function setSelectedDiceOption(diceOption) {
@@ -304,7 +304,7 @@
         
         function roll() {
             incrementRollNumber();
-            setIsUndoAvailable(false);
+            setIsUndoDisabled(true);
 
             $scope.$broadcast('roll');
 
@@ -343,8 +343,8 @@
             vm.isAnnouncementRequired = value;
         }
 
-        function setIsUndoAvailable(value) {
-            vm.isUndoAvailable = value;
+        function setIsUndoDisabled(value) {
+            vm.isUndoDisabled = value;
         }
 
         function saveGame(cells, finalResult) {
@@ -811,6 +811,8 @@
                         if (relevantValues.every(hasValue)) {
                             var sum = relevantValues.reduce(sumReduction, 0);
                             cells[cellKey].value = (sum >= 60 ? sum + 30 : sum);
+                        } else {
+                            cells[cellKey].value = null;
                         }
                         break;
                     case 'msum':
@@ -819,12 +821,16 @@
                         if (relevantValues.every(hasValue) && cells[onesCellKey].value !== null) {
                             var difference = relevantValues[1] - relevantValues[0];
                             cells[cellKey].value = (difference < 0 ? 0 : difference * cells[onesCellKey].value);
+                        } else {
+                            cells[cellKey].value = null;
                         }
                         break;
                     case 'lsum':
                         var relevantValues = getRelevantValues(4);
                         if (relevantValues.every(hasValue)) {
                             cells[cellKey].value = relevantValues.reduce(sumReduction, 0);
+                        } else {
+                            cells[cellKey].value = null;
                         }
                         break;
                     default:
@@ -842,45 +848,6 @@
                     return relevantValues;
                 }
             };
-        }
-
-        function calculateSum(cellKey, row, column) {
-            switch (row.abbreviation) {
-                case 'usum':
-                    var relevantValues = getRelevantValues(6);
-                    if (relevantValues.every(hasValue)) {
-                        var sum = relevantValues.reduce(sumReduction, 0);
-                        scope.cells[cellKey].value = (sum >= 60 ? sum + 30 : sum);
-                    }
-                    break;
-                case 'msum':
-                    var relevantValues = getRelevantValues(2);
-                    var onesCellKey = rows[0].abbreviation + '_' + column.abbreviation;
-                    if (relevantValues.every(hasValue) && scope.cells[onesCellKey].value !== null) {
-                        var difference = relevantValues[1] - relevantValues[0];
-                        scope.cells[cellKey].value = (difference < 0 ? 0 : difference * scope.cells[onesCellKey].value);
-                    }
-                    break;
-                case 'lsum':
-                    var relevantValues = getRelevantValues(4);
-                    if (relevantValues.every(hasValue)) {
-                        scope.cells[cellKey].value = relevantValues.reduce(sumReduction, 0);
-                    }
-                    break;
-                default:
-            }
-
-            function getRelevantValues(numberOfTrailingCells) {
-                var cellKey = null;
-                var relevantValues = [];
-
-                for (var i = 1; i <= numberOfTrailingCells; i++) {
-                    cellKey = rows[row.id - 1 - i].abbreviation + '_' + column.abbreviation;
-                    relevantValues.push(scope.cells[cellKey].value);
-                }
-
-                return relevantValues;
-            }
         }
 
         function getFinalResult(sumsValues) {
@@ -909,8 +876,9 @@
             dice: [],
             getDice: getDice,
             getDiceValues: getDiceValues,
-            unlockAndDisableDice: unlockAndDisableDice
-        }
+            unlockAndDisableDice: unlockAndDisableDice,
+            enableDice: enableDice
+        };
 
         return service;
 
@@ -932,6 +900,14 @@
             function unlockAndDisableDie(die) {
                 die.isLocked = false;
                 die.isDisabled = true;
+            }
+        }
+
+        function enableDice() {
+            service.dice.forEach(enableDie);
+
+            function enableDie(die) {
+                die.isDisabled = false;
             }
         }
     }
@@ -1401,11 +1377,20 @@
 
             initCells();
 
+            /**
+             * Initializes all cells.
+             */
             function initCells() {
                 scope.cells = {};
 
                 iterateCells(initCell);
 
+                /**
+                 * Initializes a single cell.
+                 * @param {string} cellKey - The cell's key.
+                 * @param {object} row - The row of a cell.
+                 * @param {object} column - The column of a cell.
+                 */
                 function initCell(cellKey, row, column) {
                     scope.cells[cellKey] = {
                         row: row,
@@ -1443,7 +1428,7 @@
                         calculateFinalResult();
                     }
 
-                    scope.play.setIsUndoAvailable(true);
+                    scope.play.setIsUndoDisabled(false);
                 }
 
                 function getCalculatedCellValue() {
@@ -1465,10 +1450,6 @@
                         default:
                             return calculationService.getOneToSixValue(cell, diceValues);
                     }
-                }
-
-                function calculateSums() {
-                    iterateCells(calculationService.getCalculateSum(rows, scope.cells), 'sum');
                 }
 
                 function calculateFinalResult() {
@@ -1581,39 +1562,76 @@
                 }
             }
 
-            function handleUndo() {
-                scope.play.setIsUndoAvailable(false);
+            /**
+             * Iterates through all sum cells and sets their value.
+             */
+            function calculateSums() {
+                iterateCells(calculationService.getCalculateSum(rows, scope.cells), 'sum');
+            }
 
-                if (announcedCellKey) {
-                    announcedCellKey = null;
-                } else {
+            /**
+             * Reverts back to paper's previous state.
+             */
+            function handleUndo() {
+                scope.play.setIsUndoDisabled(true);
+                scope.cells[savedState.cellKey] = savedState.cell;
+
+                if (!announcedCellKey) {
                     turnNumber--;
                     scope.play.setRollNumber(savedState.rollNumber);
                     scope.play.setIsInputRequired(savedState.isInputRequired);
+                    diceService.enableDice();
+                    calculateSums();
                 }
 
-                scope.cells[savedState.cellKey] = savedState.cell;
+                announcedCellKey = savedState.announcedCellKey;
                 updateAvailableCells();
             }
 
+            /**
+             * Updates savedState object with latest values.
+             * @param {string} cellKey - The last clicked cell's key.
+             */
             function updateSavedState(cellKey) {
-                // Try without copy also
                 savedState = {
                     cellKey: cellKey,
                     cell: angular.copy(scope.cells[cellKey]),
+                    announcedCellKey: angular.copy(announcedCellKey),
                     rollNumber: angular.copy(scope.play.rollNumber),
                     isInputRequired: angular.copy(scope.play.isInputRequired)
                 };
             }
 
+            /**
+             * Makes all playable cells unavailable.
+             */
             function resetCellsAvailability() {
                 iterateCells(resetCellAvailability, 'playable');
 
+                /**
+                 * Makes a single cell unavailable.
+                 * @param {string} cellKey - The cell's key.
+                 */
                 function resetCellAvailability(cellKey) {
                     scope.cells[cellKey].isAvailable = false;
                 }
             }
 
+            /**
+             * Iterates through cells and calls a function for each cell.
+             * @callback iteratorCallback
+             * @param {string} cellKey - The cell's key.
+             * @param {object} row - Iteration's current row.
+             * @param {object} column - Iteration's current column.
+             * @param {number} rowIndex - Iteration's current row's index.
+             * @param {number} columnIndex - Iteration's current column's index.
+             */
+
+            /**
+             * Iterates through rows and columns and calls a function for each instance.
+             * @param {iteratorCallback} callbackFunction - Function called for each iteration instance.
+             * @param {string} filterRows - A string defining which rows should be iterated.
+             */
             function iterateCells(callbackFunction, filterRows) {
                 var rowsToIterate = rows;
                 if (filterRows === 'playable') rowsToIterate = playableRows;
@@ -1627,14 +1645,29 @@
                 });     
             }
 
+            /**
+             * Returns true if row is playable, otherwise false.
+             * @param {object} row - The row that is evaluated.
+             * @return {boolean}
+             */
             function isPlayable(row) {
                 return row.abbreviation.indexOf('sum') === -1;
             }
 
+            /**
+             * Returns true if row is a sum row, otherwise false.
+             * @param {object} row - The row that is evaluated.
+             * @return {boolean}
+             */
             function isSum(row) {
                 return row.abbreviation.indexOf('sum') !== -1;
             }
 
+            /**
+             * Returns true if value is defined and not null, otherwise false.
+             * @param {int} value - The value that is evaluated.
+             * @return {boolean}
+             */
             function hasValue(value) {
                 return value !== null && value !== undefined;
             }

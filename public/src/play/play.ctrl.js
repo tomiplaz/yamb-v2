@@ -20,7 +20,7 @@
         vm.setRollNumber = setRollNumber;
         vm.setIsInputRequired = setIsInputRequired;
         vm.setIsAnnouncementRequired = setIsAnnouncementRequired;
-        vm.setIsUndoAvailable = setIsUndoAvailable;
+        vm.setIsUndoDisabled = setIsUndoDisabled;
         vm.saveGame = saveGame;
 
         function activate() {
@@ -31,7 +31,7 @@
             vm.hasGameStarted = false;
             vm.isInputRequired = false;
             vm.isAnnouncementRequired = false;
-            vm.isUndoAvailable = false;
+            vm.isUndoDisabled = true;
         }
 
         function setSelectedDiceOption(diceOption) {
@@ -53,7 +53,7 @@
         
         function roll() {
             incrementRollNumber();
-            setIsUndoAvailable(false);
+            setIsUndoDisabled(true);
 
             $scope.$broadcast('roll');
 
@@ -92,8 +92,8 @@
             vm.isAnnouncementRequired = value;
         }
 
-        function setIsUndoAvailable(value) {
-            vm.isUndoAvailable = value;
+        function setIsUndoDisabled(value) {
+            vm.isUndoDisabled = value;
         }
 
         function saveGame(cells, finalResult) {
