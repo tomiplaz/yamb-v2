@@ -10,8 +10,9 @@
             dice: [],
             getDice: getDice,
             getDiceValues: getDiceValues,
-            unlockAndDisableDice: unlockAndDisableDice
-        }
+            unlockAndDisableDice: unlockAndDisableDice,
+            enableDice: enableDice
+        };
 
         return service;
 
@@ -33,6 +34,14 @@
             function unlockAndDisableDie(die) {
                 die.isLocked = false;
                 die.isDisabled = true;
+            }
+        }
+
+        function enableDice() {
+            service.dice.forEach(enableDie);
+
+            function enableDie(die) {
+                die.isDisabled = false;
             }
         }
     }

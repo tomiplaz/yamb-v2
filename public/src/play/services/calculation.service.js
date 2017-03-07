@@ -133,6 +133,8 @@
                         if (relevantValues.every(hasValue)) {
                             var sum = relevantValues.reduce(sumReduction, 0);
                             cells[cellKey].value = (sum >= 60 ? sum + 30 : sum);
+                        } else {
+                            cells[cellKey].value = null;
                         }
                         break;
                     case 'msum':
@@ -141,12 +143,16 @@
                         if (relevantValues.every(hasValue) && cells[onesCellKey].value !== null) {
                             var difference = relevantValues[1] - relevantValues[0];
                             cells[cellKey].value = (difference < 0 ? 0 : difference * cells[onesCellKey].value);
+                        } else {
+                            cells[cellKey].value = null;
                         }
                         break;
                     case 'lsum':
                         var relevantValues = getRelevantValues(4);
                         if (relevantValues.every(hasValue)) {
                             cells[cellKey].value = relevantValues.reduce(sumReduction, 0);
+                        } else {
+                            cells[cellKey].value = null;
                         }
                         break;
                     default:
@@ -164,45 +170,6 @@
                     return relevantValues;
                 }
             };
-        }
-
-        function calculateSum(cellKey, row, column) {
-            switch (row.abbreviation) {
-                case 'usum':
-                    var relevantValues = getRelevantValues(6);
-                    if (relevantValues.every(hasValue)) {
-                        var sum = relevantValues.reduce(sumReduction, 0);
-                        scope.cells[cellKey].value = (sum >= 60 ? sum + 30 : sum);
-                    }
-                    break;
-                case 'msum':
-                    var relevantValues = getRelevantValues(2);
-                    var onesCellKey = rows[0].abbreviation + '_' + column.abbreviation;
-                    if (relevantValues.every(hasValue) && scope.cells[onesCellKey].value !== null) {
-                        var difference = relevantValues[1] - relevantValues[0];
-                        scope.cells[cellKey].value = (difference < 0 ? 0 : difference * scope.cells[onesCellKey].value);
-                    }
-                    break;
-                case 'lsum':
-                    var relevantValues = getRelevantValues(4);
-                    if (relevantValues.every(hasValue)) {
-                        scope.cells[cellKey].value = relevantValues.reduce(sumReduction, 0);
-                    }
-                    break;
-                default:
-            }
-
-            function getRelevantValues(numberOfTrailingCells) {
-                var cellKey = null;
-                var relevantValues = [];
-
-                for (var i = 1; i <= numberOfTrailingCells; i++) {
-                    cellKey = rows[row.id - 1 - i].abbreviation + '_' + column.abbreviation;
-                    relevantValues.push(scope.cells[cellKey].value);
-                }
-
-                return relevantValues;
-            }
         }
 
         function getFinalResult(sumsValues) {

@@ -20,18 +20,22 @@
     </div>
 
     <div class="col-xs-12 m-t-10" ng-if="play.hasGameStarted">
-        <button class="btn" ng-disabled="play.isInputRequired || play.isAnnouncementRequired"
-            ng-click="play.roll()">
+        <button class="btn" ng-click="play.roll()"
+            ng-disabled="play.isInputRequired || play.isAnnouncementRequired">
             Roll
+        </button>
+        <button class="btn" ng-click="play.undo()"
+            ng-disabled="play.isUndoDisabled">
+            Undo
         </button>
     </div>
 
-    <div class="col-xs-12 m-t-10">
-        <timer></timer>
+    <div class="col-xs-6 m-t-10 text-right">
+        <span>Roll: {{ play.rollNumber }}</span>
     </div>
 
-    <div class="col-xs-12 m-t-10">
-        <span>Roll: {{ play.rollNumber }}</span>
+    <div class="col-xs-6 m-t-10 text-left">
+        <timer></timer>
     </div>
 
     <div class="col-xs-12 m-t-20">
