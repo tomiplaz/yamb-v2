@@ -13,7 +13,7 @@
             <span>Duration: </span>
             <span ng-bind="$ctrl.game.duration | formatValue : 'duration'"></span>
         </div>
-        <div class="col-xs-12 m-t-5">
+        <div class="col-xs-12 m-t-5" ng-if="!$ctrl.isRecentGame">
             <span>Timestamp: </span>
             <span ng-bind="$ctrl.game.created_at"></span>
         </div>

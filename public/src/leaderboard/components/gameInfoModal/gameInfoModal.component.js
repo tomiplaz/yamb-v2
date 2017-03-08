@@ -22,12 +22,13 @@
 
             if ($ctrl.resolve.bestGames) {
                 $ctrl.game = $ctrl.resolve.bestGames[$ctrl.resolve.diceKey];
+                $ctrl.game.cells.forEach(setCellProperty);
             } else {
-                $ctrl.game = $ctrl.resolve.game;
+                $ctrl.game = $ctrl.resolve.recentGame;
+                $ctrl.cells = $ctrl.game.cells;
+                $ctrl.isRecentGame = true;
             }
             
-            $ctrl.game.cells.forEach(setCellProperty);
-
             function setCellProperty(cell) {
                 $ctrl.cells[cell.cell_key] = {
                     value: cell.value

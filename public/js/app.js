@@ -272,7 +272,7 @@
         vm.setIsInputRequired = setIsInputRequired;
         vm.setIsAnnouncementRequired = setIsAnnouncementRequired;
         vm.setIsUndoDisabled = setIsUndoDisabled;
-        vm.saveGame = saveGame;
+        vm.handleFinishedGame = handleFinishedGame;
 
         function activate() {
             vm.diceOptions = helperService.getDiceOptions();
@@ -347,60 +347,71 @@
             vm.isUndoDisabled = value;
         }
 
-        function saveGame(cells, finalResult) {
-            vm.finalResult = finalResult;
-
+        function handleFinishedGame(cells, finalResult) {
             $scope.$broadcast('stop');
+            
+            displayGame();
+            saveGame();
 
-            var data = {
-                game: {
-                    user_id: userId,
-                    number_of_dice: vm.selectedDiceOption.value.toString(),
+            function displayGame() {
+                var recentGame = {
                     result: finalResult,
-                    duration: $scope.timer.value
-                },
-                cells: getMappedCells(cells)
-            };
-
-            apiService
-                .create('games', data)
-                .then(successCallback, errorCallback)
-                .finally(finallyCallback);
-
-            function getMappedCells(cells) {
-                var mappedCells = [];
-
-                for (var cellKey in cells) {
-                    mappedCells.push({
-                        row_id: cells[cellKey].row.id,
-                        column_id: cells[cellKey].column.id,
-                        value: cells[cellKey].value,
-                        input_turn: cells[cellKey].inputTurn
-                    });
-                }
-
-                return mappedCells;
-            }
-
-            function successCallback(response) {
-                toastr.success("Game saved successfully!", "Game saved");
+                    duration: $scope.timer.value,
+                    cells: cells
+                };
 
                 var modal = modalService.getModalInstance(
                     modalService.MODALS.GAME_INFO,
                     {
                         user: userService.getUser(),
-                        game: response,
+                        recentGame: recentGame,
                         diceKey: vm.selectedDiceOption.key
                     }
                 );
             }
 
-            function errorCallback(response) {
-                toastr.error("Final result was " + finalResult + ".", "Game not saved");
-            }
+            function saveGame() {
+                var data = {
+                    game: {
+                        user_id: userId,
+                        number_of_dice: vm.selectedDiceOption.value.toString(),
+                        result: finalResult,
+                        duration: $scope.timer.value
+                    },
+                    cells: getMappedCells(cells)
+                };
 
-            function finallyCallback() {
-                $state.reload();
+                apiService
+                    .create('games', data)
+                    .then(successCallback, errorCallback)
+                    .finally(finallyCallback);
+
+                function getMappedCells(cells) {
+                    var mappedCells = [];
+
+                    for (var cellKey in cells) {
+                        mappedCells.push({
+                            row_id: cells[cellKey].row.id,
+                            column_id: cells[cellKey].column.id,
+                            value: cells[cellKey].value,
+                            input_turn: cells[cellKey].inputTurn
+                        });
+                    }
+
+                    return mappedCells;
+                }
+
+                function successCallback(response) {
+                    toastr.success("Game saved.");
+                }
+
+                function errorCallback(response) {
+                    toastr.error("Game not saved.");
+                }
+
+                function finallyCallback() {
+                    $state.reload();
+                }
             }
         }
     }
@@ -1160,15 +1171,15 @@
                                 return data.user;
                             },
                             bestGames: function(apiService) {
-                                if (!data.game) {
+                                if (!data.recentGame) {
                                     return apiService.custom('users', data.user.id, 'get', 'best-games');
                                 } else {
                                     return null;
                                 }
                             },
-                            game: function() {
-                                if (data.game) {
-                                    return data.game;
+                            recentGame: function() {
+                                if (data.recentGame) {
+                                    return data.recentGame;
                                 } else {
                                     return null;
                                 }
@@ -1245,12 +1256,13 @@
 
             if ($ctrl.resolve.bestGames) {
                 $ctrl.game = $ctrl.resolve.bestGames[$ctrl.resolve.diceKey];
+                $ctrl.game.cells.forEach(setCellProperty);
             } else {
-                $ctrl.game = $ctrl.resolve.game;
+                $ctrl.game = $ctrl.resolve.recentGame;
+                $ctrl.cells = $ctrl.game.cells;
+                $ctrl.isRecentGame = true;
             }
             
-            $ctrl.game.cells.forEach(setCellProperty);
-
             function setCellProperty(cell) {
                 $ctrl.cells[cell.cell_key] = {
                     value: cell.value
@@ -1401,7 +1413,8 @@
                         column: column,
                         isPlayable: isPlayable(row),
                         isAvailable: false,
-                        value: null,
+                        value: (isPlayable(row) && row.abbreviation !== '1' ? 7 : null),
+                        //value: null,
                         inputTurn: null
                     };
                 }
@@ -1461,7 +1474,7 @@
 
                     if (sumsValues.every(hasValue)) {
                         scope.finalResult = calculationService.getFinalResult(sumsValues);
-                        scope.play.saveGame(scope.cells, scope.finalResult);
+                        scope.play.handleFinishedGame(scope.cells, scope.finalResult);
                     }
 
                     function getSumsValues() {

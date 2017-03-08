@@ -21,7 +21,7 @@
         vm.setIsInputRequired = setIsInputRequired;
         vm.setIsAnnouncementRequired = setIsAnnouncementRequired;
         vm.setIsUndoDisabled = setIsUndoDisabled;
-        vm.saveGame = saveGame;
+        vm.handleFinishedGame = handleFinishedGame;
 
         function activate() {
             vm.diceOptions = helperService.getDiceOptions();
@@ -96,60 +96,71 @@
             vm.isUndoDisabled = value;
         }
 
-        function saveGame(cells, finalResult) {
-            vm.finalResult = finalResult;
-
+        function handleFinishedGame(cells, finalResult) {
             $scope.$broadcast('stop');
+            
+            displayGame();
+            saveGame();
 
-            var data = {
-                game: {
-                    user_id: userId,
-                    number_of_dice: vm.selectedDiceOption.value.toString(),
+            function displayGame() {
+                var recentGame = {
                     result: finalResult,
-                    duration: $scope.timer.value
-                },
-                cells: getMappedCells(cells)
-            };
-
-            apiService
-                .create('games', data)
-                .then(successCallback, errorCallback)
-                .finally(finallyCallback);
-
-            function getMappedCells(cells) {
-                var mappedCells = [];
-
-                for (var cellKey in cells) {
-                    mappedCells.push({
-                        row_id: cells[cellKey].row.id,
-                        column_id: cells[cellKey].column.id,
-                        value: cells[cellKey].value,
-                        input_turn: cells[cellKey].inputTurn
-                    });
-                }
-
-                return mappedCells;
-            }
-
-            function successCallback(response) {
-                toastr.success("Game saved successfully!", "Game saved");
+                    duration: $scope.timer.value,
+                    cells: cells
+                };
 
                 var modal = modalService.getModalInstance(
                     modalService.MODALS.GAME_INFO,
                     {
                         user: userService.getUser(),
-                        game: response,
+                        recentGame: recentGame,
                         diceKey: vm.selectedDiceOption.key
                     }
                 );
             }
 
-            function errorCallback(response) {
-                toastr.error("Final result was " + finalResult + ".", "Game not saved");
-            }
+            function saveGame() {
+                var data = {
+                    game: {
+                        user_id: userId,
+                        number_of_dice: vm.selectedDiceOption.value.toString(),
+                        result: finalResult,
+                        duration: $scope.timer.value
+                    },
+                    cells: getMappedCells(cells)
+                };
 
-            function finallyCallback() {
-                $state.reload();
+                apiService
+                    .create('games', data)
+                    .then(successCallback, errorCallback)
+                    .finally(finallyCallback);
+
+                function getMappedCells(cells) {
+                    var mappedCells = [];
+
+                    for (var cellKey in cells) {
+                        mappedCells.push({
+                            row_id: cells[cellKey].row.id,
+                            column_id: cells[cellKey].column.id,
+                            value: cells[cellKey].value,
+                            input_turn: cells[cellKey].inputTurn
+                        });
+                    }
+
+                    return mappedCells;
+                }
+
+                function successCallback(response) {
+                    toastr.success("Game saved.");
+                }
+
+                function errorCallback(response) {
+                    toastr.error("Game not saved.");
+                }
+
+                function finallyCallback() {
+                    $state.reload();
+                }
             }
         }
     }
