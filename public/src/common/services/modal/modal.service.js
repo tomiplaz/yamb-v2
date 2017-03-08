@@ -42,15 +42,15 @@
                                 return data.user;
                             },
                             bestGames: function(apiService) {
-                                if (!data.game) {
+                                if (!data.recentGame) {
                                     return apiService.custom('users', data.user.id, 'get', 'best-games');
                                 } else {
                                     return null;
                                 }
                             },
-                            game: function() {
-                                if (data.game) {
-                                    return data.game;
+                            recentGame: function() {
+                                if (data.recentGame) {
+                                    return data.recentGame;
                                 } else {
                                     return null;
                                 }

@@ -51,7 +51,8 @@
                         column: column,
                         isPlayable: isPlayable(row),
                         isAvailable: false,
-                        value: null,
+                        value: (isPlayable(row) && row.abbreviation !== '1' ? 7 : null),
+                        //value: null,
                         inputTurn: null
                     };
                 }
@@ -111,7 +112,7 @@
 
                     if (sumsValues.every(hasValue)) {
                         scope.finalResult = calculationService.getFinalResult(sumsValues);
-                        scope.play.saveGame(scope.cells, scope.finalResult);
+                        scope.play.handleFinishedGame(scope.cells, scope.finalResult);
                     }
 
                     function getSumsValues() {
