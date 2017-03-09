@@ -421,6 +421,46 @@
     'use strict';
 
     angular
+        .module('yamb-v2.register', [])
+        .config(config);
+    
+    config.$inject = ['$stateProvider'];
+    function config($stateProvider) {
+        $stateProvider
+            .state('root.register', {
+                url: 'register',
+                templateUrl: 'src/register/register.html',
+                controller: 'RegisterCtrl as register'
+            });
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.register')
+        .controller('RegisterCtrl', RegisterCtrl);
+    
+    RegisterCtrl.$inject = ['authService', '$state', 'toastr'];
+    function RegisterCtrl(authService, $state, toastr) {
+        var vm = this;
+
+        vm.confirm = confirm;
+
+        function confirm() {
+            authService.register(vm.input).then(function(success) {
+                toastr.success("You have registered successfully! Please log in.", "Success");
+                $state.go('root.login');
+            }, function(error) {
+                toastr.error("Something went wrong.", "Error");
+            });
+        }
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
         .module('yamb-v2.root', [])
         .config(config);
     
@@ -509,46 +549,6 @@
             $rootScope.user = null;
             vm.isNavCollapsed = true;
             $state.go('root.home');
-        }
-    }
-})();
-(function() {
-    'use strict';
-
-    angular
-        .module('yamb-v2.register', [])
-        .config(config);
-    
-    config.$inject = ['$stateProvider'];
-    function config($stateProvider) {
-        $stateProvider
-            .state('root.register', {
-                url: 'register',
-                templateUrl: 'src/register/register.html',
-                controller: 'RegisterCtrl as register'
-            });
-    }
-})();
-(function() {
-    'use strict';
-
-    angular
-        .module('yamb-v2.register')
-        .controller('RegisterCtrl', RegisterCtrl);
-    
-    RegisterCtrl.$inject = ['authService', '$state', 'toastr'];
-    function RegisterCtrl(authService, $state, toastr) {
-        var vm = this;
-
-        vm.confirm = confirm;
-
-        function confirm() {
-            authService.register(vm.input).then(function(success) {
-                toastr.success("You have registered successfully! Please log in.", "Success");
-                $state.go('root.login');
-            }, function(error) {
-                toastr.error("Something went wrong.", "Error");
-            });
         }
     }
 })();
@@ -932,42 +932,6 @@
     'use strict';
 
     angular
-        .module('yamb-v2.filters')
-        .filter('formatValue', formatValue);
-    
-    function formatValue() {
-        return function(value, key) {
-            switch (key) {
-                case 'duration':
-                case 'average_duration':
-                    if (typeof value !== 'number' || isNaN(value) || value === 0) {
-                        return '-';
-                    } else {
-                        var seconds = Math.floor(value / 1000);
-                        var minutes = Math.floor(seconds / 60);
-                        return formatTimeValue(minutes) + ':' + formatTimeValue(seconds - minutes * 60);
-                    }
-                case 'games_played':
-                case 'games_unfinished':
-                    return value;
-                default:
-                    return (value ? value : '-');
-            }
-
-            function formatTimeValue(value) {
-                if (value < 10) {
-                    return '0' + value;
-                } else {
-                    return value;
-                }
-            }
-        };
-    }
-})();
-(function() {
-    'use strict';
-
-    angular
         .module('commonServices.api', ['restangular'])
         .factory('ApiRestangular', ApiRestangular)
         .factory('apiService', apiService);
@@ -1007,6 +971,42 @@
             var restangularObject = (id ? ApiRestangular.one(resource, id) : ApiRestangular.all(resource));
             return restangularObject.customOperation(method, route, params, headers, data);
         }
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.filters')
+        .filter('formatValue', formatValue);
+    
+    function formatValue() {
+        return function(value, key) {
+            switch (key) {
+                case 'duration':
+                case 'average_duration':
+                    if (typeof value !== 'number' || isNaN(value) || value === 0) {
+                        return '-';
+                    } else {
+                        var seconds = Math.floor(value / 1000);
+                        var minutes = Math.floor(seconds / 60);
+                        return formatTimeValue(minutes) + ':' + formatTimeValue(seconds - minutes * 60);
+                    }
+                case 'games_played':
+                case 'games_unfinished':
+                    return value;
+                default:
+                    return (value ? value : '-');
+            }
+
+            function formatTimeValue(value) {
+                if (value < 10) {
+                    return '0' + value;
+                } else {
+                    return value;
+                }
+            }
+        };
     }
 })();
 (function() {
