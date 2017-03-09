@@ -51,8 +51,7 @@
                         column: column,
                         isPlayable: isPlayable(row),
                         isAvailable: false,
-                        value: (isPlayable(row) && row.abbreviation !== '1' ? 7 : null),
-                        //value: null,
+                        value: null,
                         inputTurn: null
                     };
                 }
