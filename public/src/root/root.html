@@ -18,7 +18,7 @@
                 <hr class="hidden-sm hidden-md hidden-lg" ng-if="$last">
 
                 <li class="static" ng-if="$last && user">
-                    <a ng-bind="root.greeting + ', ' + user.name + '!'"></a>
+                    <a ng-bind="'Logged in as: ' + user.name"></a>
                 <li>
 
                 <li ng-repeat="state in root[side + 'States']"

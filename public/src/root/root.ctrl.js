@@ -19,7 +19,6 @@
             $rootScope.columns = columns.plain();
 
             vm.isNavCollapsed = true;
-            vm.greeting = "Hello";
 
             vm.leftStates = [
                 {

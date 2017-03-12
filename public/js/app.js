@@ -236,6 +236,140 @@
     'use strict';
 
     angular
+        .module('yamb-v2.register', [])
+        .config(config);
+    
+    config.$inject = ['$stateProvider'];
+    function config($stateProvider) {
+        $stateProvider
+            .state('root.register', {
+                url: 'register',
+                templateUrl: 'src/register/register.html',
+                controller: 'RegisterCtrl as register'
+            });
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.register')
+        .controller('RegisterCtrl', RegisterCtrl);
+    
+    RegisterCtrl.$inject = ['authService', '$state', 'toastr'];
+    function RegisterCtrl(authService, $state, toastr) {
+        var vm = this;
+
+        vm.confirm = confirm;
+
+        function confirm() {
+            authService.register(vm.input).then(function(success) {
+                toastr.success("You have registered successfully! Please log in.", "Success");
+                $state.go('root.login');
+            }, function(error) {
+                toastr.error("Something went wrong.", "Error");
+            });
+        }
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.root', [])
+        .config(config);
+    
+    config.$inject = ['$stateProvider'];
+    function config($stateProvider) {
+        $stateProvider
+            .state('root', {
+                url: '/',
+                abstract: true,
+                templateUrl: 'src/root/root.html',
+                controller: 'RootCtrl as root',
+                resolve: {
+                    rows: function(apiService) {
+                        return apiService.get('rows');
+                    },
+                    columns: function(apiService) {
+                        return apiService.get('columns');
+                    },
+                    user: function(userService) {
+                        return userService.getUser();
+                    }
+                }
+            });
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('yamb-v2.root')
+        .controller('RootCtrl', RootCtrl);
+    
+    RootCtrl.$inject = ['rows', 'columns', 'user', '$localStorage', '$state', '$rootScope'];
+    function RootCtrl(rows, columns, user, $localStorage, $state, $rootScope) {
+        var vm = this;
+
+        activate();
+
+        vm.logout = logout;
+
+        function activate() {
+            $rootScope.user = (user ? user.plain() : user);
+            $rootScope.rows = rows.plain();
+            $rootScope.columns = columns.plain();
+
+            vm.isNavCollapsed = true;
+
+            vm.leftStates = [
+                {
+                    name: 'root.play',
+                    label: 'Play'
+                },
+                {
+                    name: 'root.rules',
+                    label: 'Rules'
+                },
+                {
+                    name: 'root.leaderboard',
+                    label: 'Leaderboard'
+                },
+                {
+                    name: 'root.statistics',
+                    label: 'Statistics'
+                },
+                {
+                    name: 'root.about',
+                    label: 'About'
+                }
+            ];
+
+            vm.rightStates = [
+                {
+                    name: 'root.register',
+                    label: 'Register'
+                },
+                {
+                    name: 'root.login',
+                    label: 'Login'
+                }
+            ];
+        }
+
+        function logout() {
+            delete $localStorage.token;
+            $rootScope.user = null;
+            vm.isNavCollapsed = true;
+            $state.go('root.home');
+        }
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
         .module('yamb-v2.play', [])
         .config(config);
     
@@ -417,141 +551,6 @@
     }
 })();
 
-(function() {
-    'use strict';
-
-    angular
-        .module('yamb-v2.register', [])
-        .config(config);
-    
-    config.$inject = ['$stateProvider'];
-    function config($stateProvider) {
-        $stateProvider
-            .state('root.register', {
-                url: 'register',
-                templateUrl: 'src/register/register.html',
-                controller: 'RegisterCtrl as register'
-            });
-    }
-})();
-(function() {
-    'use strict';
-
-    angular
-        .module('yamb-v2.register')
-        .controller('RegisterCtrl', RegisterCtrl);
-    
-    RegisterCtrl.$inject = ['authService', '$state', 'toastr'];
-    function RegisterCtrl(authService, $state, toastr) {
-        var vm = this;
-
-        vm.confirm = confirm;
-
-        function confirm() {
-            authService.register(vm.input).then(function(success) {
-                toastr.success("You have registered successfully! Please log in.", "Success");
-                $state.go('root.login');
-            }, function(error) {
-                toastr.error("Something went wrong.", "Error");
-            });
-        }
-    }
-})();
-(function() {
-    'use strict';
-
-    angular
-        .module('yamb-v2.root', [])
-        .config(config);
-    
-    config.$inject = ['$stateProvider'];
-    function config($stateProvider) {
-        $stateProvider
-            .state('root', {
-                url: '/',
-                abstract: true,
-                templateUrl: 'src/root/root.html',
-                controller: 'RootCtrl as root',
-                resolve: {
-                    rows: function(apiService) {
-                        return apiService.get('rows');
-                    },
-                    columns: function(apiService) {
-                        return apiService.get('columns');
-                    },
-                    user: function(userService) {
-                        return userService.getUser();
-                    }
-                }
-            });
-    }
-})();
-(function() {
-    'use strict';
-
-    angular
-        .module('yamb-v2.root')
-        .controller('RootCtrl', RootCtrl);
-    
-    RootCtrl.$inject = ['rows', 'columns', 'user', '$localStorage', '$state', '$rootScope'];
-    function RootCtrl(rows, columns, user, $localStorage, $state, $rootScope) {
-        var vm = this;
-
-        activate();
-
-        vm.logout = logout;
-
-        function activate() {
-            $rootScope.user = (user ? user.plain() : user);
-            $rootScope.rows = rows.plain();
-            $rootScope.columns = columns.plain();
-
-            vm.isNavCollapsed = true;
-            vm.greeting = "Hello";
-
-            vm.leftStates = [
-                {
-                    name: 'root.play',
-                    label: 'Play'
-                },
-                {
-                    name: 'root.rules',
-                    label: 'Rules'
-                },
-                {
-                    name: 'root.leaderboard',
-                    label: 'Leaderboard'
-                },
-                {
-                    name: 'root.statistics',
-                    label: 'Statistics'
-                },
-                {
-                    name: 'root.about',
-                    label: 'About'
-                }
-            ];
-
-            vm.rightStates = [
-                {
-                    name: 'root.register',
-                    label: 'Register'
-                },
-                {
-                    name: 'root.login',
-                    label: 'Login'
-                }
-            ];
-        }
-
-        function logout() {
-            delete $localStorage.token;
-            $rootScope.user = null;
-            vm.isNavCollapsed = true;
-            $state.go('root.home');
-        }
-    }
-})();
 (function() {
     'use strict';
 
@@ -932,6 +931,42 @@
     'use strict';
 
     angular
+        .module('yamb-v2.filters')
+        .filter('formatValue', formatValue);
+    
+    function formatValue() {
+        return function(value, key) {
+            switch (key) {
+                case 'duration':
+                case 'average_duration':
+                    if (typeof value !== 'number' || isNaN(value) || value === 0) {
+                        return '-';
+                    } else {
+                        var seconds = Math.floor(value / 1000);
+                        var minutes = Math.floor(seconds / 60);
+                        return formatTimeValue(minutes) + ':' + formatTimeValue(seconds - minutes * 60);
+                    }
+                case 'games_played':
+                case 'games_unfinished':
+                    return value;
+                default:
+                    return (value ? value : '-');
+            }
+
+            function formatTimeValue(value) {
+                if (value < 10) {
+                    return '0' + value;
+                } else {
+                    return value;
+                }
+            }
+        };
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
         .module('commonServices.api', ['restangular'])
         .factory('ApiRestangular', ApiRestangular)
         .factory('apiService', apiService);
@@ -971,42 +1006,6 @@
             var restangularObject = (id ? ApiRestangular.one(resource, id) : ApiRestangular.all(resource));
             return restangularObject.customOperation(method, route, params, headers, data);
         }
-    }
-})();
-(function() {
-    'use strict';
-
-    angular
-        .module('yamb-v2.filters')
-        .filter('formatValue', formatValue);
-    
-    function formatValue() {
-        return function(value, key) {
-            switch (key) {
-                case 'duration':
-                case 'average_duration':
-                    if (typeof value !== 'number' || isNaN(value) || value === 0) {
-                        return '-';
-                    } else {
-                        var seconds = Math.floor(value / 1000);
-                        var minutes = Math.floor(seconds / 60);
-                        return formatTimeValue(minutes) + ':' + formatTimeValue(seconds - minutes * 60);
-                    }
-                case 'games_played':
-                case 'games_unfinished':
-                    return value;
-                default:
-                    return (value ? value : '-');
-            }
-
-            function formatTimeValue(value) {
-                if (value < 10) {
-                    return '0' + value;
-                } else {
-                    return value;
-                }
-            }
-        };
     }
 })();
 (function() {

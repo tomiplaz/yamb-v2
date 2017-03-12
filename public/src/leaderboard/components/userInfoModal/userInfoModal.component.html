@@ -11,7 +11,7 @@
         </div>
     </div>
     <div class="row m-t-20 m-b-10">
-        <button class="btn m-l-5 m-r-5" ng-repeat="diceOption in $ctrl.diceOptions track by $index"
+        <button class="btn btn-default m-l-5 m-r-5" ng-repeat="diceOption in $ctrl.diceOptions track by $index"
             ng-class="{'active': $ctrl.selectedDiceOption === diceOption}"
             ng-click="$ctrl.setSelectedDiceOption(diceOption)"
             ng-bind="diceOption.label">

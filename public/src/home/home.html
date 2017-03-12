@@ -1,4 +1,19 @@
-<h3>Welcome</h3>
+<h3 ng-bind="'Welcome' + (user ? ' ' + user.name : '')"></h3>
+
+<div class="row m-t-20">
+    <button class="btn btn-default btn-lg" ui-sref="root.play">
+        Play
+    </button>
+</div>
+
+<div class="row m-t-10" ng-if="!user">
+    <button class="btn btn-default" ui-sref="root.register">
+        Register
+    </button>
+    <button class="btn btn-default" ui-sref="root.login">
+        Login
+    </button>
+</div>
 
 <h4 class="m-t-20">Last game played</h4>
 

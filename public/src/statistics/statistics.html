@@ -1,7 +1,7 @@
 <h3>Statistics</h3>
 
 <div class="row m-t-20">
-    <button class="btn m-l-5 m-r-5" ng-repeat="dice in statistics.options.dice track by $index"
+    <button class="btn btn-default m-l-5 m-r-5" ng-repeat="dice in statistics.options.dice track by $index"
         ng-class="{'active': statistics.selected.dice === dice}"
         ng-click="statistics.setSelected('dice', dice)"
         ng-bind="dice.label">
@@ -9,7 +9,7 @@
 </div>
 
 <div class="row m-t-10">
-    <button class="btn m-l-5 m-r-5" ng-repeat="scope in statistics.options.scope track by $index"
+    <button class="btn btn-default m-l-5 m-r-5" ng-repeat="scope in statistics.options.scope track by $index"
         ng-class="{'active': statistics.selected.scope === scope}"
         ng-click="statistics.setSelected('scope', scope)"
         ng-bind="scope.label"
@@ -18,7 +18,7 @@
 </div>
 
 <div class="row m-t-10">
-    <button class="btn m-l-5 m-r-5" ng-repeat="type in statistics.options.type track by $index"
+    <button class="btn btn-default m-l-5 m-r-5" ng-repeat="type in statistics.options.type track by $index"
         ng-class="{'active': statistics.selected.type === type}"
         ng-click="statistics.setSelected('type', type)"
         ng-bind="type.label">
