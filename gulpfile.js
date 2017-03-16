@@ -9,7 +9,8 @@ var Server = require('karma').Server;
 
 var jsFiles = [
     'public/src/main.js',
-    'public/src/**/*.js'
+    'public/src/**/*.js',
+    '!public/src/**/*.spec.js'
 ];
 
 var scssFiles = [
