@@ -2,6 +2,6 @@
 
 Second version of my Yamb game.
 
-In progress.
+Work in progress.
 
-Angular + Laravel.
+AngularJS + Laravel.
