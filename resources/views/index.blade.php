@@ -5,6 +5,10 @@
 
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
+        <meta name="author" content="Tomislav Plazonic">
+        <meta name="decription" content="Play a game of Yamb! Try to set the highest score, view leaderboards and statistics!">
+        <meta name="keywords" content="yamb Yamb jamb Jamb yahtzee Yahtzee yacht Yacht game pen and paper dice roll luck play leaderboard leaderboards statistics stats">
+
         <link type="text/css" rel="stylesheet" href="css/bootstrap.css">
         <link type="text/css" rel="stylesheet" href="css/deps.css">
         <link type="text/css" rel="stylesheet" href="css/app.css">
