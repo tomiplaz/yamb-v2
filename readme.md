@@ -2,6 +2,4 @@
 
 Second version of my Yamb game.
 
-Work in progress.
-
-AngularJS + Laravel.
+Developed in AngularJS and Laravel.
